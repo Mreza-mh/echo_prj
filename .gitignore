@@ -23,7 +23,6 @@ back/python_echo/pipeline/models/*
 ############################
 back/python_echo/echo_input/
 back/python_echo/result/
-back/python_echo/fazOres/
 back/laravel/public/echos/
 
 ############################
