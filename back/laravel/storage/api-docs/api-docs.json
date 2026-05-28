@@ -1,0 +1,2696 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Acaree Project API",
+        "description": "مستندات ای‌پی‌آی پروژه آکاری",
+        "contact": {
+            "email": "admin@example.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://my-default-host.com",
+            "description": "API Server"
+        }
+    ],
+    "paths": {
+        "/appointment/get-available-slots": {
+            "post": {
+                "tags": [
+                    "Appointment"
+                ],
+                "summary": "دریافت زمان‌های خالی برای رزرو",
+                "operationId": "80919da2209c085fe9e693b63f110fa8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "service_id",
+                                    "staff_id",
+                                    "date"
+                                ],
+                                "properties": {
+                                    "service_id": {
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "staff_id": {
+                                        "type": "integer",
+                                        "example": 3
+                                    },
+                                    "date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-01-05"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "زمان‌های خالی بازگردانده شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "عملیات موفق"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "start_time": {
+                                                        "type": "string",
+                                                        "example": "09:00"
+                                                    },
+                                                    "end_time": {
+                                                        "type": "string",
+                                                        "example": "09:30"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/appointment/add-appointment": {
+            "post": {
+                "tags": [
+                    "Appointment"
+                ],
+                "summary": "ثبت نوبت جدید",
+                "operationId": "1384a702c67624c44aed682cdd610358",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "user_id",
+                                    "staff_id",
+                                    "service_id",
+                                    "date_of_turn",
+                                    "start_time"
+                                ],
+                                "properties": {
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "staff_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "service_id": {
+                                        "type": "integer",
+                                        "example": 7
+                                    },
+                                    "date_of_turn": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-01-05"
+                                    },
+                                    "start_time": {
+                                        "type": "string",
+                                        "example": "14:30"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "example": "Online"
+                                    },
+                                    "permissible_interference": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "resource_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": [
+                                            1,
+                                            2
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "نوبت با موفقیت ثبت شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "نوبت با موفقیت ثبت شد"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/appointment/edit-appointment/{id}": {
+            "patch": {
+                "tags": [
+                    "Appointment"
+                ],
+                "summary": "ویرایش نوبت",
+                "operationId": "48209dd44e36682b826d2388c848a363",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 10
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "user_id",
+                                    "staff_id",
+                                    "service_id",
+                                    "date_of_turn",
+                                    "start_time"
+                                ],
+                                "properties": {
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "staff_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "service_id": {
+                                        "type": "integer",
+                                        "example": 7
+                                    },
+                                    "date_of_turn": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-01-05"
+                                    },
+                                    "start_time": {
+                                        "type": "string",
+                                        "example": "14:30"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "example": "Online"
+                                    },
+                                    "permissible_interference": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "resource_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": [
+                                            1,
+                                            2
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "نوبت با موفقیت ویرایش شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "نوبت با موفقیت ویرایش شد"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/appointment/get-appointment/{id}": {
+            "get": {
+                "tags": [
+                    "Appointment"
+                ],
+                "summary": "دریافت جزئیات یک نوبت",
+                "operationId": "630a3801776e8f211a4e54063a004ac7",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 12
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "جزئیات نوبت بازگردانده شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "اطلاعات نوبت با موفقیت دریافت شد"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/appointment/get-calendar-dashboard": {
+            "post": {
+                "tags": [
+                    "Appointment"
+                ],
+                "summary": "دریافت اطلاعات جامع تقویم برای داشبورد منشی",
+                "operationId": "b64dfc9bef9d684e07a7ae77617acf5a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "date"
+                                ],
+                                "properties": {
+                                    "date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-01-05"
+                                    },
+                                    "staff_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": [
+                                            1,
+                                            2
+                                        ]
+                                    },
+                                    "resource_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": [
+                                            3
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "اطلاعات تقویم بازگردانده شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "اطلاعات تقویم با موفقیت دریافت شد"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/appointment/get-current-appointment": {
+            "get": {
+                "tags": [
+                    "Appointment"
+                ],
+                "summary": "دریافت نوبت در حال اجرا (الان)",
+                "description": "چک می‌کند که در این لحظه کدام نوبت فعال در حال انجام است.",
+                "operationId": "5981642d88a293149bb051503d12734d",
+                "responses": {
+                    "200": {
+                        "description": "اطلاعات نوبت فعلی بازگردانده شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "نوبت فعلی یافت شد"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/send/verification": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "ارسال کد تایید",
+                "description": "ارسال کد تایید به ایمیل",
+                "operationId": "da1ca334452c95d015a0622a42e325f1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "user@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "کد تایید ارسال شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/login/verification": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "ورود با کد تایید",
+                "operationId": "29587ea1eb6b34903de2a7605aec63ac",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "verification_code"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "user@example.com"
+                                    },
+                                    "verification_code": {
+                                        "type": "string",
+                                        "example": "12345"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "ورود موفق",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/login/password": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "ورود با رمز عبور",
+                "operationId": "6a7f5f101f77e9aaace9db58e7abef2a",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "user@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "Password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "ورود موفق"
+                    }
+                }
+            }
+        },
+        "/auth/set/password": {
+            "put": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "تنظیم رمز عبور (ثبت‌نام)",
+                "operationId": "0515fcd7a1eb659d475176e9172c0cb9",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "user@example.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "Password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "رمز ثبت شد"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/forget-password": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "فراموشی رمز عبور",
+                "operationId": "9997936647fa7652e1886618099a7a37",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "verification_code",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "example": "user@example.com"
+                                    },
+                                    "verification_code": {
+                                        "type": "string",
+                                        "example": "12345"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "example": "Password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "رمز تغییر یافت"
+                    }
+                }
+            }
+        },
+        "/auth/verify/{user_id}": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "تایید کاربر",
+                "operationId": "a1eb0038c0efeab4c34c614f1d12da0b",
+                "parameters": [
+                    {
+                        "name": "user_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        },
+                        "example": 10
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "کاربر تایید شد"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/get/me": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "دریافت اطلاعات کاربر",
+                "operationId": "18e83d6959ae63b22318e1b3adeabe9b",
+                "responses": {
+                    "200": {
+                        "description": "اطلاعات کاربر"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/change-password": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "تغییر رمز عبور",
+                "operationId": "255dd8dc9b5174b7256349a2318e8c1e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "current_password",
+                                    "new_password",
+                                    "new_password_confirmation"
+                                ],
+                                "properties": {
+                                    "current_password": {
+                                        "type": "string",
+                                        "example": "OldPass123"
+                                    },
+                                    "new_password": {
+                                        "type": "string",
+                                        "example": "NewPass123"
+                                    },
+                                    "new_password_confirmation": {
+                                        "type": "string",
+                                        "example": "NewPass123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "رمز با موفقیت تغییر یافت"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/edit/profile": {
+            "put": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "ویرایش پروفایل",
+                "operationId": "c044bb9211985487e6bb54aabfa7e2f8",
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "علی رضایی"
+                                    },
+                                    "birthday": {
+                                        "type": "string",
+                                        "example": "1402/05/19"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "پروفایل ویرایش شد"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/auth/list-user": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "دریافت لیست کاربران با فیلتر",
+                "operationId": "86a238e813e3f57085f74212d7882806",
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "count_item": {
+                                        "description": "تعداد آیتم‌های مورد نیاز در هر صفحه",
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "is_paginate": {
+                                        "description": "فعال بودن یا نبودن صفحه‌بندی",
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "name": {
+                                        "description": "فیلتر بر اساس نام کاربر",
+                                        "type": "string",
+                                        "example": "علی رضایی"
+                                    },
+                                    "mobile": {
+                                        "description": "فیلتر بر اساس شماره موبایل",
+                                        "type": "string",
+                                        "example": "09123456789"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "لیست کاربران با موفقیت دریافت شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "عملیات موفق"
+                                        },
+                                        "data": {
+                                            "description": "لیست کاربران یا دیتای صفحه‌بندی",
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "خطا در داده‌های ورودی",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "نام باید رشته باشد"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/echo-history/info-doctor/{patient_id}": {
+            "get": {
+                "tags": [
+                    "EchoHistory"
+                ],
+                "summary": "دریافت اطلاعات اکوی بیمار توسط پزشک",
+                "description": "پزشک می‌تواند اطلاعات اکوی بیمار را با استفاده از شناسه بیمار دریافت کند.",
+                "operationId": "348acae1ede3c2ffb586a9193f5ff49f",
+                "parameters": [
+                    {
+                        "name": "patient_id",
+                        "in": "path",
+                        "description": "شناسه بیمار",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 25
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "اطلاعات اکوی بیمار با موفقیت ارسال شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "اطلاعات اکو بیمار با موفقیت ارسال شد"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": {
+                                                "patient_id": "25",
+                                                "name": "علی احمدی",
+                                                "echo_date": "2024-01-12",
+                                                "details": "Normal EF"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "اکوی بیمار وجود ندارد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "اکوی بیمار وجود ندارد"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/echo-history/info": {
+            "get": {
+                "tags": [
+                    "EchoHistory"
+                ],
+                "summary": "دریافت اطلاعات اکوی بیمار لاگین شده",
+                "description": "این متد اطلاعات اکوی بیمار لاگین شده را بر اساس شناسه کاربر احراز هویت شده دریافت می‌کند.",
+                "operationId": "e7955c643e36d0a79624106bb61b798c",
+                "responses": {
+                    "200": {
+                        "description": "اطلاعات اکوی بیمار با موفقیت ارسال شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "اطلاعات اکو بیمار با موفقیت ارسال شد"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": {
+                                                "patient_id": "6473af5c0bfa8120c935dc1b",
+                                                "name": "علی احمدی",
+                                                "echo_date": "2024-01-12",
+                                                "details": "Normal EF"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "اکوی بیمار وجود ندارد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "اکوی بیمار وجود ندارد"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/echo-history/file/{address}": {
+            "get": {
+                "tags": [
+                    "EchoHistory"
+                ],
+                "summary": "دریافت فایل اکو بیمار",
+                "description": "این متد فایل مربوط به اکوی بیمار (تصویر یا PDF) را بر اساس مسیر فایل (`address`) از پوشه public/echos ارسال می‌کند.",
+                "operationId": "49bbf487dd5061d4a702e0fdfe059413",
+                "parameters": [
+                    {
+                        "name": "address",
+                        "in": "path",
+                        "description": "مسیر فایل مورد نظر برای دانلود یا مشاهده",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "patient_123/report.pdf"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "فایل مورد نظر با موفقیت ارسال شد (توسط response()->file)",
+                        "content": {
+                            "application/octet-stream": {}
+                        }
+                    },
+                    "400": {
+                        "description": "مسیر فایل نامعتبر است",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Invalid file path"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "فایل یافت نشد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "File not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/expertise/list": {
+            "post": {
+                "tags": [
+                    "Expertise"
+                ],
+                "summary": "دریافت لیست تخصص‌ها",
+                "operationId": "3dae7b2b4e8cad7ad405cb4e5e146734",
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "is_paginate": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "count_item": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Cardiology"
+                                    },
+                                    "label": {
+                                        "type": "string",
+                                        "example": "قلب و عروق"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "لیست تخصص‌ها با موفقیت بازگشت داده شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "عملیات موفق"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/expertise/{expertise_id}": {
+            "get": {
+                "tags": [
+                    "Expertise"
+                ],
+                "summary": "دریافت جزئیات یک تخصص",
+                "operationId": "aeec9db6c950276867bd28922cd4e8f5",
+                "parameters": [
+                    {
+                        "name": "expertise_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "جزئیات تخصص بازگشت داده شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "عملیات موفق"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/expertise/add": {
+            "post": {
+                "tags": [
+                    "Expertise"
+                ],
+                "summary": "افزودن تخصص جدید",
+                "operationId": "d81fad690d8ada2197cb9bf6a522e8c5",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "label"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Cardiology"
+                                    },
+                                    "label": {
+                                        "type": "string",
+                                        "example": "قلب و عروق"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "تخصص با موفقیت اضافه شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "عملیات موفق"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/expertise/edit/{expertise_id}": {
+            "patch": {
+                "tags": [
+                    "Expertise"
+                ],
+                "summary": "ویرایش تخصص",
+                "operationId": "c27ecd5581225d524857070b463aa354",
+                "parameters": [
+                    {
+                        "name": "expertise_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Cardiology"
+                                    },
+                                    "label": {
+                                        "type": "string",
+                                        "example": "قلب و عروق"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "تخصص با موفقیت ویرایش شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "عملیات موفق"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/expertise/delete/{expertise_id}": {
+            "delete": {
+                "tags": [
+                    "Expertise"
+                ],
+                "summary": "حذف تخصص",
+                "operationId": "422e174ddfbadc27c499a52c57bc0091",
+                "parameters": [
+                    {
+                        "name": "expertise_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "تخصص با موفقیت حذف شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "عملیات موفق"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/resource/list": {
+            "post": {
+                "tags": [
+                    "Resource"
+                ],
+                "summary": "دریافت لیست منابع",
+                "operationId": "da3468962c39a2a58ae7e3dd331f1e1c",
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "is_paginate": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "count_item": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "resource_name": {
+                                        "type": "string",
+                                        "example": "دستگاه اکسیژن"
+                                    },
+                                    "resource_type": {
+                                        "type": "string",
+                                        "example": "Medical"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "لیست منابع با موفقیت دریافت شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "لیست منابع با موفقیت دریافت شد"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/resource/{resource_id}": {
+            "get": {
+                "tags": [
+                    "Resource"
+                ],
+                "summary": "دریافت جزئیات یک منبع",
+                "operationId": "8edab922fa427e2ae80ebf8cb842b1e7",
+                "parameters": [
+                    {
+                        "name": "resource_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "منبع با موفقیت دریافت شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "منبع با موفقیت دریافت شد"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/resource/add": {
+            "post": {
+                "tags": [
+                    "Resource"
+                ],
+                "summary": "افزودن منبع جدید",
+                "operationId": "0cc7c88dafcbf3070e691d310a3ca5af",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "resource_name",
+                                    "resource_type"
+                                ],
+                                "properties": {
+                                    "resource_name": {
+                                        "type": "string",
+                                        "example": "دستگاه اکسیژن"
+                                    },
+                                    "resource_type": {
+                                        "type": "string",
+                                        "example": "Medical"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "منبع با موفقیت افزوده شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "منبع با موفقیت افزوده شد"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/resource/edit/{resource_id}": {
+            "patch": {
+                "tags": [
+                    "Resource"
+                ],
+                "summary": "ویرایش منبع",
+                "operationId": "b96cd5a2f8c0b843cf073fa2725a59eb",
+                "parameters": [
+                    {
+                        "name": "resource_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "resource_name": {
+                                        "type": "string",
+                                        "example": "دستگاه اکسیژن پیشرفته"
+                                    },
+                                    "resource_type": {
+                                        "type": "string",
+                                        "example": "Medical"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "منبع با موفقیت ویرایش شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "منبع با موفقیت ویرایش شد"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/resource/delete/{resource_id}": {
+            "delete": {
+                "tags": [
+                    "Resource"
+                ],
+                "summary": "حذف منبع",
+                "operationId": "491717efd89b824859443a388a52e69a",
+                "parameters": [
+                    {
+                        "name": "resource_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "منبع با موفقیت حذف شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "منبع با موفقیت حذف شد"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/service/list": {
+            "post": {
+                "tags": [
+                    "Service"
+                ],
+                "summary": "دریافت لیست سرویس‌ها",
+                "operationId": "ee2811693bb72c0f860faad25533e501",
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "is_paginate": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "count_item": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "example": "ویزیت عمومی"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "لیست سرویس‌ها بازگشت داده شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "لیست سرویس ها با موفقیت دریافت شد"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/service/{service_id}": {
+            "get": {
+                "tags": [
+                    "Service"
+                ],
+                "summary": "دریافت جزئیات یک سرویس",
+                "operationId": "93c28fee143b9317ce5a217175042d1a",
+                "parameters": [
+                    {
+                        "name": "service_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "جزئیات سرویس بازگشت داده شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "سرویس مورد نظر با موفقیت دریافت شد"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/service/add": {
+            "post": {
+                "tags": [
+                    "Service"
+                ],
+                "summary": "افزودن سرویس جدید",
+                "operationId": "b4c959be90a77af882ccce69568a6a8b",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "ویزیت عمومی"
+                                    },
+                                    "duration": {
+                                        "type": "string",
+                                        "example": "00:30:00"
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "example": 50000
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "سرویس با موفقیت اضافه شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "سرویس با موفقیت افزوده شد"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/service/edit/{service_id}": {
+            "patch": {
+                "tags": [
+                    "Service"
+                ],
+                "summary": "ویرایش سرویس",
+                "operationId": "9699684da7e4f18a21b3528ef2baa2c1",
+                "parameters": [
+                    {
+                        "name": "service_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "ویزیت تخصصی"
+                                    },
+                                    "duration": {
+                                        "type": "string",
+                                        "example": "01:00:00"
+                                    },
+                                    "price": {
+                                        "type": "number",
+                                        "example": 100000
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "سرویس با موفقیت ویرایش شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "سرویس با موفقیت ویرایش شد"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/service/delete/{service_id}": {
+            "delete": {
+                "tags": [
+                    "Service"
+
+                ],
+                "summary": "حذف سرویس",
+                "operationId": "c1631be4e16077c53c2b1381eed54e11",
+                "parameters": [
+                    {
+                        "name": "service_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "سرویس با موفقیت حذف شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "سرویس با موفقیت حذف شد"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/staff/list": {
+            "post": {
+                "tags": [
+                    "Staff"
+                ],
+                "summary": "دریافت لیست کارمندان",
+                "operationId": "0b7dfcf205e6dc9947c8bc8b1d074d53",
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "is_paginate": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "count_item": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "expertise_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "day": {
+                                        "type": "string",
+                                        "example": "sat"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "لیست کارمندان بازگشت داده شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "لیست پرسنل ها با موفقیت دریافت شد"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/staff/{staff_id}": {
+            "get": {
+                "tags": [
+                    "Staff"
+                ],
+                "summary": "دریافت جزئیات یک کارمند",
+                "operationId": "9dc957bd93e0c87129616c79958cb14e",
+                "parameters": [
+                    {
+                        "name": "staff_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "جزئیات کارمند بازگشت داده شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "پرسنل مورد نظر با موفقیت دریافت شد"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/staff/add": {
+            "post": {
+                "tags": [
+                    "Staff"
+                ],
+                "summary": "افزودن کارمند جدید",
+                "operationId": "4805ac38b17ef4b6cada95daf2cc82f8",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "user_id",
+                                    "expertise_id",
+                                    "schedule"
+                                ],
+                                "properties": {
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "expertise_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "schedule": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "day": {
+                                                    "type": "string",
+                                                    "example": "sat"
+                                                },
+                                                "start_time": {
+                                                    "type": "string",
+                                                    "example": "09:00:00"
+                                                },
+                                                "end_time": {
+                                                    "type": "string",
+                                                    "example": "12:00:00"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "کارمند با موفقیت اضافه شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "پرسنل با موفقیت افزوده شد"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/staff/edit/{staff_id}": {
+            "patch": {
+                "tags": [
+                    "Staff"
+                ],
+                "summary": "ویرایش کارمند",
+                "operationId": "1692f8d38fc573b13a6e86fda086b989",
+                "parameters": [
+                    {
+                        "name": "staff_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 5
+                                    },
+                                    "expertise_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    },
+                                    "schedule": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "day": {
+                                                    "type": "string",
+                                                    "example": "sun"
+                                                },
+                                                "start_time": {
+                                                    "type": "string",
+                                                    "example": "14:00:00"
+                                                },
+                                                "end_time": {
+                                                    "type": "string",
+                                                    "example": "18:00:00"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "کارمند با موفقیت ویرایش شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "پرسنل با موفقیت ویرایش شد"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/staff/delete/{staff_id}": {
+            "delete": {
+                "tags": [
+                    "Staff"
+                ],
+                "summary": "حذف کارمند",
+                "operationId": "cfc3cccfe4851ecfa802e57879439ccf",
+                "parameters": [
+                    {
+                        "name": "staff_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "کارمند با موفقیت حذف شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "پرسنل با موفقیت حذف شد"
+                                        },
+                                        "data": {
+                                            "type": "object",
+                                            "example": null
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/staff-schedule/add/{staff_id}": {
+            "post": {
+                "tags": [
+                    "Staff Schedule"
+                ],
+                "summary": "افزودن برنامه زمانی برای کارمند",
+                "description": "این متد برنامه زمانی هفتگی یک کارمند را ثبت می‌کند.",
+                "operationId": "257014f859561f22e2ee5a3e9b99e1bb",
+                "parameters": [
+                    {
+                        "name": "staff_id",
+                        "in": "path",
+                        "description": "شناسه کارمند",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 5
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "schedule"
+                                ],
+                                "properties": {
+                                    "schedule": {
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "day",
+                                                "start_time",
+                                                "end_time"
+                                            ],
+                                            "properties": {
+                                                "day": {
+                                                    "description": "روز هفته",
+                                                    "type": "string",
+                                                    "example": "sat"
+                                                },
+                                                "start_time": {
+                                                    "type": "string",
+                                                    "format": "time",
+                                                    "example": "08:00:00"
+                                                },
+                                                "end_time": {
+                                                    "type": "string",
+                                                    "format": "time",
+                                                    "example": "14:00:00"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "برنامه زمانی با موفقیت ثبت شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "برنامه زمانی با موفقیت ثبت شد"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "خطای اعتبارسنجی",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "زمان پایان باید بعد از زمان شروع باشد."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/status/list": {
+            "post": {
+                "tags": [
+                    "Status"
+                ],
+                "summary": "دریافت لیست وضعیت‌ها",
+                "operationId": "0c1b76c0789ac66dd94025b6672d9955",
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "is_paginate": {
+                                        "type": "boolean",
+                                        "example": true
+                                    },
+                                    "count_item": {
+                                        "type": "integer",
+                                        "example": 10
+                                    },
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Active"
+                                    },
+                                    "label": {
+                                        "type": "string",
+                                        "example": "فعال"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "لیست وضعیت‌ها بازگشت داده شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "عملیات موفق"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/status/{status_id}": {
+            "get": {
+                "tags": [
+                    "Status"
+                ],
+                "summary": "دریافت جزئیات یک وضعیت",
+                "operationId": "c98d559590bdf9dfc8d9aabecb44127b",
+                "parameters": [
+                    {
+                        "name": "status_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "جزئیات وضعیت بازگشت داده شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "عملیات موفق"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/status/add": {
+            "post": {
+                "tags": [
+                    "Status"
+                ],
+                "summary": "افزودن وضعیت جدید",
+                "operationId": "50bc757aefa22eb5b0cb3e59e316cdd1",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "label"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Active"
+                                    },
+                                    "label": {
+                                        "type": "string",
+                                        "example": "فعال"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "وضعیت اضافه شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "عملیات موفق"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/status/edit/{status_id}": {
+            "patch": {
+                "tags": [
+                    "Status"
+                ],
+                "summary": "ویرایش یک وضعیت",
+                "operationId": "c02b57475977e30e325c8a5982aa1ae0",
+                "parameters": [
+                    {
+                        "name": "status_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "example": "Inactive"
+                                    },
+                                    "label": {
+                                        "type": "string",
+                                        "example": "غیرفعال"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "وضعیت ویرایش شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "عملیات موفق"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/status/delete/{status_id}": {
+            "delete": {
+                "tags": [
+                    "Status"
+                ],
+                "summary": "حذف یک وضعیت",
+                "operationId": "286857297ac28ec152d00229926ed135",
+                "parameters": [
+                    {
+                        "name": "status_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "وضعیت حذف شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "عملیات موفق"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Appointment",
+            "description": "Appointment"
+        },
+        {
+            "name": "Auth",
+            "description": "Auth"
+        },
+        {
+            "name": "EchoHistory",
+            "description": "EchoHistory"
+        },
+        {
+            "name": "Expertise",
+            "description": "Expertise"
+        },
+        {
+            "name": "Resource",
+            "description": "Resource"
+        },
+        {
+            "name": "Service",
+            "description": "Service"
+        },
+        {
+            "name": "Staff",
+            "description": "Staff"
+        },
+        {
+            "name": "Status",
+            "description": "Status"
+        }
+    ]
+}
