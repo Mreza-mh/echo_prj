@@ -1,0 +1,90 @@
+<div class="doctor-panel-container" [dir]="translationService.getDirection()">
+  <mat-toolbar color="primary" class="doctor-toolbar">
+    <button mat-icon-button (click)="toggleSidenav()">
+      <mat-icon>menu</mat-icon>
+    </button>
+
+    <div class="toolbar-content">
+      <span class="panel-title">{{ getTranslation('doctorPanel') }}</span>
+    </div>
+
+    <span class="spacer"></span>
+
+    <div class="header-actions">
+      <button mat-icon-button (click)="toggleTheme()" [matTooltip]="getTranslation('toggleTheme')">
+        <mat-icon>{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      </button>
+
+      <button mat-icon-button (click)="toggleLanguage()" [matTooltip]="getTranslation('toggleLanguage')">
+        <mat-icon>language</mat-icon>
+      </button>
+
+      <button mat-icon-button [matMenuTriggerFor]="userMenu">
+        <mat-icon>account_circle</mat-icon>
+      </button>
+      <mat-menu #userMenu="matMenu">
+        <div class="user-menu-header" *ngIf="currentUser$ | async as user">
+          <div class="user-name">{{ user.name }}</div>
+          <div class="user-mobile">{{ user.mobile }}</div>
+        </div>
+        <mat-divider></mat-divider>
+        <button mat-menu-item routerLink="/dr-panel/settings">
+          <mat-icon>settings</mat-icon>
+          <span>{{ getTranslation('settings') }}</span>
+        </button>
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>{{ getTranslation('logout') }}</span>
+        </button>
+      </mat-menu>
+    </div>
+  </mat-toolbar>
+
+  <mat-sidenav-container class="sidenav-container">
+    <mat-sidenav
+      #sidenav
+      [mode]="isMobile ? 'over' : 'side'"
+      [(opened)]="sidenavOpened"
+      (closed)="sidenavOpened = false"
+      class="doctor-sidenav"
+      [class.collapsed]="sidebarCollapsed"
+    >
+      <div class="sidebar-header" *ngIf="!isMobile">
+        <button mat-icon-button (click)="toggleSidebarCollapse()" class="collapse-btn">
+          <mat-icon>{{ sidebarCollapsed ? 'chevron_right' : 'chevron_left' }}</mat-icon>
+        </button>
+      </div>
+
+      <mat-nav-list>
+        <a mat-list-item routerLink="/dr-panel/dashboard" routerLinkActive="active" (click)="closeSidenav()">
+          <mat-icon matListItemIcon>dashboard</mat-icon>
+          <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('dashboard') }}</span>
+        </a>
+
+        <mat-divider></mat-divider>
+        <div class="nav-section-title" *ngIf="!sidebarCollapsed">{{ getTranslation('patientManagement') }}</div>
+
+        <a mat-list-item routerLink="/dr-panel/appointments" routerLinkActive="active" (click)="closeSidenav()">
+          <mat-icon matListItemIcon>event_available</mat-icon>
+          <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('appointments') }}</span>
+        </a>
+
+        <a mat-list-item routerLink="/dr-panel/echo-history" routerLinkActive="active" (click)="closeSidenav()">
+          <mat-icon matListItemIcon>assignment</mat-icon>
+          <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('echoHistory') }}</span>
+        </a>
+
+        <a mat-list-item routerLink="/dr-panel/patients" routerLinkActive="active" (click)="closeSidenav()">
+          <mat-icon matListItemIcon>people</mat-icon>
+          <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('patients') }}</span>
+        </a>
+
+        <mat-divider></mat-divider>
+      </mat-nav-list>
+    </mat-sidenav>
+
+    <mat-sidenav-content class="doctor-content">
+      <router-outlet></router-outlet>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

@@ -1,0 +1,162 @@
+<mat-toolbar [class.scrolled]="isScrolled" class="header-toolbar">
+  <div class="container d-flex align-items-center justify-content-between">
+    <!-- Logo & Brand -->
+    <div class="brand-section d-flex align-items-center" routerLink="/">
+      <div class="logo-wrapper">
+        <mat-icon class="logo-icon">medical_services</mat-icon>
+      </div>
+      <div class="brand-text d-none d-sm-flex flex-column">
+        <span class="brand-name">Aca<span class="accent">ree</span></span>
+        <span class="brand-tagline">{{ getTranslation('clinicTagline') }}</span>
+      </div>
+    </div>
+
+    <!-- Desktop Navigation -->
+    <nav class="desktop-nav d-none d-lg-flex align-items-center">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-link">{{ getTranslation('home') }}</a>
+      <a routerLink="/organizations" routerLinkActive="active" class="nav-link">{{ getTranslation('selectOrg') }}</a>
+      <a href="about" class="nav-link">{{ getTranslation('aboutAcaree') }}</a>
+      <!-- <a href="contact" class="nav-link">{{ getTranslation('contactUs') }}</a> -->
+    </nav>
+
+    <!-- Actions Area -->
+    <div class="actions-section d-flex align-items-center gap-2">
+      <!-- Language Switcher -->
+      <button mat-icon-button (click)="toggleLanguage()" [matTooltip]="getTranslation('toggleLanguage')">
+        <mat-icon>language</mat-icon>
+        <span class="lang-text d-none d-md-inline ms-1">{{ translationService.getCurrentLang() === 'fa' ? 'EN' : 'FA' }}</span>
+      </button>
+
+      <!-- Theme Toggle -->
+      <button mat-icon-button (click)="toggleTheme()" [matTooltip]="getTranslation('toggleTheme')">
+        <mat-icon>{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      </button>
+
+      <mat-divider vertical class="mx-2 d-none d-md-block" style="height: 24px;"></mat-divider>
+
+      <!-- Auth Section -->
+      @if (!isAuthenticated) {
+        <button mat-button routerLink="/auth/login" class="login-btn d-none d-sm-inline-flex">
+          {{ getTranslation('login') }}
+        </button>
+        <button mat-flat-button color="primary" routerLink="/auth/register" class="register-btn">
+          {{ getTranslation('doctorRegistration') }}
+        </button>
+      } @else {
+        <button mat-button [matMenuTriggerFor]="userMenu" class="user-profile-btn">
+          <!-- <div class="user-avatar-mini">
+            <mat-icon>account_circle</mat-icon>
+          </div> -->
+          <span class="user-name d-none d-md-inline ms-2">{{ user?.name || 'User!' }}</span>
+          <mat-icon class="menu-arrow">expand_more</mat-icon>
+        </button>
+        
+        <mat-menu #userMenu="matMenu" class="user-dropdown-menu" xPosition="before">
+          <div class="menu-header px-3 py-2">
+            <div class="menu-user-info">
+              <strong>{{ user?.name }}</strong>
+              <small class="text-muted d-block">{{ user?.mobile }}</small>
+            </div>
+          </div>
+          <mat-divider></mat-divider>
+          <button mat-menu-item routerLink="/dashboard">
+            <mat-icon>dashboard</mat-icon>
+            <span>{{ getTranslation('dashboard') }}</span>
+          </button>
+          <button mat-menu-item routerLink="/profile">
+            <mat-icon>person_outline</mat-icon>
+            <span>{{ getTranslation('profile') }}</span>
+          </button>
+          
+          <!-- Super Admin Link -->
+          @if (isSuperAdmin) {
+            <button mat-menu-item routerLink="/super-panel" class="super-admin-link">
+              <mat-icon color="warn">verified_user</mat-icon>
+              <span>{{ getTranslation('superAdminPanelShort') }}</span>
+            </button>
+          }
+
+          <!-- Admin Panel Link -->
+          @if (isAdmin) {
+            <button mat-menu-item routerLink="/panel/dashboard">
+              <mat-icon color="primary">dashboard</mat-icon>
+              <span>{{ getTranslation('adminPanelShort') }}</span>
+            </button>
+          }
+
+          <mat-divider></mat-divider>
+          <button mat-menu-item (click)="logout()" class="logout-item">
+            <mat-icon color="error">logout</mat-icon>
+            <span>{{ getTranslation('logout') }}</span>
+          </button>
+        </mat-menu>
+      }
+
+      <!-- Mobile Menu Toggle -->
+      <button mat-icon-button class="d-lg-none" (click)="toggleMenu()">
+        <mat-icon>{{ isMenuOpen ? 'close' : 'menu' }}</mat-icon>
+      </button>
+    </div>
+  </div>
+</mat-toolbar>
+
+<!-- Mobile Drawer -->
+<div class="mobile-drawer" [class.open]="isMenuOpen">
+  <div class="drawer-header p-4 d-flex align-items-center justify-content-between">
+    <div class="brand-section">
+      <span class="brand-name">Aca<span class="accent">ree</span></span>
+    </div>
+    <button mat-icon-button (click)="closeMenu()">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="drawer-content p-3">
+<nav class="mobile-nav d-flex flex-column gap-2">
+       <a routerLink="/" (click)="closeMenu()" class="drawer-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+         <mat-icon>home</mat-icon>
+         <span>{{ getTranslation('home') }}</span>
+       </a>
+       <a routerLink="/organizations" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
+         <mat-icon>business</mat-icon>
+         <span>{{ getTranslation('selectOrg') }}</span>
+       </a>
+       <a routerLink="/dashboard" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
+         <mat-icon>dashboard</mat-icon>
+         <span>{{ getTranslation('dashboard') }}</span>
+       </a>
+       <a href="about" (click)="closeMenu()" class="drawer-link">
+         <mat-icon>info</mat-icon>
+         <span>{{ getTranslation('aboutAcaree') }}</span>
+       </a>
+     </nav>
+
+    <mat-divider class="my-3"></mat-divider>
+    
+    <div class="drawer-footer mt-auto p-3">
+      @if (!isAuthenticated) {
+        <button mat-flat-button color="primary" class="w-100 mb-2" routerLink="/auth/login" (click)="closeMenu()">
+          {{ getTranslation('login') }}
+        </button>
+        <button mat-stroked-button color="primary" class="w-100" routerLink="/auth/register" (click)="closeMenu()">
+          {{ getTranslation('doctorRegistration') }}
+        </button>
+      } @else {
+        <div class="d-flex align-items-center gap-3 mb-4">
+          <div class="user-avatar">
+            <mat-icon>account_circle</mat-icon>
+          </div>
+          <div>
+            <div class="fw-bold">{{ user?.name }}</div>
+            <div class="text-muted small">{{ user?.mobile }}</div>
+          </div>
+        </div>
+        <button mat-flat-button color="warn" class="w-100" (click)="logout(); closeMenu()">
+          <mat-icon>logout</mat-icon>
+          {{ getTranslation('logout') }}
+        </button>
+      }
+    </div>
+  </div>
+</div>
+<div class="drawer-overlay" *ngIf="isMenuOpen" (click)="closeMenu()"></div>

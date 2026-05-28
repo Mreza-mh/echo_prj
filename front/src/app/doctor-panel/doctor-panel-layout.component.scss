@@ -1,0 +1,171 @@
+.doctor-panel-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.doctor-toolbar {
+  z-index: 10;
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 2px 4px var(--shadow);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border-color);
+
+  .toolbar-content {
+    margin-left: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+
+  .panel-title {
+    font-weight: 500;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    button {
+      color: var(--text-primary) !important;
+    }
+  }
+}
+
+.user-menu-header {
+  padding: 16px;
+  text-align: center;
+  background: var(--bg-secondary);
+
+  .user-name {
+    font-weight: bold;
+    font-size: 1rem;
+    color: var(--text-primary);
+  }
+
+  .user-mobile {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+  }
+}
+
+.sidenav-container {
+  flex: 1;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+}
+
+.doctor-sidenav {
+  width: 260px;
+  background-color: var(--bg-primary);
+  border-right: 1px solid var(--border-color);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 5;
+
+  &.collapsed {
+    width: 80px;
+
+    .nav-section-title {
+      display: none;
+    }
+  }
+
+  .sidebar-header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 8px;
+  }
+}
+
+.nav-section-title {
+  padding: 16px 16px 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  letter-spacing: 0.05em;
+}
+
+.mat-mdc-nav-list {
+  .mat-mdc-list-item {
+    margin: 4px 8px;
+    border-radius: 8px;
+    height: 48px;
+    color: var(--text-primary);
+
+    &.active {
+      background-color: var(--active-bg);
+      color: var(--accent-color);
+
+      mat-icon {
+        color: var(--accent-color);
+      }
+      
+      .mdc-list-item__primary-text {
+        color: var(--accent-color) !important;
+      }
+    }
+
+    &:hover:not(.active) {
+      background-color: var(--hover-bg);
+    }
+    
+    mat-icon {
+      color: var(--text-secondary);
+    }
+  }
+}
+
+.doctor-content {
+  background-color: var(--bg-page);
+  padding: 24px;
+  margin: 0 !important;
+  min-height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  position: relative;
+  z-index: 1;
+
+  .content-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
+
+// RTL Support
+:host-context([dir='rtl']) {
+  .toolbar-content {
+    margin-left: 0;
+    margin-right: 16px;
+  }
+
+  .doctor-sidenav {
+    border-right: none;
+    border-left: 1px solid var(--border-color);
+  }
+}
+
+@media (max-width: 600px) {
+  .doctor-content {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-actions {
+    gap: 0.25rem;
+  }
+}

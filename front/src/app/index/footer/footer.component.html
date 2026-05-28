@@ -1,0 +1,78 @@
+<footer class="main-footer">
+  <div class="container">
+    <div class="footer-top row py-5">
+      <div class="col-lg-4 col-md-6 mb-4 mb-lg-0">
+        <div class="footer-brand mb-4">
+          <span class="brand-name">Aca<span class="accent">ree</span></span>
+        </div>
+        <p class="brand-desc">
+          {{ getTranslation('footerDesc') }}
+        </p>
+        <div class="social-links mt-4">
+          <a href="#" class="social-btn" aria-label="Instagram"><mat-icon>camera_alt</mat-icon></a>
+          <a href="#" class="social-btn" aria-label="LinkedIn"><mat-icon>business</mat-icon></a>
+          <a href="#" class="social-btn" aria-label="Twitter"><mat-icon>alternate_email</mat-icon></a>
+        </div>
+      </div>
+
+      <div class="col-lg-2 col-md-6 mb-4 mb-lg-0">
+        <h5 class="footer-title">{{ getTranslation('quickAccess') }}</h5>
+        <ul class="footer-links">
+          <li><a routerLink="/">{{ getTranslation('home') }}</a></li>
+          <li><a href="#">{{ getTranslation('aboutAcaree') }}</a></li>
+          <li><a href="#">{{ getTranslation('specializedServices') }}</a></li>
+          <li><a href="#">{{ getTranslation('faq') }}</a></li>
+        </ul>
+      </div>
+
+      <div class="col-lg-3 col-md-6 mb-4 mb-lg-0">
+        <h5 class="footer-title">{{ getTranslation('contactUs') }}</h5>
+        <ul class="footer-contact">
+          <li>
+            <mat-icon>location_on</mat-icon>
+            <span>{{ getTranslation('address') }}</span>
+          </li>
+          <li>
+            <mat-icon>phone</mat-icon>
+            <span dir="ltr">{{ getTranslation('phoneLabel') }}: ۰۲۱ - ۸۸۰۰ ۹۹۰۰</span>
+          </li>
+          <li>
+            <mat-icon>email</mat-icon>
+            <span>{{ getTranslation('emailLabel') }}: info@acaree.com</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="col-lg-3 col-md-6">
+        <h5 class="footer-title">{{ getTranslation('workingHours') }}</h5>
+        <div class="working-hours">
+          <div class="hour-item">
+            <span>{{ getTranslation('satToWed') }}</span>
+            <span class="time">۰۸:۰۰ - ۲۰:۰۰</span>
+          </div>
+          <div class="hour-item">
+            <span>{{ getTranslation('thursdays') }}</span>
+            <span class="time">۰۸:۰۰ - ۱۴:۰۰</span>
+          </div>
+          <div class="hour-item closed">
+            <span>{{ getTranslation('friAndHolidays') }}</span>
+            <span class="time">{{ getTranslation('closed') }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-bottom py-4">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-3">
+        <!-- <p class="copyright mb-0">
+          {{ getTranslation('copyright') }}
+        </p> -->
+        <div class="trust-badges">
+          <img src="images/visa.png" alt="Visa" width="30">
+          <img src="images/mastercard.png" alt="Mastercard" width="30">
+          <img src="images/ssl.png" alt="SSL" width="30">
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>

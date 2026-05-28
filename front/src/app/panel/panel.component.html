@@ -1,0 +1,161 @@
+<div class="panel-container" [dir]="translationService.getDirection()">
+  <!-- Header -->
+  <mat-toolbar color="primary" class="panel-toolbar">
+    <button mat-icon-button (click)="toggleSidenav()">
+      <mat-icon>menu</mat-icon>
+    </button>
+
+    <div class="toolbar-content" *ngIf="activeOrganization$ | async as activeOrg">
+      <span class="org-name">{{ activeOrg.name }}</span>
+      <mat-chip-set class="org-type-chip">
+        <mat-chip>{{ activeOrg.business_type }}</mat-chip>
+      </mat-chip-set>
+    </div>
+
+    <span class="spacer"></span>
+
+    <div class="header-actions">
+      <!-- Organization Switcher -->
+      <button mat-button [matMenuTriggerFor]="orgMenu" *ngIf="(currentUser$ | async)?.organizations?.length > 1">
+        <mat-icon>swap_horiz</mat-icon>
+        <span *ngIf="!isMobile">{{ getTranslation('switchOrganization') }}</span>
+      </button>
+      <mat-menu #orgMenu="matMenu">
+        <button mat-menu-item *ngFor="let org of (currentUser$ | async)?.organizations" (click)="switchOrganization(org)">
+          <mat-icon>business</mat-icon>
+          <span>{{ org.name }}</span>
+        </button>
+      </mat-menu>
+
+      <button mat-icon-button (click)="toggleTheme()" [matTooltip]="getTranslation('toggleTheme')">
+        <mat-icon>{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      </button>
+
+      <button mat-icon-button (click)="toggleLanguage()" [matTooltip]="getTranslation('toggleLanguage')">
+        <mat-icon>language</mat-icon>
+      </button>
+
+      <button mat-icon-button [matMenuTriggerFor]="userMenu">
+        <mat-icon>account_circle</mat-icon>
+      </button>
+      <mat-menu #userMenu="matMenu">
+        <div class="user-menu-header" *ngIf="currentUser$ | async as user">
+          <div class="user-name">{{ user.name }}</div>
+          <div class="user-mobile">{{ user.mobile }}</div>
+        </div>
+        <mat-divider></mat-divider>
+        <button mat-menu-item routerLink="/panel/settings">
+          <mat-icon>settings</mat-icon>
+          <span>{{ getTranslation('settings') }}</span>
+        </button>
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>{{ getTranslation('logout') }}</span>
+        </button>
+      </mat-menu>
+    </div>
+  </mat-toolbar>
+
+  <mat-sidenav-container class="sidenav-container">
+    <mat-sidenav
+      #sidenav
+      [mode]="isMobile ? 'over' : 'side'"
+      [(opened)]="sidenavOpened"
+      (closed)="sidenavOpened = false"
+      class="panel-sidenav"
+      [class.collapsed]="sidebarCollapsed"
+    >
+      <div class="sidebar-header" *ngIf="!isMobile">
+        <button mat-icon-button (click)="toggleSidebarCollapse()" class="collapse-btn">
+          <mat-icon>{{ sidebarCollapsed ? 'chevron_right' : 'chevron_left' }}</mat-icon>
+        </button>
+      </div>
+
+      <mat-nav-list>
+        <!-- Dashboard -->
+        <a mat-list-item routerLink="/panel/dashboard" routerLinkActive="active" (click)="closeSidenav()">
+          <mat-icon matListItemIcon>dashboard</mat-icon>
+          <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('dashboard') }}</span>
+        </a>
+
+        <mat-divider></mat-divider>
+        <div class="nav-section-title" *ngIf="!sidebarCollapsed">{{ getTranslation('management') }}</div>
+
+        <!-- Staff -->
+        <a mat-list-item routerLink="/panel/staff" routerLinkActive="active" (click)="closeSidenav()">
+          <mat-icon matListItemIcon>people</mat-icon>
+          <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('staff') }}</span>
+        </a>
+
+        <!-- Staff Schedule -->
+        <a mat-list-item routerLink="/panel/staff-schedule" routerLinkActive="active" (click)="closeSidenav()">
+          <mat-icon matListItemIcon>calendar_month</mat-icon>
+          <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('staffSchedule') }}</span>
+        </a>
+
+        <!-- Services -->
+        <a mat-list-item routerLink="/panel/organization-service" routerLinkActive="active" (click)="closeSidenav()">
+          <mat-icon matListItemIcon>medical_services</mat-icon>
+          <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('services') }}</span>
+        </a>
+
+        <!-- Resources -->
+        <a mat-list-item routerLink="/panel/resource" routerLinkActive="active" (click)="closeSidenav()">
+          <mat-icon matListItemIcon>inventory_2</mat-icon>
+          <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('resources') }}</span>
+        </a>
+
+        <!-- Status -->
+        <a mat-list-item routerLink="/panel/status" routerLinkActive="active" (click)="closeSidenav()">
+          <mat-icon matListItemIcon>rule</mat-icon>
+          <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('status') }}</span>
+        </a>
+
+        <!-- Expertise -->
+        <a mat-list-item routerLink="/panel/expertise" routerLinkActive="active" (click)="closeSidenav()">
+          <mat-icon matListItemIcon>psychology</mat-icon>
+          <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('expertise') }}</span>
+        </a>
+
+        <mat-divider></mat-divider>
+        <div class="nav-section-title" *ngIf="!sidebarCollapsed">{{ getTranslation('operations') }}</div>
+
+        <!-- Appointments -->
+        <a mat-list-item 
+           [routerLink]="['/panel/appointment']" 
+           routerLinkActive="active" 
+           (click)="closeSidenav()">
+          <mat-icon matListItemIcon>event_available</mat-icon>
+          <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('appointments') }}</span>
+        </a>
+
+        <mat-divider></mat-divider>
+      </mat-nav-list>
+    </mat-sidenav>
+
+    <mat-sidenav-content class="panel-content">
+      <div class="content-container" [class.full-sidebar]="!sidebarCollapsed && sidenavOpened && !isMobile">
+        <!-- Welcome Header in Main Content -->
+        <div class="welcome-banner" *ngIf="activeOrganization$ | async as activeOrg">
+          <div class="welcome-header-flex">
+            <div class="welcome-text-container">
+              <h1 class="welcome-text">
+                {{ getTranslation('welcomeTo') }} {{ activeOrg.name }}
+              </h1>
+              <p class="welcome-subtext" *ngIf="currentUser$ | async as user">
+                خوش آمدید، <strong>{{ user.name }}</strong>! شما در حال مدیریت منابع این سازمان هستید.
+              </p>
+            </div>
+            <div class="org-badge-large" *ngIf="activeOrg.business_type">
+              <mat-icon>business</mat-icon>
+              <span>{{ activeOrg.business_type }}</span>
+            </div>
+          </div>
+        </div>
+
+        <router-outlet></router-outlet>
+      </div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>
+

@@ -1,0 +1,324 @@
+<div class="org-details-container" [dir]="(currentLang$ | async) === 'fa' ? 'rtl' : 'ltr'">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-bg" [style.background-image]="organization?.image ? 'url(' + organization.image + ')' : ''">
+      <div class="hero-overlay"></div>
+    </div>
+    
+    <div class="container hero-content">
+      <div class="row align-items-center">
+        <div class="col-lg-8">
+          <div class="org-badge mb-3" *ngIf="organization?.type">
+            <mat-icon>verified</mat-icon>
+            <span>{{ organization.type }}</span>
+          </div>
+          <h1 class="org-title mb-2">{{ organization?.name || getTranslate('مطب دکتر احمدی') }}</h1>
+          <p class="org-address mb-4">
+            <mat-icon>location_on</mat-icon>
+              زنجان سعدی وسط  
+          </p>
+          
+          <div class="org-stats d-flex gap-4">
+            <div class="stat-item">
+              <span class="stat-value">{{ services.length }}</span>
+              <span class="stat-label">{{ getTranslate('services') }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">{{ staffList.length }}</span>
+              <span class="stat-label">{{ getTranslate('staff') }}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-value">{{ resources.length }}</span>
+              <span class="stat-label">{{ getTranslate('resources') }}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="col-lg-4 d-none d-lg-flex justify-content-end">
+          <div class="org-main-card shadow-lg p-4 rounded-4 bg-white text-dark">
+            <h3 class="h5 fw-bold mb-3">{{ getTranslate('contactInfo') }}</h3>
+            <div class="contact-item mb-2 d-flex align-items-center gap-2">
+              <mat-icon class="text-primary">phone</mat-icon>
+              <span>{{ organization?.phone || "02433998866" }}</span>
+            </div>
+            <div class="contact-item mb-4 d-flex align-items-center gap-2">
+              <mat-icon class="text-primary">email</mat-icon>
+              <span>{{ organization?.email || 'ahmadi@gmail.com' }}</span>
+            </div>
+            <button mat-flat-button color="primary" class="w-100 rounded-pill py-2">
+              {{ getTranslate('contactUs') }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions / Theme & Lang -->
+    <!-- <div class="floating-controls">
+      <button mat-fab color="basic" (click)="toggleTheme()" [matTooltip]="getTranslate('toggleTheme')">
+        <mat-icon>{{ (isDarkMode$ | async) ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      </button>
+      
+      <button mat-fab color="basic" [matMenuTriggerFor]="langMenu" [matTooltip]="getTranslate('language')">
+        <mat-icon>language</mat-icon>
+      </button>
+      
+      <mat-menu #langMenu="matMenu">
+        <button mat-menu-item (click)="changeLanguage('fa')">
+          <span [class.fw-bold]="(currentLang$ | async) === 'fa'">فارسی (FA)</span>
+        </button>
+        <button mat-menu-item (click)="changeLanguage('en')">
+          <span [class.fw-bold]="(currentLang$ | async) === 'en'">English (EN)</span>
+        </button>
+      </mat-menu>
+    </div> -->
+  </section>
+
+  <!-- Main Content -->
+  <div class="container main-content-wrapper mt-n5">
+    
+    <!-- Mobile View: Tabs -->
+    <div class="mobile-only-tabs ">
+      <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start" class="premium-tabs shadow-sm rounded-4 bg-white overflow-hidden">
+        
+        <!-- Services Tab -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon class="tab-icon ">medical_services</mat-icon>
+            <span class="tab-label ">{{ getTranslate('services') }}</span>
+          </ng-template>
+          
+          <div class="p-4">
+            <div class="services-wrapper mobile-slider">
+              <div class="row g-4" *ngIf="!isLoading && services.length > 0">
+                <div class="col-12" *ngFor="let service of services">
+                  <ng-container *ngTemplateOutlet="serviceCard; context: { $implicit: service }"></ng-container>
+                </div>
+              </div>
+              <div *ngIf="!isLoading && services.length === 0" class="empty-state text-center py-5">
+                <mat-icon class="empty-icon">search_off</mat-icon>
+                <p>{{ getTranslate('noServicesFound') }}</p>
+              </div>
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- Staff Tab -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon class="tab-icon">groups</mat-icon>
+            <span class="tab-label">{{ getTranslate('staff') }}</span>
+          </ng-template>
+          
+          <div class="p-4">
+            <div class="staff-wrapper mobile-slider">
+              <div class="row g-4" *ngIf="!isLoadingStaff && staffList.length > 0">
+                <div class="col-12" *ngFor="let staff of staffList">
+                  <ng-container *ngTemplateOutlet="staffCard; context: { $implicit: staff }"></ng-container>
+                </div>
+              </div>
+              <div *ngIf="!isLoadingStaff && staffList.length === 0" class="empty-state text-center py-5">
+                <mat-icon class="empty-icon">person_off</mat-icon>
+                <p>{{ getTranslate('noStaffFound') }}</p>
+              </div>
+            </div>
+          </div>
+        </mat-tab>
+
+        <!-- Resources Tab -->
+        <mat-tab>
+          <ng-template mat-tab-label>
+            <mat-icon class="tab-icon">inventory_2</mat-icon>
+            <span class="tab-label">{{ getTranslate('resources') }}</span>
+          </ng-template>
+          <div class="p-4">
+            <ng-container *ngTemplateOutlet="resourcesSection"></ng-container>
+          </div>
+        </mat-tab>
+      </mat-tab-group>
+    </div>
+
+    <!-- Desktop View: All sections together -->
+    <div class="desktop-sections mt-4">
+      <!-- Services Section -->
+      <section id="services" class="mb-5">
+        <div class="section-heading">
+          <h2 class="title">{{ getTranslate('services') }}</h2>
+          <p class="subtitle">{{ getTranslate('listServices') }}</p>
+        </div>
+        
+        <div class="row g-4" *ngIf="!isLoading && services.length > 0">
+          <div class="col-lg-4" *ngFor="let service of services">
+            <ng-container *ngTemplateOutlet="serviceCard; context: { $implicit: service }"></ng-container>
+          </div>
+        </div>
+        <div *ngIf="!isLoading && services.length === 0" class="empty-state text-center py-5">
+          <p>{{ getTranslate('noServicesFound') }}</p>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Staff Section -->
+      <section id="staff" class="mb-5">
+        <div class="section-heading">
+          <h2 class="title">{{ getTranslate('staff') }}</h2>
+          <p class="subtitle">{{ getTranslate('heroSubtitle') }}</p>
+        </div>
+        
+        <div class="row g-4" *ngIf="!isLoadingStaff && staffList.length > 0">
+          <div class="col-lg-3" *ngFor="let staff of staffList">
+            <ng-container *ngTemplateOutlet="staffCard; context: { $implicit: staff }"></ng-container>
+          </div>
+        </div>
+        <div *ngIf="!isLoadingStaff && staffList.length === 0" class="empty-state text-center py-5">
+          <p>{{ getTranslate('noStaffFound') }}</p>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Resources Section -->
+      <section id="resources" class="mb-5">
+        <div class="section-heading">
+          <h2 class="title">{{ getTranslate('resources') }}</h2>
+          <p class="subtitle">{{ getTranslate('manageYourClinicResources') }}</p>
+        </div>
+        <ng-container *ngTemplateOutlet="resourcesSection"></ng-container>
+      </section>
+    </div>
+
+    <ng-template #serviceCard let-service>
+      <mat-card class="premium-card service-card h-100 border-0 shadow-sm">
+        <div class="card-img-placeholder" [style.background]="getPlaceholderColor(service.service?.title || service.name)">
+          <mat-icon>health_and_safety</mat-icon>
+        </div>
+        <mat-card-content class="p-4">
+          <h3 class="service-name mb-2">{{ service?.title || service.path }}</h3>
+          <p class="service-desc text-muted mb-4 line-clamp-2">
+            {{ "time"+service.duration  }}
+          </p>
+          <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+            <div class="service-price">
+              <span class="label text-muted small d-block">{{ getTranslate('price') }}</span>
+              <span class="value fw-bold text-primary">
+                {{ service.price ? (service.price | number) + ' ' + getTranslate('currency') : 'Free' }}
+              </span>
+            </div>
+            <button mat-flat-button color="primary" class="rounded-pill" (click)="goToAppointment(service.id)">
+              {{ getTranslate('bookAppointment') }}
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </ng-template>
+
+    <ng-template #staffCard let-staff>
+      <mat-card class="premium-card staff-card h-100 border-0 shadow-sm text-center">
+        <div class="p-4">
+          <div class="staff-avatar-box mx-auto mb-3">
+            <img *ngIf="staff.user?.image" [src]="staff.user.image" [alt]="staff.user.name || staff.user_name" class="staff-img shadow-sm">
+            <div *ngIf="!staff.user?.image" class="staff-placeholder shadow-sm" [style.background]="getPlaceholderColor(staff.user?.name || staff.user_name || '')">
+              {{ (staff.user?.name || staff.user_name || 'S').charAt(0) }}
+            </div>
+          </div>
+          <h3 class="staff-name h6 fw-bold mb-1">{{ staff.user?.name || staff.user_name || 'Staff Member' }}</h3>
+          <p class="staff-role text-primary small mb-1">{{ staff.expertise?.title || staff.expertise_title || staff.role || 'Specialist' }}</p>
+          <p class="staff-bio text-muted x-small mb-3 line-clamp-1" *ngIf="staff.role">{{ staff.role }}</p>
+          
+          <div class="staff-actions d-grid gap-2">
+            <button mat-flat-button color="primary" class="rounded-pill btn-sm" (click)="goToStaffAppointment(staff.id)">
+              {{ getTranslate('bookAppointment') }}
+            </button>
+            <button mat-stroked-button color="primary" class="rounded-pill btn-sm" (click)="goToStaffDetails(staff.id)">
+              {{ getTranslate('viewDetails') }}
+            </button>
+          </div>
+        </div>
+      </mat-card>
+    </ng-template>
+
+    <ng-template #resourcesSection>
+      <div *ngIf="isLoadingResources" class="loader-container">
+        <mat-spinner diameter="40"></mat-spinner>
+      </div>
+      <div class="resources-wrapper">
+        <mat-accordion class="premium-accordion" *ngIf="!isLoadingResources && resources.length > 0">
+          <mat-expansion-panel *ngFor="let resource of resources" class="mb-3 border-0 shadow-sm rounded-3">
+            <mat-expansion-panel-header>
+              <mat-panel-title class="fw-bold d-flex align-items-center gap-2">
+                <mat-icon class="text-primary">meeting_room</mat-icon>
+                {{ resource.resource_name || resource.name }}
+              </mat-panel-title>
+              <mat-panel-description *ngIf="resource.resource_type" class="d-none d-md-flex">
+                {{ resource.resource_type }}
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+            
+            <div class="resource-details p-3">
+              <div class="row g-3">
+                <div class="col-md-8">
+                  <p class="text-muted">{{ resource.name || 'برای قلب' }}</p>
+                  <div class="d-flex flex-wrap gap-2 mt-3">
+                    <!-- <mat-chip-set>
+                      <mat-chip *ngIf="resource.capacity">
+                        <mat-icon matChipAvatar>groups</mat-icon>
+                        Capacity: {{ resource.capacity }}
+                      </mat-chip>
+                      <mat-chip [color]="resource.is_active ? 'primary' : 'warn'">
+                        {{ resource.is_active ? 'Available' : 'Unavailable' }}
+                      </mat-chip>
+                    </mat-chip-set> -->
+                  </div>
+                </div>
+                <div class="col-md-4" *ngIf="resource.image">
+                  <img [src]="resource.image" class="img-fluid rounded-3 shadow-sm" alt="Resource image">
+                </div>
+              </div>
+            </div>
+          </mat-expansion-panel>
+        </mat-accordion>
+        <div *ngIf="!isLoadingResources && resources.length === 0" class="empty-state text-center py-5">
+          <mat-icon class="empty-icon">inventory_2</mat-icon>
+          <p>{{ getTranslate('noResourcesFound') }}</p>
+        </div>
+      </div>
+    </ng-template>
+
+    <div class="row mt-5 g-4 mb-5">
+      <div class="col-lg-8">
+        <mat-card class="border-0 shadow-sm p-4 rounded-4 bg-white">
+          <h2 class="h5 fw-bold mb-4 d-flex align-items-center gap-2">
+            <mat-icon class="text-primary">info</mat-icon>
+            {{ getTranslate('aboutUs') }}
+          </h2>
+          <p class="text-muted lh-lg">
+            {{ organization?.description || 'Acaree helps you manage your health services with ease. This organization is committed to providing high-quality healthcare services using modern technologies.' }}
+          </p>
+        </mat-card>
+      </div>
+      <div class="col-lg-4">
+        <mat-card class="border-0 shadow-sm p-4 rounded-4 bg-white">
+          <h2 class="h5 fw-bold mb-4 d-flex align-items-center gap-2">
+            <mat-icon class="text-primary">schedule</mat-icon>
+            {{ getTranslate('workingHoursHeader') }}
+          </h2>
+          <div class="working-hours-list">
+            <div class="d-flex justify-content-between py-2 border-bottom">
+              <span class="text-muted">{{ getTranslate('satToWed') }}</span>
+              <span class="fw-bold">08:00 - 20:00</span>
+            </div>
+            <div class="d-flex justify-content-between py-2 border-bottom">
+              <span class="text-muted">{{ getTranslate('thursdays') }}</span>
+              <span class="fw-bold">08:00 - 14:00</span>
+            </div>
+            <div class="d-flex justify-content-between py-2">
+              <span class="text-muted">{{ getTranslate('friAndHolidays') }}</span>
+              <span class="text-danger">{{ getTranslate('closed') }}</span>
+            </div>
+          </div>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,67 @@
+<div class="staff-container">
+  <div class="header">
+    <h1>{{ getTranslation('staff') }}</h1>
+    <button mat-raised-button color="primary" (click)="openAddDialog()">
+      <mat-icon>add</mat-icon>
+      {{ getTranslation('addStaff') }}
+    </button>
+  </div>
+
+  <mat-card class="table-card">
+    <div class="table-container">
+      <table mat-table [dataSource]="dataSource">
+        <!-- ID Column -->
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef>ID</th>
+          <td mat-cell *matCellDef="let staff">{{ staff.id }}</td>
+        </ng-container>
+
+        <!-- Name Column -->
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>{{ getTranslation('name') }}</th>
+          <td mat-cell *matCellDef="let staff">
+            {{ staff.user?.name || staff.name || (getTranslation('user') + ' ' + staff.user_id) }}
+          </td>
+        </ng-container>
+
+        <!-- Role Column -->
+        <ng-container matColumnDef="role">
+          <th mat-header-cell *matHeaderCellDef>{{ getTranslation('role') }}</th>
+          <td mat-cell *matCellDef="let staff">{{ staff.role }}</td>
+        </ng-container>
+
+        <!-- Expertise Column -->
+        <ng-container matColumnDef="expertise">
+          <th mat-header-cell *matHeaderCellDef>{{ getTranslation('expertise') }}</th>
+          <td mat-cell *matCellDef="let staff">{{ staff.expertise?.title || '-' }}</td>
+        </ng-container>
+
+        <!-- Actions Column -->
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>{{ getTranslation('actions') }}</th>
+          <td mat-cell *matCellDef="let staff">
+            <button mat-icon-button color="accent" (click)="goToAppointment(staff)" [matTooltip]="getTranslation('appointments')">
+              <mat-icon>event_available</mat-icon>
+            </button>
+            <button mat-icon-button color="primary" (click)="openEditDialog(staff)">
+              <mat-icon>edit</mat-icon>
+            </button>
+            <button mat-icon-button color="warn" (click)="deleteStaff(staff)">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+        <!-- Row shown when there is no matching data. -->
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" colspan="5">
+            {{ getTranslation('noStaffFound') }}
+          </td>
+        </tr>
+      </table>
+    </div>
+  </mat-card>
+</div>

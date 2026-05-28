@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24">
+  <g id="Group_5383" data-name="Group 5383" transform="translate(-262 -1912)">
+    <g id="Group_1721" data-name="Group 1721" transform="translate(127 1516)">
+      <rect id="Rectangle_861" data-name="Rectangle 861" width="24" height="24" transform="translate(135 396)" fill="none"/>
+      <g id="Group_1719" data-name="Group 1719" transform="translate(-10.25 -0.25)">
+        <path id="Vector" d="M10,20A10,10,0,1,1,20,10,10.008,10.008,0,0,1,10,20ZM10,1.4A8.6,8.6,0,1,0,18.6,10,8.615,8.615,0,0,0,10,1.4Z" transform="translate(147.25 398.25)" fill="#5f0000"/>
+        <path id="Vector-2" data-name="Vector" d="M.7,6.047a.7.7,0,0,1-.7-.7V.7A.7.7,0,0,1,.7,0a.7.7,0,0,1,.7.7V5.349A.7.7,0,0,1,.7,6.047Z" transform="translate(156.552 403.831)" fill="#5f0000"/>
+        <path id="Vector-3" data-name="Vector" d="M.93,1.856a.926.926,0,0,1-.353-.074,1.074,1.074,0,0,1-.307-.2.96.96,0,0,1-.2-.307A.926.926,0,0,1,0,.926.926.926,0,0,1,.074.572,1.074,1.074,0,0,1,.27.265,1.074,1.074,0,0,1,.577.07a.93.93,0,0,1,.707,0,1.074,1.074,0,0,1,.307.2,1.074,1.074,0,0,1,.2.307A.926.926,0,0,1,1.86.926a.926.926,0,0,1-.074.353.96.96,0,0,1-.2.307,1.074,1.074,0,0,1-.307.2A.926.926,0,0,1,.93,1.856Z" transform="translate(156.32 411.045)" fill="#5f0000"/>
+      </g>
+    </g>
+  </g>
+</svg>

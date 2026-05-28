@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24">
+  <g id="Group_5387" data-name="Group 5387" transform="translate(-36 -384)">
+    <g id="Group_5386" data-name="Group 5386">
+      <g id="Group_5116" data-name="Group 5116" transform="translate(-3602 -1381)">
+        <rect id="Rectangle_802" data-name="Rectangle 802" width="24" height="24" transform="translate(3638 1765)" fill="none"/>
+        <g id="Group_1620" data-name="Group 1620" transform="translate(156.611 -35.25)">
+          <path id="Vector" d="M10.93,20H5.349C1.247,20,0,18.753,0,14.651v-9.3C0,1.247,1.247,0,5.349,0H10.93c4.1,0,5.349,1.247,5.349,5.349v9.3C16.279,18.753,15.033,20,10.93,20ZM5.349,1.4C2.019,1.4,1.4,2.028,1.4,5.349v9.3c0,3.321.623,3.953,3.953,3.953H10.93c3.33,0,3.953-.633,3.953-3.953v-9.3c0-3.321-.623-3.953-3.953-3.953Z" transform="translate(3485.25 1802.25)" fill="#717171"/>
+          <path id="Vector-2" data-name="Vector" d="M4.419,1.4H.7A.7.7,0,0,1,0,.7.7.7,0,0,1,.7,0H4.419a.7.7,0,0,1,.7.7A.7.7,0,0,1,4.419,1.4Z" transform="translate(3490.831 1805.506)" fill="#717171"/>
+          <path id="Vector-3" data-name="Vector" d="M2.14,4.279a2.14,2.14,0,1,1,2.14-2.14A2.14,2.14,0,0,1,2.14,4.279Zm0-2.893a.744.744,0,1,0,.744.744A.746.746,0,0,0,2.14,1.386Z" transform="translate(3491.25 1815.283)" fill="#717171"/>
+        </g>
+      </g>
+    </g>
+  </g>
+</svg>

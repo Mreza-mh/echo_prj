@@ -1,0 +1,240 @@
+<div class="dashboard-page animate__animated animate__fadeIn">
+  @if (dashboardData) {
+    <!-- Professional Header -->
+    <header class="dashboard-header mb-4">
+      <div class="header-main d-flex justify-content-between align-items-center mb-4">
+        <div class="title-section">
+          <h1 class="fw-bold mb-1">داشبورد مدیریت نوبت‌ها</h1>
+          <p class="text-muted small mb-0">مدیریت هوشمند زمان‌بندی و پرسنل</p>
+        </div>
+        
+        <div class="actions-section d-flex gap-2">
+          <button mat-flat-button color="primary" (click)="onAddAppointment()" class="add-btn">
+            <mat-icon>add_circle</mat-icon>
+            ثبت نوبت جدید
+          </button>
+          <button mat-icon-button (click)="loadData()" [disabled]="isLoading" class="refresh-btn-round">
+            <mat-icon [class.spinning]="isLoading">refresh</mat-icon>
+          </button>
+        </div>
+      </div>
+
+      <!-- Enhanced Summary Cards -->
+      <div class="summary-grid mb-4">
+        <div class="stat-card total animate__animated animate__fadeInUp">
+          <div class="stat-icon"><mat-icon>event_note</mat-icon></div>
+          <div class="stat-content">
+            <span class="stat-label">کل نوبت‌ها</span>
+            <span class="stat-value">{{ dashboardData.summary.total_appointments }}</span>
+          </div>
+        </div>
+        <div class="stat-card confirmed animate__animated animate__fadeInUp" style="animation-delay: 0.1s">
+          <div class="stat-icon"><mat-icon>check_circle</mat-icon></div>
+          <div class="stat-content">
+            <span class="stat-label">تایید شده</span>
+            <span class="stat-value">{{ dashboardData.summary.confirmed_count }}</span>
+          </div>
+        </div>
+        <div class="stat-card pending animate__animated animate__fadeInUp" style="animation-delay: 0.2s">
+          <div class="stat-icon"><mat-icon>pending_actions</mat-icon></div>
+          <div class="stat-content">
+            <span class="stat-label">در انتظار</span>
+            <span class="stat-value">{{ dashboardData.summary.pending_count }}</span>
+          </div>
+        </div>
+        <div class="stat-card resources animate__animated animate__fadeInUp" style="animation-delay: 0.3s">
+          <div class="stat-icon"><mat-icon>inventory_2</mat-icon></div>
+          <div class="stat-content">
+            <span class="stat-label">منابع فعال</span>
+            <span class="stat-value">{{ dashboardData.resource_usage?.length || 0 }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters Row -->
+      <div class="filters-bar p-3 shadow-sm border rounded-4">
+        <div class="row g-3 align-items-center">
+          <div class="col-md-3">
+            <mat-form-field appearance="outline" class="w-100 no-subscript">
+              <mat-label>تاریخ تقویم</mat-label>
+              <input matInput [matDatepicker]="picker" [(ngModel)]="selectedDate" (dateChange)="loadData()">
+              <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+              <mat-datepicker #picker></mat-datepicker>
+            </mat-form-field>
+          </div>
+          <div class="col-md-4">
+            <mat-form-field appearance="outline" class="w-100 no-subscript">
+              <mat-label>فیلتر پرسنل</mat-label>
+              <mat-select [(ngModel)]="filterStaffIds" multiple (selectionChange)="loadData()">
+                @for (staff of staffs; track staff.id) {
+                  <mat-option [value]="staff.id">
+                    <div class="d-flex align-items-center">
+                      <div class="mini-avatar me-2">{{ staff.user?.name?.charAt(0) }}</div>
+                      {{ staff.user?.name }}
+                    </div>
+                  </mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <div class="col-md-4">
+            <mat-form-field appearance="outline" class="w-100 no-subscript">
+              <mat-label>فیلتر منابع</mat-label>
+              <mat-select [(ngModel)]="filterResourceIds" multiple (selectionChange)="loadData()">
+                @for (res of resources; track res.id) {
+                  <mat-option [value]="res.id">{{ res.resource_name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Timeline Section -->
+    <div class="timeline-section mb-5 shadow-sm rounded-4 overflow-hidden">
+      <div class="section-title p-3 border-bottom d-flex align-items-center justify-content-between">
+        <div class="d-flex align-items-center gap-2">
+          <mat-icon class="text-primary">view_timeline</mat-icon>
+          <h2 class="h6 mb-0 fw-bold">نمای زمان‌بندی پرسنل</h2>
+        </div>
+        <div class="timeline-hint text-muted small d-flex align-items-center gap-1">
+          <mat-icon style="font-size: 14px; width: 14px; height: 14px;">info</mat-icon>
+          برای جابجایی نوبت، آن را بکشید و رها کنید
+        </div>
+      </div>
+      
+      <div class="calendar-wrapper p-3 position-relative">
+        <div class="loading-overlay" *ngIf="isLoading">
+          <mat-spinner diameter="40"></mat-spinner>
+        </div>
+        <full-calendar #calendar [options]="calendarOptions"></full-calendar>
+      </div>
+    </div>
+
+    <!-- Tables Section (Grid Layout) -->
+    <div class="row g-4">
+      <!-- Appointments List -->
+      <div class="col-lg-8">
+        <div class="list-section shadow-sm rounded-4 h-100">
+          <div class="section-title p-3 border-bottom d-flex align-items-center justify-content-between">
+            <div class="d-flex align-items-center gap-2">
+              <mat-icon class="text-primary">format_list_bulleted</mat-icon>
+              <h2 class="h6 mb-0 fw-bold">لیست نوبت‌های امروز</h2>
+            </div>
+            <span class="badge rounded-pill bg-primary-subtle text-primary border border-primary-subtle px-3">
+              {{ allAppointments.length }} نوبت
+            </span>
+          </div>
+
+          <div class="table-responsive p-0">
+            <table class="table table-hover align-middle mb-0">
+              <thead>
+                <tr>
+                  <th class="ps-4">زمان</th>
+                  <th>مشتری</th>
+                  <th>خدمت / پرسنل</th>
+                  <th>وضعیت</th>
+                  <th class="text-center pe-4">عملیات</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (app of allAppointments; track app.id) {
+                  <tr class="appointment-row flex">
+                    <td class="ps-4">
+                      <div class="time-box">
+                        <span class="start">{{ app.start.substring(0, 5) }}</span>
+                        <span class="arrow">→</span>
+                        <span class="end">{{ app.end.substring(0, 5) }}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <div class="avatar-sm me-2">{{ app.customer_name.charAt(0) }}</div>
+                        <div>
+                          <div class="fw-bold small">{{ app.customer_name }}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="small fw-medium">{{ app.service_name }}</div>
+                      <div class="text-muted x-small d-flex align-items-center gap-1">
+                        <mat-icon style="font-size: 12px; width: 12px; height: 12px;">person</mat-icon>
+                        {{ app.staff_name }}
+                      </div>
+                    </td>
+                    <td>
+                      <span class="status-chip" [class]="app.status_title">
+                        {{ app.status }}
+                      </span>
+                    </td>
+                    <td class="text-center pe-4">
+                      <button mat-icon-button (click)="onAppointmentClick(app)" matTooltip="ویرایش">
+                        <mat-icon class="text-primary" style="font-size: 20px;">edit</mat-icon>
+                      </button>
+                    </td>
+                  </tr>
+                }
+                @if (allAppointments.length === 0) {
+                  <tr>
+                    <td colspan="5" class="text-center py-5">
+                      <div class="empty-state">
+                        <mat-icon class="opacity-25" style="font-size: 48px; width: 48px; height: 48px;">event_busy</mat-icon>
+                        <p class="text-muted mt-2">نوبتی یافت نشد</p>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Resources Section -->
+      <div class="col-lg-4">
+        <div class="list-section shadow-sm rounded-4 h-100">
+          <div class="section-title p-3 border-bottom">
+            <div class="d-flex align-items-center gap-2">
+              <mat-icon class="text-primary">inventory_2</mat-icon>
+              <h2 class="h6 mb-0 fw-bold">اشغال منابع</h2>
+            </div>
+          </div>
+          
+          <div class="p-3">
+            @for (res of dashboardData?.resource_usage; track res.resource_id) {
+              <div class="resource-usage-item mb-3 p-3 border rounded-3">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <div>
+                    <span class="fw-bold d-block">{{ res.resource_name }}</span>
+                    <span class="text-muted x-small">{{ res.resource_type }}</span>
+                  </div>
+                  @if (res.usage?.length) {
+                    <span class="badge bg-danger-subtle text-danger rounded-pill x-small">در حال استفاده</span>
+                  } @else {
+                    <span class="badge bg-success-subtle text-success rounded-pill x-small">آزاد</span>
+                  }
+                </div>
+                
+                <div class="usage-list">
+                  @for (usage of res.usage; track $index) {
+                    <div class="usage-pill d-flex align-items-center gap-2 mt-2">
+                      <mat-icon style="font-size: 14px; width: 14px; height: 14px;">schedule</mat-icon>
+                      <span class="x-small fw-medium">{{ usage.start }} - {{ usage.end }}</span>
+                      <span class="text-muted x-small">({{ usage.staff }})</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  @} @else {
+    <div class="dashboard-loading py-5 text-center">
+      <mat-spinner diameter="50" class="mx-auto"></mat-spinner>
+      <p class="mt-4 text-muted fw-medium">در حال بارگذاری داشبورد مدیریتی...</p>
+    </div>
+  }
+</div>

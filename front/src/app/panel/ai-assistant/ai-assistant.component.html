@@ -1,0 +1,133 @@
+<div class="ai-assistant-wrapper" [class.open]="isOpen()">
+  <!-- Chat Window -->
+  <div class="chat-window" *ngIf="isOpen()">
+    <div class="chat-header">
+      <div class="d-flex align-items-center gap-2">
+        <div class="ai-avatar">
+          <mat-icon>smart_toy</mat-icon>
+        </div>
+        <div>
+          <h3 class="m-0">دستیار هوشمند آکاری</h3>
+          <span class="status-online">آنلاین</span>
+        </div>
+      </div>
+      <button mat-icon-button (click)="toggleChat()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="chat-messages" #scrollMe [scrollTop]="scrollMe.scrollHeight">
+      <div *ngFor="let msg of messages()" [class]="'message-bubble ' + msg.role">
+        <div class="avatar" *ngIf="msg.role === 'assistant'">
+          <mat-icon>smart_toy</mat-icon>
+        </div>
+        <div class="bubble-wrapper">
+          <div class="bubble-content" [innerHTML]="formatMessage(msg)"></div>
+
+          <!-- UI Components -->
+          <div class="ui-container" *ngIf="msg.ui">
+            
+            <!-- Select Staff -->
+            <div *ngIf="msg.ui.type === 'SELECT_STAFF'" class="ui-staff-list">
+              <mat-card *ngFor="let staff of msg.ui.data" class="staff-card" (click)="selectStaff(staff)">
+                <mat-card-content>
+                  <div class="d-flex align-items-center gap-3">
+                    <div class="staff-avatar">
+                      <mat-icon>person</mat-icon>
+                    </div>
+                    <div>
+                      <div class="staff-name">{{ staff.name }}</div>
+                      <div class="staff-expertise">{{ staff.expertise }}</div>
+                      <!-- بخش organization_name حذف شد زیرا بک‌اند سبک شده و آن را ارسال نمی‌کند -->
+                    </div>
+                  </div>
+                </mat-card-content>
+              </mat-card>
+            </div>
+
+            <!-- Select Service -->
+            <div *ngIf="msg.ui.type === 'SELECT_SERVICE'" class="ui-service-list">
+              <button mat-stroked-button *ngFor="let service of msg.ui.data" (click)="selectService(service)" class="service-btn">
+                <div class="service-name">{{ service.name }}</div>
+                <div class="service-price" *ngIf="service.price">{{ service.price | number }} تومان</div>
+              </button>
+            </div>
+
+            <!-- Select Date -->
+            <div *ngIf="msg.ui.type === 'SELECT_DATE'" class="ui-calendar">
+              <mat-calendar (selectedChange)="onDateChange($event, msg.ui.data)"></mat-calendar>
+              <div class="calendar-hint">لطفاً تاریخ مورد نظر خود را انتخاب کنید</div>
+            </div>
+
+            <!-- Select Time -->
+            <div *ngIf="msg.ui.type === 'SELECT_TIME'" class="ui-time-slots">
+              <div class="date-header">{{ msg.ui.data.date }}</div>
+              <div class="slots-grid">
+                <button mat-flat-button *ngFor="let slot of msg.ui.data.slots" (click)="selectTime(slot, msg.ui.data)" class="slot-btn">
+                  {{ slot.start_time }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Confirmation -->
+            <div *ngIf="msg.ui.type === 'CONFIRMATION'" class="ui-confirmation">
+              <mat-card class="confirm-card">
+                <mat-card-header>
+                  <mat-card-title>تایید نوبت</mat-card-title>
+                </mat-card-header>
+                <mat-card-content>
+                  <div class="confirm-item"><strong>پزشک:</strong> {{ msg.ui.data.staff_name }}</div>
+                  <div class="confirm-item"><strong>خدمت:</strong> {{ msg.ui.data.service_name }}</div>
+                  <div class="confirm-item"><strong>تاریخ:</strong> {{ msg.ui.data.date }}</div>
+                  <div class="confirm-item"><strong>ساعت:</strong> {{ msg.ui.data.time }}</div>
+                </mat-card-content>
+                <mat-divider></mat-divider>
+                <mat-card-actions align="end">
+                  <button mat-button color="warn" (click)="userInput = 'لغو فرآیند'; sendMessage()">انصراف</button>
+                  <button mat-raised-button color="primary" (click)="confirmBooking(msg.ui.data)">تایید و ثبت نهایی</button>
+                </mat-card-actions>
+              </mat-card>
+            </div>
+
+          </div>
+
+          <div class="message-time">{{ msg.timestamp | date:'HH:mm' }}</div>
+        </div>
+        <div class="avatar" *ngIf="msg.role === 'user'">
+          <mat-icon>person</mat-icon>
+        </div>
+      </div>
+      
+      <div class="message-bubble assistant loading" *ngIf="isLoading()">
+        <div class="avatar">
+          <mat-icon>smart_toy</mat-icon>
+        </div>
+        <div class="bubble-wrapper">
+          <div class="bubble-content">
+            <div class="typing-indicator">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="chat-input-area">
+      <mat-form-field appearance="outline" class="w-100 no-subscript">
+        <input matInput 
+               [(ngModel)]="userInput" 
+               (keyup.enter)="sendMessage()" 
+               placeholder="سوال خود را بپرسید...">
+        <button mat-icon-button matSuffix (click)="sendMessage()" [disabled]="isLoading() || !userInput.trim()">
+          <mat-icon>send</mat-icon>
+        </button>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <!-- Floating Button -->
+  <button class="floating-btn" (click)="toggleChat()" [class.active]="isOpen()">
+    <mat-icon>{{ isOpen() ? 'close' : 'chat' }}</mat-icon>
+    <span class="btn-label" *ngIf="!isOpen()">نوبت‌دهی هوشمند</span>
+  </button>
+</div>

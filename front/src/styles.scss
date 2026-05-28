@@ -1,0 +1,207 @@
+@use '@angular/material' as mat;
+@import 'bootstrap/dist/css/bootstrap.rtl.min.css';
+@import 'animate.css/animate.min.css';
+
+// Include theming for Angular Material with `mat.theme()`.
+// This Sass mixin will define CSS variables that are used for styling Angular Material
+// components according to the Material 3 design spec.
+// Learn more about theming and how to use it for your application's
+// custom components at https://material.angular.dev/guide/theming
+
+html {
+  @include mat.theme(
+    (
+      color: (
+        primary: mat.$azure-palette,
+        tertiary: mat.$blue-palette,
+      ),
+      typography: Roboto,
+      density: 0,
+    )
+  );
+}
+
+
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: url('../public/fonts/MaterialIcons-Regular.woff2') format('woff2'),
+       url('../public/fonts/MaterialIcons-Regular.woff') format('woff'),
+       url('../public/fonts/MaterialIcons-Regular.ttf') format('truetype');
+  font-display: block; 
+}
+
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  // Default the application to a light color theme. This can be changed to
+  // `dark` to enable the dark color theme, or to `light dark` to defer to the
+  // user's system settings.
+  color-scheme: light;
+
+  // Set a default background, font and text colors for the application using
+  // Angular Material's system-level CSS variables. Learn more about these
+  // variables at https://material.angular.dev/guide/system-variables
+  background-color: var(--mat-sys-surface);
+  color: var(--mat-sys-on-surface);
+  font: var(--mat-sys-body-medium);
+
+  // Reset the user agent margin.
+  margin: 0;
+
+  // Custom theme variables for consistent theming across the app
+--bg-primary: var(--mat-sys-surface);
+   --bg-secondary: #e6e9ee50;
+   --bg-sidebar: var(--mat-sys-surface);
+   --bg-page: #f5f7fa;
+  --bg-table-header: var(--mat-sys-surface-variant);
+  --text-primary: var(--mat-sys-on-surface);
+  --text-secondary: var(--mat-sys-on-surface-variant);
+  --border-color: var(--mat-sys-outline-variant);
+  --hover-bg: rgba(144, 202, 249, 0.08);
+  --active-bg: rgba(144, 202, 249, 0.16);
+  --shadow: rgba(0, 0, 0, 0.1);
+  --loading-bg: rgba(255, 255, 255, 0.8);
+  --accent-color: var(--mat-sys-primary);
+  --success-color: #4caf50;
+  --error-color: #f44336;
+  --warning-color: #ff9800;
+}
+/* You can add global styles to this file, and also import other style files */
+
+html,
+body {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: 'Samim', Roboto, 'Helvetica Neue', sans-serif;
+  
+  &.rtl {
+    direction: rtl;
+    text-align: right;
+  }
+  
+  &.ltr {
+    direction: ltr;
+    text-align: left;
+  }
+}
+
+// Global RTL Utilities
+[dir='rtl'] {
+  .ms-auto { margin-right: auto !important; margin-left: 0 !important; }
+  .me-auto { margin-left: auto !important; margin-right: 0 !important; }
+  .text-end { text-align: left !important; }
+  .text-start { text-align: right !important; }
+}
+
+// Snackbar styles
+.snackbar-success {
+  background-color: var(--success-color) !important;
+  color: white !important;
+}
+
+.snackbar-error {
+  background-color: var(--error-color) !important;
+  color: white !important;
+}
+
+.snackbar-warn {
+  background-color: var(--warning-color) !important;
+  color: white !important;
+}
+
+// Angular Material Menu & Overlays theming
+.mat-mdc-menu-panel {
+  background-color: var(--bg-primary) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: 0 10px 30px var(--shadow) !important;
+}
+
+.mat-mdc-menu-item {
+  color: var(--text-primary) !important;
+  
+  .mat-icon {
+    color: var(--text-secondary) !important;
+  }
+
+  &:hover:not([disabled]) {
+    background-color: var(--hover-bg) !important;
+  }
+
+  &.active {
+    background-color: var(--active-bg) !important;
+    color: var(--accent-color) !important;
+    
+    .mat-icon {
+      color: var(--accent-color) !important;
+    }
+  }
+}
+
+.cdk-overlay-backdrop-showing {
+  opacity: 0.5 !important;
+}
+
+// Dark theme
+[data-theme='dark'] {
+  --mat-sys-surface: #121212;
+  --mat-sys-surface-variant: #221919;
+  --mat-sys-on-surface: #f1f1f1;
+  --mat-sys-on-surface-variant: #b0b0b0;
+  --mat-sys-primary: #86dbfc;
+  --mat-sys-primary-container: #2d1b3d;
+  --mat-sys-on-primary-container: #e6d7ff;
+  --mat-sys-outline-variant: #49454f;
+
+// Override custom theme variables for dark mode
+   --bg-primary: #18181af6;
+   --bg-secondary: #1e1e1e;
+   --bg-sidebar: #1e1e1e;
+   --bg-page: #0a0a0a;
+   --bg-table-header: #2a2a2a;
+  --text-primary: #e0e0e0;
+  --text-secondary: #b0b0b0;
+  --border-color: #49454f;
+  --hover-bg: rgba(144, 202, 249, 0.12);
+  --active-bg: rgba(144, 202, 249, 0.24);
+  --shadow: rgba(0, 0, 0, 0.3);
+  --loading-bg: rgba(30, 30, 30, 0.8);
+  --accent-color: #86dbfc;
+
+  // Global text overrides for dark mode
+  .text-muted {
+    color: var(--text-secondary) !important;
+  }
+
+  .text-dark {
+    color: var(--text-primary) !important;
+  }
+
+  .bg-white {
+    background-color: var(--bg-primary) !important;
+  }
+
+  .bg-light {
+    background-color: var(--bg-secondary) !important;
+  }
+}
+
+
+

@@ -1,0 +1,208 @@
+<div class="doctor-dashboard animate__animated animate__fadeIn">
+  @if (loading && !scheduleData) {
+    <div class="loading-container">
+      <mat-spinner diameter="48"></mat-spinner>
+      <p class="mt-3 text-muted">در حال بارگذاری داشبورد پزشک...</p>
+    </div>
+  } @else {
+    <header class="dashboard-header mb-4">
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <h1 class="fw-bold mb-1">داشبورد پزشک</h1>
+          <p class="text-muted small mb-0">برنامه‌ریزی نوبت‌ها و اطلاعات اکو بیماران</p>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+          <input type="date" class="date-picker" [value]="selectedDate" (change)="onCustomDateChange($event)">
+          <button mat-stroked-button (click)="setDateFilter(0)" [class.active]="isDateActive(0)">
+            امروز
+          </button>
+          <button mat-stroked-button (click)="setDateFilter(1)" [class.active]="isDateActive(1)">
+            فردا
+          </button>
+          <button mat-stroked-button (click)="setDateFilter(2)" [class.active]="isDateActive(2)">
+            پس‌فردا
+          </button>
+          <button mat-icon-button (click)="refresh()" class="refresh-btn">
+            <mat-icon>refresh</mat-icon>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    @if (error) {
+      <div class="error-card">
+        <mat-icon class="error-icon">error_outline</mat-icon>
+        <p>{{ error }}</p>
+      </div>
+    }
+
+    <div class="row g-4">
+      <!-- Left Column: Schedule & Current Appointment -->
+      <div class="col-lg-7">
+        @if (scheduleData) {
+          <mat-card class="schedule-card mb-4 shadow-sm">
+            <div class="card-header">
+              <div class="d-flex align-items-center gap-2">
+                <mat-icon class="text-primary">schedule</mat-icon>
+                <h2 class="h6 mb-0 fw-bold">برنامه‌ریزی پزشک</h2>
+              </div>
+              <span class="text-muted x-small">{{ scheduleData.date }}</span>
+            </div>
+
+            <mat-card-content class="pt-0">
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                  <thead>
+                    <tr>
+                      <th>ساعت</th>
+                      <th>بیمار</th>
+                      <th>نوع</th>
+                      <th>وضعیت</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (app of allAppointments; track app.id) {
+                      <tr>
+                        <td>
+                          <span class="fw-medium">{{ app.start?.substring(0, 5) }}</span>
+                          <span class="text-muted mx-1">تا</span>
+                          <span class="fw-medium">{{ app.end?.substring(0, 5) }}</span>
+                        </td>
+                        <td>
+                          <div class="d-flex align-items-center">
+                            <div class="avatar-xs me-2">{{ app.customer_name?.charAt(0) || 'ب' }}</div>
+                            <span>{{ app.customer_name }}</span>
+                          </div>
+                        </td>
+                        <td>{{ app.type }}</td>
+                        <td>
+                          <span class="status-dot" [style.background-color]="getStatusColor(app.status_title)"></span>
+                          <span class="status-text">{{ app.status_title }}</span>
+                        </td>
+                      </tr>
+                    }
+                    @if (allAppointments.length === 0) {
+                      <tr>
+                        <td colspan="4" class="text-center py-4 text-muted">
+                          <mat-icon>sentiment_dissatisfied</mat-icon>
+                          <p class="mb-0 mt-2">نوبتی در این تاریخ وجود ندارد</p>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+
+        <!-- Current Appointment (Now) -->
+        @if (currentAppointment) {
+          <mat-card class="appointment-card mb-4">
+            <div class="card-header">
+              <div class="d-flex align-items-center gap-2">
+                <mat-icon class="text-primary">event_available</mat-icon>
+                <h2 class="h6 mb-0 fw-bold">نوبت در حال اجرا</h2>
+              </div>
+              <span class="status-badge active">فعال</span>
+            </div>
+
+            <mat-card-content class="pt-3">
+              <div class="patient-info">
+                <div class="avatar-large">
+                  {{ currentAppointment.user?.name?.charAt(0) || 'ب' }}
+                </div>
+                <div class="patient-details">
+                  <div class="patient-name">{{ currentAppointment.user?.name }}</div>
+                  <div class="system-name">
+                    <mat-icon>monitor_heart</mat-icon>
+                    {{ currentAppointment.service?.title }}
+                  </div>
+                </div>
+              </div>
+
+              <mat-divider class="my-3"></mat-divider>
+
+              <div class="appointment-details">
+                <div class="detail-row">
+                  <span class="label">ساعت شروع</span>
+                  <span class="value">{{ currentAppointment.start_time }}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="label">ساعت پایان</span>
+                  <span class="value">{{ currentAppointment.end_time }}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="label">نوع نوبت</span>
+                  <span class="value">{{ currentAppointment.reservation_type }}</span>
+                </div>
+              </div>
+
+              <div class="progress-section mt-4">
+                <div class="d-flex justify-content-between small text-muted mb-1">
+                  <span>پیشرفت نوبت</span>
+                  <span>۵۰٪</span>
+                </div>
+                <mat-progress-bar mode="determinate" value="50"></mat-progress-bar>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        } @else if (!loading) {
+          <mat-card class="no-appointment-card mb-4">
+            <mat-icon>info</mat-icon>
+            <p>نوبت فعالی در حال حاضر وجود ندارد.</p>
+          </mat-card>
+        }
+
+        <!-- Current Patient Echo Info -->
+        @if (currentAppointment && currentPatientDetails) {
+          <mat-card class="patient-details-card mb-4">
+            <div class="card-header">
+              <div class="d-flex align-items-center gap-2">
+                <mat-icon class="text-primary">person</mat-icon>
+                <h2 class="h6 mb-0 fw-bold">اطلاعات بیمار الان</h2>
+              </div>
+            </div>
+
+            <mat-card-content class="pt-3">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <div class="info-item">
+                    <span class="label">نام کامل</span>
+                    <span class="value">{{ currentPatientDetails.name }}</span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="info-item">
+                    <span class="label">شماره موبایل</span>
+                    <span class="value">{{ currentPatientDetails.mobile || currentPatientDetails.phone || '-' }}</span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="info-item">
+                    <span class="label">تاریخ اکو</span>
+                    <span class="value">{{ currentPatientDetails.echo_date || '-' }}</span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="info-item">
+                    <span class="label">جزئیات اکو</span>
+                    <span class="value">{{ currentPatientDetails.details || '-' }}</span>
+                  </div>
+                </div>
+                @if (currentPatientDetails.file_address) {
+                  <div class="col-12">
+                    <button mat-stroked-button color="primary" (click)="viewEchoFile(currentPatientDetails.file_address)">
+                      <mat-icon>visibility</mat-icon>
+                      مشاهده فایل اکو
+                    </button>
+                  </div>
+                }
+              </div>
+            </mat-card-content>
+          </mat-card>
+        }
+      </div>
+    </div>
+  }
+</div>

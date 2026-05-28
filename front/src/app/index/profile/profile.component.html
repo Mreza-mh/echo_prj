@@ -1,0 +1,88 @@
+<div class="profile-container">
+  <mat-card class="profile-card">
+    <div class="card-header-gradient">
+      <div class="header-content">
+        <h2>تنظیمات حساب کاربری</h2>
+        <p>اطلاعات شخصی خود را مدیریت کنید</p>
+      </div>
+    </div>
+
+    <!-- <div class="avatar-wrapper">
+      <div class="avatar-circle">
+        <mat-icon>account_circle</mat-icon>
+      </div>
+    </div> -->
+
+    <mat-card-content>
+      <div *ngIf="isLoading" class="loading-overlay">
+        <mat-spinner diameter="45" strokeWidth="3"></mat-spinner>
+        <p>در حال دریافت اطلاعات کاربری...</p>
+      </div>
+
+      <form [formGroup]="profileForm" (ngSubmit)="onSubmit()" *ngIf="!isLoading">
+        
+        <div class="section-title">
+          <mat-icon>person_outline</mat-icon>
+          <span>اطلاعات قابل ویرایش</span>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-row full-width">
+            <span class="field-label">نام و نام خانوادگی</span>
+            <mat-form-field appearance="outline">
+              <input matInput formControlName="name" placeholder="مثلا: علی رضایی">
+              <mat-icon matSuffix color="primary">badge</mat-icon>
+              <mat-error *ngIf="profileForm.get('name')?.hasError('required')">
+                وارد کردن نام الزامی است
+              </mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row full-width">
+            <span class="field-label">تاریخ تولد</span>
+            <mat-form-field appearance="outline">
+              <input matInput formControlName="birthday" placeholder="۱۴۰۲/۰۵/۱۹">
+              <mat-icon matSuffix color="primary">event</mat-icon>
+              <mat-error *ngIf="profileForm.get('birthday')?.hasError('required')">
+                وارد کردن تاریخ تولد الزامی است
+              </mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div class="section-title" style="margin-top: 2rem;">
+          <mat-icon>lock_outline</mat-icon>
+          <span>اطلاعات سیستمی (غیرقابل ویرایش)</span>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-row read-only-row">
+            <span class="field-label">شماره تلفن همراه</span>
+            <mat-form-field appearance="outline">
+              <input matInput formControlName="phone" readonly>
+              <mat-icon matSuffix>smartphone</mat-icon>
+            </mat-form-field>
+          </div>
+
+          <div class="form-row read-only-row">
+            <span class="field-label">سطح دسترسی</span>
+            <mat-form-field appearance="outline">
+              <input matInput formControlName="role" readonly>
+              <mat-icon matSuffix>verified_user</mat-icon>
+            </mat-form-field>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button mat-flat-button color="primary" type="submit" [disabled]="profileForm.invalid || isSaving">
+            <div class="button-content">
+              <mat-spinner diameter="24" *ngIf="isSaving"></mat-spinner>
+              <mat-icon *ngIf="!isSaving">done_all</mat-icon>
+              <span>بروزرسانی پروفایل</span>
+            </div>
+          </button>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+</div>

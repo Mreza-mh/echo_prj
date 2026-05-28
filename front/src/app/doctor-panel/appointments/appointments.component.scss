@@ -1,0 +1,125 @@
+.appointments-container {
+  max-width: 900px;
+  margin: 0 auto;
+
+  .page-header {
+    h1 { font-size: 1.6rem; color: var(--text-primary); }
+  }
+
+  .refresh-btn {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+  }
+
+  .loading-container {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-secondary);
+  }
+
+  .error-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 32px;
+    text-align: center;
+    color: var(--error-color);
+
+    .error-icon { 
+      font-size: 48px; 
+      width: 48px; 
+      height: 48px; 
+    }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+
+    mat-icon {
+      font-size: 64px;
+      width: 64px;
+      height: 64px;
+      opacity: 0.3;
+      margin-bottom: 16px;
+    }
+
+    h3 {
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+  }
+
+  .appointments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .appointment-item {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px var(--shadow);
+    }
+  }
+
+  .appointment-content {
+    display: flex;
+    gap: 16px;
+    padding: 20px;
+  }
+
+  .patient-avatar {
+    width: 56px;
+    height: 56px;
+    background: var(--active-bg);
+    color: var(--accent-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .appointment-details {
+    flex: 1;
+  }
+
+  .patient-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+  }
+
+  .status-chip {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white !important;
+    padding: 4px 12px;
+    min-height: 24px;
+  }
+
+  .detail-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+
+    mat-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+  }
+}

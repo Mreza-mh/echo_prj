@@ -1,0 +1,57 @@
+.resource-container {
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      font-weight: 500;
+    }
+  }
+
+  .table-card {
+    position: relative;
+    border-radius: 12px;
+    overflow: hidden;
+    min-height: 200px;
+  }
+
+  .loading-shade {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: var(--loading-bg);
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .table-container {
+    overflow: auto;
+    background-color: var(--bg-secondary);
+  }
+
+  table {
+    width: 100%;
+    background-color: var(--bg-secondary) !important;
+    
+    th {
+      color: var(--text-primary) !important;
+    }
+    
+    td {
+      color: var(--text-primary) !important;
+    }
+  }
+
+  .mat-column-actions {
+    width: 120px;
+    text-align: center;
+  }
+}

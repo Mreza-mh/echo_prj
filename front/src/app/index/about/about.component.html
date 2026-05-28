@@ -1,0 +1,78 @@
+<div class="about-page" [dir]="translationService.getCurrentLang() === 'fa' ? 'rtl' : 'ltr'">
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container">
+      <div class="hero-content animate__animated animate__fadeIn">
+        <h1 class="display-3 fw-bold">{{ getTranslation('aboutTitle') }}</h1>
+        <p class="lead mb-4">{{ getTranslation('aboutSubtitle') }}</p>
+        <div class="hero-badges">
+          <span class="badge rounded-pill bg-primary px-3 py-2 m-1">{{ getTranslation('smartScheduling') }}</span>
+          <span class="badge rounded-pill bg-success px-3 py-2 m-1">{{ getTranslation('resourceManagement') }}</span>
+        </div>
+      </div>
+    </div>
+    <div class="hero-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+    </div>
+  </section>
+
+  <!-- Content Sections -->
+  <section class="content-section py-5 mt-4">
+    <div class="container">
+      <div class="row g-5">
+        <!-- Mission & Vision -->
+        <div class="col-lg-6">
+          <div class="card mission-card h-100 border-0 shadow-sm animate__animated animate__fadeInLeft">
+            <div class="card-body p-4 p-md-5">
+              <div class="icon-circle mb-4">
+                <mat-icon>flag</mat-icon>
+              </div>
+              <h2 class="h3 fw-bold mb-3">{{ getTranslation('aboutMission') }}</h2>
+              <p class="text-secondary lh-lg mb-5">{{ getTranslation('aboutMissionDesc') }}</p>
+
+              <div class="icon-circle mb-4 mt-4">
+                <mat-icon>visibility</mat-icon>
+              </div>
+              <h2 class="h3 fw-bold mb-3">{{ getTranslation('aboutVision') }}</h2>
+              <p class="text-secondary lh-lg">{{ getTranslation('aboutVisionDesc') }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Our Story -->
+        <div class="col-lg-6">
+          <div class="card story-card h-100 border-0 shadow-sm animate__animated animate__fadeInRight">
+            <div class="card-body p-4 p-md-5">
+              <div class="icon-circle mb-4">
+                <mat-icon>history_edu</mat-icon>
+              </div>
+              <h2 class="h3 fw-bold mb-3">{{ getTranslation('aboutStory') }}</h2>
+              <p class="text-secondary lh-lg">{{ getTranslation('aboutStoryDesc') }}</p>
+              
+              <div class="features-list mt-5">
+                <h3 class="h5 fw-bold mb-4">{{ getTranslation('features') }}</h3>
+                <div class="feature-item mb-3 d-flex align-items-center gap-3">
+                  <mat-icon class="text-primary">check_circle</mat-icon>
+                  <span>{{ getTranslation('smartScheduling') }}</span>
+                </div>
+                <div class="feature-item mb-3 d-flex align-items-center gap-3">
+                  <mat-icon class="text-primary">check_circle</mat-icon>
+                  <span>{{ getTranslation('resourceManagement') }}</span>
+                </div>
+                <div class="feature-item mb-3 d-flex align-items-center gap-3">
+                  <mat-icon class="text-primary">check_circle</mat-icon>
+                  <span>{{ getTranslation('multiOrganization') }}</span>
+                </div>
+                <div class="feature-item d-flex align-items-center gap-3">
+                  <mat-icon class="text-primary">check_circle</mat-icon>
+                  <span>{{ getTranslation('realTimeUpdates') }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

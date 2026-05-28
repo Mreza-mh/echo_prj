@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+  <g id="Group_5385" data-name="Group 5385" transform="translate(-36 -60)">
+    <g id="Group_4989" data-name="Group 4989" transform="translate(9712 -2280)">
+      <path id="Vector" d="M0,0H24V24H0Z" transform="translate(-9676 2340)" fill="none"/>
+      <g id="Group_4988" data-name="Group 4988" transform="translate(-0.753 -0.555)">
+        <path id="Vector-2" data-name="Vector" d="M7.371,14.746a.8.8,0,0,1-.573-.238L.235,7.945a.816.816,0,0,1,0-1.146L6.8.235A.81.81,0,0,1,7.945,1.381l-5.99,5.99,5.99,5.99a.816.816,0,0,1,0,1.146A.784.784,0,0,1,7.371,14.746Z" transform="translate(-9673.247 2345.183)" fill="#1c1c1c"/>
+        <path id="Vector-3" data-name="Vector" d="M19.008,1.622H.811A.817.817,0,0,1,0,.811.817.817,0,0,1,.811,0h18.2a.817.817,0,0,1,.811.811A.817.817,0,0,1,19.008,1.622Z" transform="translate(-9673.066 2351.743)" fill="#1c1c1c"/>
+      </g>
+    </g>
+  </g>
+</svg>

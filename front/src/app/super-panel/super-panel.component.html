@@ -1,0 +1,93 @@
+<div class="superpanel-container" [dir]="translationService.getDirection()">
+  <!-- Header -->
+  <mat-toolbar color="primary" class="superpanel-toolbar">
+    <button mat-icon-button (click)="toggleSidebar()">
+      <mat-icon>menu</mat-icon>
+    </button>
+
+    <div class="toolbar-content">
+      <span class="panel-title">{{ getTranslation('superAdminPanel') }}</span>
+    </div>
+
+    <span class="spacer"></span>
+
+    <div class="header-actions">
+      <button mat-icon-button (click)="toggleTheme()" [matTooltip]="getTranslation('toggleTheme')">
+        <mat-icon>{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</mat-icon>
+      </button>
+
+      <button mat-icon-button (click)="toggleLanguage()" [matTooltip]="getTranslation('toggleLanguage')">
+        <mat-icon>language</mat-icon>
+      </button>
+
+      <button mat-icon-button [matMenuTriggerFor]="userMenu">
+        <mat-icon>account_circle</mat-icon>
+      </button>
+      <mat-menu #userMenu="matMenu">
+        <div class="user-menu-header" *ngIf="currentUser$ | async as user">
+          <div class="user-name">{{ user.name }}</div>
+          <div class="user-mobile">{{ user.mobile }}</div>
+        </div>
+        <mat-divider></mat-divider>
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>{{ getTranslation('logout') }}</span>
+        </button>
+      </mat-menu>
+    </div>
+  </mat-toolbar>
+
+  <mat-sidenav-container class="sidenav-container">
+    <mat-sidenav
+      #sidenav
+      [mode]="isMobile ? 'over' : 'side'"
+      [opened]="isSidenavOpen"
+      class="superpanel-sidenav"
+      [class.collapsed]="sidebarCollapsed"
+    >
+      <div class="sidebar-header" *ngIf="!isMobile">
+        <button mat-icon-button (click)="toggleSidebarCollapse()" class="collapse-btn">
+          <mat-icon>{{ sidebarCollapsed ? 'chevron_right' : 'chevron_left' }}</mat-icon>
+        </button>
+      </div>
+
+      <mat-nav-list>
+        <div class="nav-section-title" *ngIf="!sidebarCollapsed">{{ getTranslation('management') }}</div>
+        
+        <!-- Users -->
+        <a mat-list-item routerLink="/super-panel/users" routerLinkActive="active" (click)="closeSidenav()">
+          <mat-icon matListItemIcon>people</mat-icon>
+          <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('users') }}</span>
+        </a>
+
+        <!-- Organizations -->
+        <a mat-list-item routerLink="/super-panel/organizations" routerLinkActive="active" (click)="closeSidenav()">
+          <mat-icon matListItemIcon>business</mat-icon>
+          <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('organizations') }}</span>
+        </a>
+
+        <!-- Services -->
+        <a mat-list-item routerLink="/super-panel/services" routerLinkActive="active" (click)="closeSidenav()">
+          <mat-icon matListItemIcon>medical_services</mat-icon>
+          <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('services') }}</span>
+        </a>
+      </mat-nav-list>
+    </mat-sidenav>
+
+    <mat-sidenav-content class="main-content">
+      <div class="content-wrapper" [class.full-sidebar]="isSidenavOpen && !sidebarCollapsed && !isMobile">
+        <!-- Welcome Header in Main Content -->
+        <div class="welcome-banner" *ngIf="currentUser$ | async as user">
+          <h1 class="welcome-text">
+            {{ getTranslation('welcomeTo') }} {{ getTranslation('superAdminPanel') }}
+          </h1>
+          <p class="welcome-subtext">
+            {{ getTranslation('manageAcareeResources') }}
+          </p>
+        </div>
+
+        <router-outlet></router-outlet>
+      </div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>
