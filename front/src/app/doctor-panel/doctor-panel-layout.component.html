@@ -64,19 +64,9 @@
         <mat-divider></mat-divider>
         <div class="nav-section-title" *ngIf="!sidebarCollapsed">{{ getTranslation('patientManagement') }}</div>
 
-        <a mat-list-item routerLink="/dr-panel/appointments" routerLinkActive="active" (click)="closeSidenav()">
-          <mat-icon matListItemIcon>event_available</mat-icon>
-          <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('appointments') }}</span>
-        </a>
-
         <a mat-list-item routerLink="/dr-panel/echo-history" routerLinkActive="active" (click)="closeSidenav()">
           <mat-icon matListItemIcon>assignment</mat-icon>
           <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('echoHistory') }}</span>
-        </a>
-
-        <a mat-list-item routerLink="/dr-panel/patients" routerLinkActive="active" (click)="closeSidenav()">
-          <mat-icon matListItemIcon>people</mat-icon>
-          <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('patients') }}</span>
         </a>
 
         <mat-divider></mat-divider>

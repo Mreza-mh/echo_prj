@@ -1,67 +1,271 @@
 <div class="echo-history-container animate__animated animate__fadeIn">
+
   <header class="page-header mb-4">
     <div class="d-flex justify-content-between align-items-center">
       <div>
-        <h1 class="fw-bold mb-1">سوابق اکو بیماران</h1>
-        <p class="text-muted small mb-0">تمام اکوهای ثبت شده برای بیماران</p>
+        <h1 class="fw-bold mb-1">{{ getTranslation('echoHistoryTitle') }}</h1>
+        <p class="text-muted small mb-0">
+          {{ getTranslation('echoHistoryDescription') }}
+        </p>
       </div>
+
       <button mat-icon-button (click)="refresh()" class="refresh-btn">
         <mat-icon>refresh</mat-icon>
       </button>
     </div>
   </header>
 
+  <!-- Search -->
+  <div class="search-form mb-4 d-flex gap-2">
+    <mat-form-field appearance="fill" class="w-100">
+      <mat-label>{{ getTranslation('patientNationalId') }}</mat-label>
+      <input matInput type="number"
+             [(ngModel)]="searchPatientId"
+             (keyup.enter)="searchPatient()"
+             placeholder="{{ getTranslation('enterPatientId') }}">
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" (click)="searchPatient()">
+      <mat-icon>search</mat-icon>
+      {{ getTranslation('search') }}
+    </button>
+  </div>
+
+  <!-- STATES -->
   @if (loading) {
     <div class="loading-container">
       <mat-spinner diameter="48"></mat-spinner>
-      <p class="mt-3 text-muted">در حال بارگذاری سوابق اکو...</p>
+      <p class="mt-3 text-muted">
+        {{ getTranslation('loadingEchoHistory') }}
+      </p>
     </div>
+
   } @else if (error) {
     <div class="error-card">
       <mat-icon class="error-icon">error_outline</mat-icon>
       <p>{{ error }}</p>
     </div>
-  } @else if (echoHistories.length === 0) {
+
+  } @else if (!echoData) {
     <div class="empty-state">
       <mat-icon>assignment</mat-icon>
-      <h3>سابقه اکوی یافت نشد</h3>
-      <p>هیچ سابقه اکوی برای بیماران ثبت نشده است.</p>
+      <h3>{{ getTranslation('noEchoHistoryFound') }}</h3>
+      <p>{{ getTranslation('noEchoHistoryForPatient') }}</p>
+
+      <button mat-flat-button color="primary"
+              (click)="searchPatientId=''; patientId=null; echoData=null;">
+        {{ getTranslation('newSearch') }}
+      </button>
     </div>
+
   } @else {
-    <div class="echo-list">
-      @for (echo of echoHistories; track echo.patient_id) {
-        <mat-card class="echo-item shadow-sm mb-3">
-          <div class="card-header">
-            <div class="d-flex align-items-center gap-2">
-              <mat-icon class="text-primary">assignment</mat-icon>
-              <h2 class="h6 mb-0 fw-bold">اکو {{ echo.name }}</h2>
+
+    <!-- PATIENT INFO -->
+    <mat-card class="patient-info-card mb-4">
+      <mat-card-header>
+        <mat-card-title>
+          {{ getTranslation('patientInfo') }}
+        </mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="row g-3">
+
+          <div class="col-md-3">
+            <div class="info-item">
+              <span class="label">{{ getTranslation('id') }}</span>
+              <span class="value">{{ patientInfo?.id }}</span>
             </div>
-            @if (echo.file_address) {
-              <button mat-stroked-button color="primary" (click)="viewEchoFile(echo.file_address)" class="view-file-btn">
-                <mat-icon>visibility</mat-icon>
-                مشاهده فایل
-              </button>
-            }
           </div>
 
-          <mat-card-content class="pt-3">
-            <div class="echo-info">
-              <div class="info-row">
-                <span class="label">نام بیمار</span>
-                <span class="value">{{ echo.name }}</span>
-              </div>
-              <div class="info-row">
-                <span class="label">تاریخ اکو</span>
-                <span class="value">{{ echo.echo_date }}</span>
-              </div>
-              <div class="info-row">
-                <span class="label">جزئیات</span>
-                <span class="value details">{{ echo.details }}</span>
-              </div>
+          <div class="col-md-3">
+            <div class="info-item">
+              <span class="label">{{ getTranslation('gender') }}</span>
+              <span class="value">{{ patientInfo?.gender }}</span>
             </div>
-          </mat-card-content>
-        </mat-card>
+          </div>
+
+          <div class="col-md-3">
+            <div class="info-item">
+              <span class="label">{{ getTranslation('weight') }}</span>
+              <span class="value">{{ patientInfo?.weight }} kg</span>
+            </div>
+          </div>
+
+          <div class="col-md-3">
+            <div class="info-item">
+              <span class="label">{{ getTranslation('height') }}</span>
+              <span class="value">{{ patientInfo?.height }} cm</span>
+            </div>
+          </div>
+
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- DATE SELECT -->
+    @if (visitDates?.length) {
+      <mat-form-field appearance="fill" class="w-100 mb-4">
+        <mat-label>{{ getTranslation('selectDate') }}</mat-label>
+        <mat-select [(ngModel)]="selectedDate">
+          <mat-option *ngFor="let date of visitDates" [value]="date">
+            {{ date }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    }
+
+    <!-- VISITS -->
+    <div class="visits-list">
+
+      @for (visit of getVisitList(selectedDate); track visit.view_instance) {
+
+        <mat-expansion-panel class="visit-panel mb-3">
+
+          <mat-expansion-panel-header>
+
+            <mat-panel-title>
+              {{ getTranslation('viewInstance') }}: {{ visit.view_instance }}
+
+              @if (visit.detected_view && visit.detected_view !== visit.view_instance) {
+                <span class="text-muted">
+                  ({{ getTranslation('detected') }}: {{ visit.detected_view }})
+                </span>
+              }
+            </mat-panel-title>
+
+            <mat-panel-description>
+              {{ getTranslation('video') }}: {{ visit.video_name }} |
+              {{ getTranslation('processedAt') }}: {{ visit.processed_at }}
+            </mat-panel-description>
+
+          </mat-expansion-panel-header>
+
+          <!-- PANEL BODY (FIXED) -->
+          <div class="p-3">
+
+            <!-- Measurements -->
+            @if (visit.measurements?.length) {
+              <div class="mb-3">
+                <h4>{{ getTranslation('measurements') }}</h4>
+
+                 <table class="table table-sm table-hover">
+                   <thead>
+                     <tr>
+                       <th>{{ getTranslation('eventName') }}</th>
+                       <th>{{ getTranslation('measurementName') }}</th>
+                       <th>{{ getTranslation('value') }}</th>
+                       <th>{{ getTranslation('unit') }}</th>
+                       <th>{{ getTranslation('text') }}</th>
+                       <th>{{ getTranslation('frameImage') }}</th>
+                       <th>{{ getTranslation('previewImage') }}</th>
+                     </tr>
+                   </thead>
+
+                   <tbody>
+                     @for (m of visit.measurements; track m.event_frame_number) {
+                       <tr>
+                         <td>{{ m.event_name }}</td>
+                         <td>{{ m.measurement_name }}</td>
+                         <td>{{ m.value }}</td>
+                         <td>{{ m.unit }}</td>
+                         <td>{{ m.text }}</td>
+                         <td>
+                           @if (m.event_frame_image_url) {
+                             <img [src]="m.event_frame_image_url" width="50" height="50" style="object-fit: cover;" (click)="viewFile(m.event_frame_image_url)" class="cursor-pointer">
+                           }
+                         </td>
+                         <td>
+                           @if (m.measurement_preview_image_url) {
+                             <img [src]="m.measurement_preview_image_url" width="50" height="50" style="object-fit: cover;" (click)="viewFile(m.measurement_preview_image_url)" class="cursor-pointer">
+                           }
+                         </td>
+                       </tr>
+                     }
+                   </tbody>
+                </table>
+              </div>
+            }
+
+            <!-- Volumes -->
+            @if (visit.a4c_volume || visit.lv_volume) {
+              <div class="mb-3">
+
+                <h4>{{ getTranslation('volumes') }}</h4>
+
+                @if (visit.a4c_volume) {
+                  <div>
+                    <strong>A4C</strong>
+                    RA: {{ visit.a4c_volume.areas_cm2?.right_atrium?.toFixed(2) }} cm²,
+                    LA: {{ visit.a4c_volume.areas_cm2?.left_atrium?.toFixed(2) }} cm²
+                  </div>
+                }
+
+                @if (visit.lv_volume) {
+                  <div>
+                    <strong>LV</strong>
+                    {{ visit.lv_volume.area_cm2?.toFixed(2) }} cm²
+                  </div>
+                }
+
+              </div>
+            }
+
+            <!-- Classification -->
+            @if (visit.classification) {
+              <div class="mb-3">
+                <h4>{{ getTranslation('classification') }}</h4>
+
+                <div>
+                  {{ visit.classification.video_name }} |
+                  {{ visit.classification.prediction }} |
+                  {{ (visit.classification.confidence * 100).toFixed(1) }}%
+                </div>
+              </div>
+            }
+
+            <!-- FILES -->
+            @if (visit.files) {
+              <div class="mb-3">
+                <h4>{{ getTranslation('files') }}</h4>
+
+                <div class="d-flex flex-wrap gap-2">
+
+                  @if (visit.files.classification_json_address) {
+                    <button mat-stroked-button (click)="viewFile(visit.files.classification_json_address)">
+                      JSON
+                    </button>
+                  }
+
+                  @if (visit.files.result_json_address) {
+                    <button mat-stroked-button (click)="viewFile(visit.files.result_json_address)">
+                      Result
+                    </button>
+                  }
+
+                  @if (visit.files.plots?.links?.length) {
+                    <button mat-stroked-button
+                            (click)="viewFile(visit.files.plots.links[0].address)">
+                      Plot
+                    </button>
+                  }
+
+                </div>
+              </div>
+            }
+
+          </div>
+
+        </mat-expansion-panel>
+
       }
+
+      @if (!getVisitList(selectedDate)?.length) {
+        <p class="text-muted text-center py-4">
+          {{ getTranslation('noVisitsForDate') }}
+        </p>
+      }
+
     </div>
   }
 </div>

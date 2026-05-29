@@ -1,143 +1,60 @@
 .user-dashboard {
-  --bg-secondary: #e6e9ee50;
-  --border-color: var(--mat-sys-outline-variant);
-  --text-primary: var(--mat-sys-on-surface);
-  --text-secondary: var(--mat-sys-on-surface-variant);
-  --accent-color: var(--mat-sys-primary);
-  --active-bg: rgba(144, 202, 249, 0.16);
-  --hover-bg: rgba(144, 202, 249, 0.08);
-
-  max-width: 900px;
+  max-width: 1200px;
   margin: 0 auto;
+}
 
-  .dashboard-header {
-    h1 { font-size: 1.6rem; color: var(--text-primary); }
-  }
+.dashboard-header {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+}
 
-  .refresh-btn {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-  }
+.profile-card, .echo-card, .no-echo-card, .appointments-card {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
 
-  .loading-container {
-    text-align: center;
-    padding: 80px 20px;
-    color: var(--text-secondary);
-  }
+.visit-summary {
+  margin: 1rem 0;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border-left: 4px solid #007bff;
+}
 
-  .error-card {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
-    padding: 32px;
-    text-align: center;
-    color: var(--error-color);
+.info-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
 
-    .error-icon { 
-      font-size: 48px; 
-      width: 48px; 
-      height: 48px; 
-    }
-  }
+.label {
+  font-weight: 600;
+  color: #495057;
+}
 
-  .echo-card, .appointments-card {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 20px;
-    overflow: hidden;
+.value {
+  font-weight: normal;
+}
 
-    .card-header {
-      padding: 16px 24px;
-      border-bottom: 1px solid var(--border-color);
-      display: flex;
-      align-items: center;
-      background: var(--bg-secondary);
-    }
-  }
+/* Date selector */
+.mat-form-field {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
 
-  .info-item {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+/* Buttons */
+button.mat-icon-button {
+  margin: 0.25rem;
+}
 
-    .label {
-      color: var(--text-secondary);
-      font-size: 0.8rem;
-    }
-    .value {
-      font-weight: 500;
-      color: var(--text-primary);
-      font-size: 0.95rem;
-    }
-  }
+/* Appointments table */
+.table {
+  margin-top: 1rem;
+}
 
-  .no-echo-card {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 20px;
-    padding: 40px;
-    text-align: center;
-    color: var(--text-secondary);
-
-    mat-icon { 
-      font-size: 42px; 
-      width: 42px; 
-      height: 42px; 
-      opacity: 0.6; 
-    }
-  }
-
-  .table-responsive {
-    margin: 0;
-    scrollbar-width: thin;
-  }
-
-  .table {
-    margin-bottom: 0;
-    background: transparent;
-
-    th {
-      background: var(--bg-secondary);
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: var(--text-secondary);
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    td {
-      padding: 12px 16px;
-      vertical-align: middle;
-      border-bottom: 1px solid var(--border-color);
-      color: var(--text-primary);
-      font-size: 0.9rem;
-    }
-
-    tr:hover td {
-      background-color: var(--hover-bg);
-    }
-
-    tr:last-child td { border-bottom: none; }
-
-    .status-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      display: inline-block;
-      margin-right: 8px;
-    }
-
-    .status-text {
-      font-size: 0.85rem;
-      font-weight: 500;
-    }
-  }
-
-  // RTL Support
-  @media (max-width: 991.98px) {
-    .info-item {
-      flex-direction: column;
-      gap: 4px;
-    }
-  }
+.cursor-pointer {
+  cursor: pointer;
 }

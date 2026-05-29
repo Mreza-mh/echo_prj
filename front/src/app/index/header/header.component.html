@@ -59,7 +59,7 @@
             </div>
           </div>
           <mat-divider></mat-divider>
-          <button mat-menu-item routerLink="/dashboard">
+          <button mat-menu-item [routerLink]="dashboardLink">
             <mat-icon>dashboard</mat-icon>
             <span>{{ getTranslation('dashboard') }}</span>
           </button>
@@ -68,22 +68,6 @@
             <span>{{ getTranslation('profile') }}</span>
           </button>
           
-          <!-- Super Admin Link -->
-          @if (isSuperAdmin) {
-            <button mat-menu-item routerLink="/super-panel" class="super-admin-link">
-              <mat-icon color="warn">verified_user</mat-icon>
-              <span>{{ getTranslation('superAdminPanelShort') }}</span>
-            </button>
-          }
-
-          <!-- Admin Panel Link -->
-          @if (isAdmin) {
-            <button mat-menu-item routerLink="/panel/dashboard">
-              <mat-icon color="primary">dashboard</mat-icon>
-              <span>{{ getTranslation('adminPanelShort') }}</span>
-            </button>
-          }
-
           <mat-divider></mat-divider>
           <button mat-menu-item (click)="logout()" class="logout-item">
             <mat-icon color="error">logout</mat-icon>
@@ -112,24 +96,24 @@
   </div>
 
   <div class="drawer-content p-3">
-<nav class="mobile-nav d-flex flex-column gap-2">
-       <a routerLink="/" (click)="closeMenu()" class="drawer-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
-         <mat-icon>home</mat-icon>
-         <span>{{ getTranslation('home') }}</span>
-       </a>
-       <a routerLink="/organizations" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
-         <mat-icon>business</mat-icon>
-         <span>{{ getTranslation('selectOrg') }}</span>
-       </a>
-       <a routerLink="/dashboard" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
-         <mat-icon>dashboard</mat-icon>
-         <span>{{ getTranslation('dashboard') }}</span>
-       </a>
-       <a href="about" (click)="closeMenu()" class="drawer-link">
-         <mat-icon>info</mat-icon>
-         <span>{{ getTranslation('aboutAcaree') }}</span>
-       </a>
-     </nav>
+    <nav class="mobile-nav d-flex flex-column gap-2">
+      <a routerLink="/" (click)="closeMenu()" class="drawer-link" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+        <mat-icon>home</mat-icon>
+        <span>{{ getTranslation('home') }}</span>
+      </a>
+      <a routerLink="/organizations" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
+        <mat-icon>business</mat-icon>
+        <span>{{ getTranslation('selectOrg') }}</span>
+      </a>
+      <a [routerLink]="dashboardLink" (click)="closeMenu()" class="drawer-link" routerLinkActive="active">
+        <mat-icon>dashboard</mat-icon>
+        <span>{{ getTranslation('dashboard') }}</span>
+      </a>
+      <a href="about" (click)="closeMenu()" class="drawer-link">
+        <mat-icon>info</mat-icon>
+        <span>{{ getTranslation('aboutAcaree') }}</span>
+      </a>
+    </nav>
 
     <mat-divider class="my-3"></mat-divider>
     

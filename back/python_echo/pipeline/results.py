@@ -28,8 +28,16 @@ def path_for_frontend(path_value: str | Path | None) -> str | None:
     if not path_value:
         return None
     path = Path(path_value).expanduser().resolve()
+
+    public_root = os.getenv("LARAVEL_PUBLIC_RESULT_PATH")
+    if public_root:
+        try:
+            return path.relative_to(Path(public_root).expanduser().resolve()).as_posix()
+        except Exception:
+            pass
+
     try:
-        return str(path.relative_to(PROJECT_ROOT.resolve()))
+        return path.relative_to(PROJECT_ROOT.resolve()).as_posix()
     except Exception:
         return str(path)
 

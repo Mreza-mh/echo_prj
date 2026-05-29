@@ -109,6 +109,24 @@ export class HeaderComponent implements OnInit {
     return this.credentialsService.isAuthenticated();
   }
 
+  get dashboardLink(): string {
+    if (!this.user) {
+      return '/dashboard'; // fallback
+    }
+    switch (this.user.role) {
+      case 'patient':
+        return '/dashboard';
+      case 'doctor':
+        return '/dr-panel/dashboard';
+      case 'admin':
+        return '/panel/dashboard';
+      case 'super_admin':
+        return '/super-panel';
+      default:
+        return '/dashboard';
+    }
+  }
+
   logout() {
     this.authService.logout().subscribe(() => {
       this.router.navigate(['/auth/login']);

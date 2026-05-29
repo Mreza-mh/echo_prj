@@ -6,8 +6,15 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
+import { MatSelectModule } from '@angular/material/select';
 import { DoctorHttpService } from '../doctor-http.service';
 import { ToastService } from '../../@shared/services/toast/toast.service';
+import { TranslationService } from '../../@shared/services/translation.service';
+import { MatExpansionPanel, MatExpansionPanelDescription, MatExpansionPanelHeader, MatExpansionPanelTitle } from '@angular/material/expansion';
+import { MatTabNavPanel } from '@angular/material/tabs';
 
 @Component({
   selector: 'app-echo-history',
@@ -20,49 +27,125 @@ import { ToastService } from '../../@shared/services/toast/toast.service';
     MatProgressSpinnerModule,
     MatDividerModule,
     MatTooltipModule,
+    MatFormFieldModule,
+    MatInputModule,
+    FormsModule,
+    MatSelectModule,
+    MatExpansionPanelDescription, 
+    MatExpansionPanelTitle,
+    MatExpansionPanel,
+    MatExpansionPanelHeader
   ],
   templateUrl: './echo-history.component.html',
-  styleUrls: ['./echo-history.component.scss'],
+  styleUrls: ['./echo-history.component.scss']
 })
 export class EchoHistoryComponent implements OnInit {
   private doctorHttp = inject(DoctorHttpService);
   private toast = inject(ToastService);
+  private translationService = inject(TranslationService);
 
-  echoHistories: any[] = [];
+  echoData: any = null;
   loading = true;
   error: string | null = null;
+  patientId: string | number | null = null;
+  searchPatientId: string | number = '';
+
+  // Processed data for display
+  patientInfo: any = null;
+  visitDates: string[] = []; // sorted descending
+  visitsByDate: { [date: string]: any[] } = {};
+  selectedDate: string = '';
 
   ngOnInit(): void {
-    this.loadEchoHistories();
+    // Initially, we don't load any echo history until a patient is searched
+    this.echoData = null;
+    this.loading = false;
   }
 
-  refresh(): void {
+  searchPatient(): void {
+    const id = Number(this.searchPatientId);
+    if (isNaN(id)) {
+      this.toast.error(this.getTranslation('pleaseEnterValidPatientId'));
+      return;
+    }
+    this.patientId = id;
+    this.loadEchoHistory();
+  }
+
+  loadEchoHistory(): void {
+    if (this.patientId === null) {
+      this.echoData = null;
+      this.patientInfo = null;
+      this.visitDates = [];
+      this.visitsByDate = {};
+      this.selectedDate = '';
+      this.loading = false;
+      return;
+    }
+
     this.loading = true;
     this.error = null;
-    this.echoHistories = [];
-    this.loadEchoHistories();
-  }
+    this.echoData = null;
+    this.patientInfo = null;
+    this.visitDates = [];
+    this.visitsByDate = {};
+    this.selectedDate = '';
 
-  private loadEchoHistories(): void {
-    // For now, we load the current user's echo history
-    this.doctorHttp.getEchoHistory().subscribe({
+    this.doctorHttp.getEchoHistoryByPatient(this.patientId).subscribe({
       next: (response: any) => {
         if (response.success && response.data) {
-          this.echoHistories = Array.isArray(response.data) ? response.data : [response.data];
+          this.echoData = response.data;
+          this.processEchoData();
         } else {
-          this.echoHistories = [];
+          this.echoData = null;
+          this.error = this.getTranslation('noEchoHistoryFoundForPatient');
         }
         this.loading = false;
       },
       error: (err) => {
-        console.error('Error fetching echo histories:', err);
-        this.error = 'خطا در دریافت اطلاعات اکوها';
+        console.error('Error fetching echo history:', err);
+        this.error = this.getTranslation('errorFetchingEchoHistory');
         this.loading = false;
       }
     });
   }
 
-  viewEchoFile(address: string): void {
+  private processEchoData(): void {
+    if (!this.echoData) return;
+    this.patientInfo = this.echoData.patient_info || {};
+    const visits = this.echoData.visits || {};
+    this.visitDates = Object.keys(visits).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+    this.visitsByDate = visits;
+    if (this.visitDates.length > 0) {
+      this.selectedDate = this.visitDates[0];
+    }
+  }
+
+  refresh(): void {
+    this.loadEchoHistory();
+  }
+
+  getVisitList(date: string): any[] {
+    return this.visitsByDate[date] || [];
+  }
+
+  getTranslation(key: string): string {
+    return this.translationService.getTranslation(key);
+  }
+
+  // Helper to check if a value is boolean (to hide in UI)
+  isBoolean(val: any): boolean {
+    return typeof val === 'boolean';
+  }
+
+  // Helper to get a safe URL for viewing a file
+  getFileUrl(address: string): string {
+    // Assuming the address is relative to the API base, but the service already handles full URL?
+    // We'll just return the address as is; the viewFile method will use the service.
+    return address;
+  }
+
+  viewFile(address: string): void {
     if (address) {
       this.doctorHttp.getEchoFile(address).subscribe({
         next: (blob: Blob) => {
@@ -70,25 +153,7 @@ export class EchoHistoryComponent implements OnInit {
           window.open(url, '_blank');
         },
         error: (err) => {
-          this.toast.error('خطا در دریافت فایل اکو');
-        }
-      });
-    }
-  }
-
-  downloadEchoFile(address: string): void {
-    if (address) {
-      this.doctorHttp.getEchoFile(address).subscribe({
-        next: (blob: Blob) => {
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'echo-file.pdf';
-          a.click();
-          window.URL.revokeObjectURL(url);
-        },
-        error: (err) => {
-          this.toast.error('خطا در دانلود فایل اکو');
+          this.toast.error(this.getTranslation('errorFetchingEchoFile'));
         }
       });
     }

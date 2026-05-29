@@ -17,8 +17,8 @@ export class DoctorHttpService {
     return this.authHttp.getMe();
   }
 
-  getCurrentAppointment(): Observable<any> {
-    return this.genericHttp.get('/appointment/get-current-appointment');
+  getCurrentAppointment(params?: any): Observable<any> {
+    return this.genericHttp.get('/appointment/get-current-appointment', params);
   }
 
   getAppointmentDetails(id: string | number): Observable<any> {
