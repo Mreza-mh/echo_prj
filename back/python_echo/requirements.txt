@@ -6,3 +6,5 @@ scipy
 tensorflow
 torch
 torchvision
+requests
+python-dotenv

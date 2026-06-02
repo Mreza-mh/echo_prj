@@ -25,6 +25,13 @@ def get_public_output_root(output_root: Path) -> Path:
 
 
 def path_for_frontend(path_value: str | Path | None) -> str | None:
+    """
+    تبدیل مسیر مطلق به مسیر نسبی برای استفاده در فرانت‌اند و MongoDB.
+    
+    مثال:
+        ورودی: C:/Users/.../public/echos/2/2026-06-02/a4c/media/events/End_Diastol.jpg
+        خروجی: 2/2026-06-02/a4c/media/events/End_Diastol.jpg
+    """
     if not path_value:
         return None
     path = Path(path_value).expanduser().resolve()
@@ -32,7 +39,9 @@ def path_for_frontend(path_value: str | Path | None) -> str | None:
     public_root = os.getenv("LARAVEL_PUBLIC_RESULT_PATH")
     if public_root:
         try:
-            return path.relative_to(Path(public_root).expanduser().resolve()).as_posix()
+            # تبدیل به مسیر نسبی نسبت به public_root
+            relative = path.relative_to(Path(public_root).expanduser().resolve())
+            return relative.as_posix()
         except Exception:
             pass
 
@@ -100,7 +109,8 @@ def build_session_paths(
     internal_session_dir = ensure_dir(internal_date_dir / view_name)
     public_session_dir = ensure_dir(public_date_dir / view_name)
     internal_dir = ensure_dir(internal_session_dir / "internal")
-    public_dir = ensure_dir(public_session_dir / "public")
+    # حذف "public" اضافی - فایل‌ها مستقیم در view_name ذخیره می‌شوند
+    public_dir = public_session_dir
 
     return {
         "internal_root": internal_root,
@@ -123,13 +133,29 @@ def build_session_paths(
 
 
 def copy_public_file(source: str | Path | None, destination: Path, output_root: Path) -> str | None:
+    """
+    کپی یک فایل از مسیر مبدأ (internal) به مسیر مقصد (public) و بازگشت مسیر نسبی.
+    
+    Args:
+        source: مسیر فایل مبدأ (مثلاً فایل در پوشه internal)
+        destination: مسیر مقصد کامل (مثلاً در public_root/...)
+        output_root: پوشه ریشه (استفاده نمی‌شود، برای سازگاری نگه داشته شده)
+    
+    Returns:
+        مسیر نسبی فایل نسبت به public_root (برای ذخیره در MongoDB و استفاده در API)
+        مثال: "2/2026-06-02/a4c/media/events/End_Diastol.jpg"
+    """
     if not source:
         return None
     source_path = Path(source).expanduser().resolve()
     if not source_path.exists():
         return None
+    
+    # ایجاد پوشه مقصد و کپی فایل
     destination.parent.mkdir(parents=True, exist_ok=True)
     copy2(source_path, destination)
+    
+    # بازگشت مسیر نسبی برای استفاده در فرانت‌اند
     return path_for_frontend(destination)
 
 
@@ -213,6 +239,162 @@ def save_public_result_to_mongo(document: dict[str, Any]) -> dict[str, Any]:
     }
 
 # //az in
+
+def generate_final_patient_report(
+    output_root: Path,
+    patient_id: str,
+    visit_date: str,
+    final_report_json_path: Path,
+) -> dict[str, Any] | None:
+    """
+    تولید گزارش نهایی برای بیمار با استفاده از LLM و ذخیره در MongoDB
+    
+    این تابع:
+    1. فایل final_report.json را می‌خواند
+    2. از LLM برای تولید متن دوستانه استفاده می‌کند
+    3. یک فایل HTML زیبا تولید می‌کند
+    4. همه چیز را در MongoDB ذخیره می‌کند
+    
+    ورودی:
+        output_root: پوشه ریشه خروجی
+        patient_id: شناسه بیمار
+        visit_date: تاریخ ویزیت
+        final_report_json_path: مسیر فایل final_report.json
+    
+    خروجی:
+        دیکشنری حاوی مسیرهای فایل‌های تولید شده و وضعیت ذخیره در MongoDB
+    """
+    from pipeline.llm_report_generator import LLMReportGenerator
+    import json
+    
+    if not final_report_json_path.exists():
+        print(f"Final report not found: {final_report_json_path}")
+        return None
+    
+    # خواندن داده‌های گزارش نهایی
+    with final_report_json_path.open("r", encoding="utf-8") as f:
+        final_report_data = json.load(f)
+    
+    # تولید گزارش با LLM
+    try:
+        generator = LLMReportGenerator()
+        llm_report_text = generator.generate_patient_report(final_report_data)
+        
+        if not llm_report_text:
+            print("LLM failed to generate report, using fallback")
+            llm_report_text = "گزارش در دسترس نیست. لطفاً با پزشک مشورت کنید."
+        
+        # تولید HTML
+        html_report = generator.generate_html_report(
+            llm_report=llm_report_text,
+            final_report_data=final_report_data
+        )
+        
+    except Exception as e:
+        print(f"Error generating LLM report: {e}")
+        llm_report_text = "خطا در تولید گزارش."
+        html_report = "<html><body><p>خطا در تولید گزارش</p></body></html>"
+    
+    # تعیین مسیرهای ذخیره
+    internal_root = output_root.expanduser().resolve()
+    public_root = get_public_output_root(internal_root)
+    
+    patient_dir = internal_root / safe_name(patient_id)
+    date_dir = patient_dir / visit_date
+    final_report_dir = ensure_dir(date_dir / "final_report")
+    
+    # ذخیره فایل‌های متنی و HTML در internal
+    llm_text_path = final_report_dir / "llm_patient_report.txt"
+    llm_html_path = final_report_dir / "patient_report.html"
+    
+    with llm_text_path.open("w", encoding="utf-8") as f:
+        f.write(llm_report_text)
+    
+    with llm_html_path.open("w", encoding="utf-8") as f:
+        f.write(html_report)
+    
+    # کپی به پوشه public
+    public_patient_dir = public_root / safe_name(patient_id) / visit_date / "final_report"
+    ensure_dir(public_patient_dir)
+    
+    public_text_path = public_patient_dir / "llm_patient_report.txt"
+    public_html_path = public_patient_dir / "patient_report.html"
+    
+    public_text_relative = copy_public_file(llm_text_path, public_text_path, public_root)
+    public_html_relative = copy_public_file(llm_html_path, public_html_path, public_root)
+    
+    # ذخیره در MongoDB
+    mongo_uri = os.getenv("ECHO_MONGO_URI", "mongodb://localhost:27017/")
+    
+    try:
+        from pymongo import MongoClient
+        client = MongoClient(mongo_uri)
+        db = client[os.getenv("ECHO_MONGO_DB", "echo_pipeline")]
+        coll = db[os.getenv("ECHO_MONGO_COLLECTION", "patients")]
+        
+        # ساخت entry برای MongoDB
+        llm_report_entry = {
+            "type": "llm_final_report",
+            "generated_at": datetime.now().isoformat(),
+            "report_text": llm_report_text,
+            "files": {
+                "html": public_html_relative,
+                "text": public_text_relative
+            }
+        }
+        
+        # به‌روزرسانی document بیمار
+        patient_info = final_report_data.get("patient", {})
+        date_field = f"visits.{visit_date}"
+        
+        coll.update_one(
+            {"_id": patient_id},
+            {
+                "$set": {
+                    "patient_info": patient_info,
+                    "last_updated": datetime.now().isoformat(),
+                }
+            },
+            upsert=True,
+        )
+        
+        # حذف گزارش قدیمی (اگر وجود دارد)
+        coll.update_one(
+            {"_id": patient_id},
+            {"$pull": {date_field: {"type": "llm_final_report"}}},
+        )
+        
+        # اضافه کردن گزارش جدید
+        coll.update_one(
+            {"_id": patient_id},
+            {"$push": {date_field: llm_report_entry}}
+        )
+        
+        client.close()
+        
+        mongo_status = {
+            "status": "success",
+            "patient_id": patient_id,
+            "visit_date": visit_date
+        }
+        
+    except Exception as e:
+        print(f"Error saving to MongoDB: {e}")
+        mongo_status = {"status": "error", "message": str(e)}
+    
+    return {
+        "llm_report_text": llm_report_text,
+        "internal_files": {
+            "text": str(llm_text_path),
+            "html": str(llm_html_path)
+        },
+        "public_files": {
+            "text": public_text_relative,
+            "html": public_html_relative
+        },
+        "mongodb": mongo_status
+    }
+
 
 def aggregate_and_evaluate_fuzzy(
     output_root: Path,
@@ -336,8 +518,9 @@ def aggregate_and_evaluate_fuzzy(
         f.write(llm_prompt)
 
     public_root = get_public_output_root(output_root)
+    # حذف "public" اضافی - فایل‌ها مستقیم در agg_folder_name ذخیره می‌شوند
     public_summary_dir = ensure_dir(
-        public_root / safe_name(patient_id) / visit_date / agg_folder_name / "public"
+        public_root / safe_name(patient_id) / visit_date / agg_folder_name
     )
     public_reports_dir = ensure_dir(public_summary_dir / "reports")
     public_media_dir = ensure_dir(public_summary_dir / "media" / "summary")

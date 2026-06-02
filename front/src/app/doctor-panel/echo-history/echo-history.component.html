@@ -115,6 +115,10 @@
       </mat-form-field>
     }
 
+    <div style="width: 680px; height: 520px;">
+      <app-heart-visualization [patientData]="echoData" ></app-heart-visualization>
+    </div>
+
     <!-- VISITS -->
     <div class="visits-list">
 
@@ -142,119 +146,153 @@
           </mat-expansion-panel-header>
 
           <!-- PANEL BODY (FIXED) -->
-          <div class="p-3">
-
-            <!-- Measurements -->
-            @if (visit.measurements?.length) {
-              <div class="mb-3">
-                <h4>{{ getTranslation('measurements') }}</h4>
-
-                 <table class="table table-sm table-hover">
-                   <thead>
-                     <tr>
-                       <th>{{ getTranslation('eventName') }}</th>
-                       <th>{{ getTranslation('measurementName') }}</th>
-                       <th>{{ getTranslation('value') }}</th>
-                       <th>{{ getTranslation('unit') }}</th>
-                       <th>{{ getTranslation('text') }}</th>
-                       <th>{{ getTranslation('frameImage') }}</th>
-                       <th>{{ getTranslation('previewImage') }}</th>
-                     </tr>
-                   </thead>
-
-                   <tbody>
-                     @for (m of visit.measurements; track m.event_frame_number) {
-                       <tr>
-                         <td>{{ m.event_name }}</td>
-                         <td>{{ m.measurement_name }}</td>
-                         <td>{{ m.value }}</td>
-                         <td>{{ m.unit }}</td>
-                         <td>{{ m.text }}</td>
-                         <td>
-                           @if (m.event_frame_image_url) {
-                             <img [src]="m.event_frame_image_url" width="50" height="50" style="object-fit: cover;" (click)="viewFile(m.event_frame_image_url)" class="cursor-pointer">
-                           }
-                         </td>
-                         <td>
-                           @if (m.measurement_preview_image_url) {
-                             <img [src]="m.measurement_preview_image_url" width="50" height="50" style="object-fit: cover;" (click)="viewFile(m.measurement_preview_image_url)" class="cursor-pointer">
-                           }
-                         </td>
-                       </tr>
+           <div class="p-3">
+           
+           @if (visit.type === 'fuzzy_summary') {
+             <div class="visit-summary mb-3 p-3 border rounded">
+               <h5>{{ getTranslation('fuzzySummary') }}</h5>
+               <div>
+                 <strong>{{ getTranslation('score') }}:</strong> {{ visit.result.score }}<br>
+                 <strong>{{ getTranslation('category') }}:</strong> {{ visit.result.category }}<br>
+                 <strong>{{ getTranslation('text') }}:</strong> {{ visit.result.text }}
+               </div>
+               @if (visit.result.plots?.links) {
+                 <div class="mt-3">
+                   <strong>{{ getTranslation('plots') }}:</strong>
+                   <div class="d-flex flex-wrap gap-2">
+                     @for (plot of visit.result.plots.links; track plot.url) {
+                       <div (click)="viewFile(plot.url); $event.stopPropagation()" class="cursor-pointer">
+                         <img [src]="plot.url" width="80" height="80" style="object-fit: cover;" alt="plot">
+                       </div>
                      }
-                   </tbody>
-                </table>
-              </div>
-            }
-
-            <!-- Volumes -->
-            @if (visit.a4c_volume || visit.lv_volume) {
-              <div class="mb-3">
-
-                <h4>{{ getTranslation('volumes') }}</h4>
-
-                @if (visit.a4c_volume) {
-                  <div>
-                    <strong>A4C</strong>
-                    RA: {{ visit.a4c_volume.areas_cm2?.right_atrium?.toFixed(2) }} cm²,
-                    LA: {{ visit.a4c_volume.areas_cm2?.left_atrium?.toFixed(2) }} cm²
-                  </div>
-                }
-
-                @if (visit.lv_volume) {
-                  <div>
-                    <strong>LV</strong>
-                    {{ visit.lv_volume.area_cm2?.toFixed(2) }} cm²
-                  </div>
-                }
-
-              </div>
-            }
-
-            <!-- Classification -->
-            @if (visit.classification) {
-              <div class="mb-3">
-                <h4>{{ getTranslation('classification') }}</h4>
-
-                <div>
-                  {{ visit.classification.video_name }} |
-                  {{ visit.classification.prediction }} |
-                  {{ (visit.classification.confidence * 100).toFixed(1) }}%
-                </div>
-              </div>
-            }
-
-            <!-- FILES -->
-            @if (visit.files) {
-              <div class="mb-3">
-                <h4>{{ getTranslation('files') }}</h4>
-
-                <div class="d-flex flex-wrap gap-2">
-
-                  @if (visit.files.classification_json_address) {
-                    <button mat-stroked-button (click)="viewFile(visit.files.classification_json_address)">
-                      JSON
-                    </button>
-                  }
-
-                  @if (visit.files.result_json_address) {
-                    <button mat-stroked-button (click)="viewFile(visit.files.result_json_address)">
-                      Result
-                    </button>
-                  }
-
-                  @if (visit.files.plots?.links?.length) {
-                    <button mat-stroked-button
-                            (click)="viewFile(visit.files.plots.links[0].address)">
-                      Plot
-                    </button>
-                  }
-
-                </div>
-              </div>
-            }
-
-          </div>
+                   </div>
+                 </div>
+               }
+             </div>
+           } @else {
+             <div class="visit-summary mb-3 p-3 border rounded">
+               <h5>
+                 {{ getTranslation('viewInstance') }}: {{ visit.view_instance }}
+               </h5>
+   
+               @if (visit.detected_view && visit.detected_view !== visit.view_instance) {
+                 <span class="text-muted">
+                   ({{ getTranslation('detected') }}: {{ visit.detected_view }})
+                 </span>
+               }
+   
+               <div>
+                 <strong>{{ getTranslation('video') }}:</strong> {{ visit.video_name }} |
+                 <strong>{{ getTranslation('processedAt') }}:</strong> {{ visit.processed_at }}
+               </div>
+   
+               @if (visit.measurements?.length) {
+                 <div class="mt-2">
+                   <strong>{{ getTranslation('measurements') }}:</strong>
+                   <table class="table table-sm table-hover">
+                     <thead>
+                       <tr>
+                         <th>{{ getTranslation('eventName') }}</th>
+                         <th>{{ getTranslation('measurementName') }}</th>
+                         <th>{{ getTranslation('value') }}</th>
+                         <th>{{ getTranslation('unit') }}</th>
+                         <th>{{ getTranslation('text') }}</th>
+                         <th>{{ getTranslation('frameImage') }}</th>
+                         <th>{{ getTranslation('previewImage') }}</th>
+                       </tr>
+                     </thead>
+                     <tbody>
+                       @for (m of visit.measurements; track m.event_frame_number) {
+                         <tr>
+                           <td>{{ m.event_name }}</td>
+                           <td>{{ m.measurement_name }}</td>
+                           <td>{{ m.value }}</td>
+                           <td>{{ m.unit }}</td>
+                           <td>{{ m.text }}</td>
+                           <td>
+                             <div (click)="viewFile(m.event_frame_image_url); $event.stopPropagation()" class="cursor-pointer">
+                               <img [src]="m.event_frame_image_url" width="40" height="40" style="object-fit: cover;">
+                             </div>
+                           </td>
+                           <td>
+                             <div (click)="viewFile(m.measurement_preview_image_url); $event.stopPropagation()" class="cursor-pointer">
+                               <img [src]="m.measurement_preview_image_url" width="40" height="40" style="object-fit: cover;">
+                             </div>
+                           </td>
+                         </tr>
+                       }
+                     </tbody>
+                   </table>
+                 </div>
+               }
+   
+               <!-- Volumes -->
+               @if (visit.a4c_volume || visit.lv_volume) {
+                 <div class="mb-3">
+                   <h4>{{ getTranslation('volumes') }}</h4>
+   
+                   @if (visit.a4c_volume) {
+                     <div>
+                       <strong>A4C</strong>
+                       RA: {{ visit.a4c_volume.areas_cm2?.right_atrium?.toFixed(2) }} cm²,
+                       LA: {{ visit.a4c_volume.areas_cm2?.left_atrium?.toFixed(2) }} cm²
+                     </div>
+                   }
+   
+                   @if (visit.lv_volume) {
+                     <div>
+                       <strong>LV</strong>
+                       {{ visit.lv_volume.area_cm2?.toFixed(2) }} cm²
+                     </div>
+                   }
+                 </div>
+               }
+   
+               <!-- Classification -->
+               @if (visit.classification) {
+                 <div class="mb-3">
+                   <h4>{{ getTranslation('classification') }}</h4>
+   
+                   <div>
+                     {{ visit.classification.video_name }} |
+                     {{ visit.classification.prediction }} |
+                     {{ (visit.classification.confidence * 100).toFixed(1) }}%
+                   </div>
+                 </div>
+               }
+   
+               <!-- FILES -->
+               @if (visit.files) {
+                 <div class="mb-3">
+                   <h4>{{ getTranslation('files') }}</h4>
+   
+                   <div class="d-flex flex-wrap gap-2">
+   
+                     @if (visit.files.classification_json_address) {
+                       <button mat-stroked-button (click)="viewFile(visit.files.classification_json_address)">
+                         JSON
+                       </button>
+                     }
+   
+                     @if (visit.files.result_json_address) {
+                       <button mat-stroked-button (click)="viewFile(visit.files.result_json_address)">
+                         Result
+                       </button>
+                     }
+   
+                     @if (visit.files.plots?.links?.length) {
+                       <button mat-stroked-button
+                               (click)="viewFile(visit.files.plots.links[0].address)">
+                         Plot
+                       </button>
+                     }
+   
+                   </div>
+                 </div>
+               }
+             </div>
+           }
+           </div>
 
         </mat-expansion-panel>
 

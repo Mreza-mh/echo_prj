@@ -205,3 +205,16 @@ body {
 
 
 
+
+// Patient Form Dialog Styles
+.patient-form-dialog {
+  .mat-mdc-dialog-container {
+    padding: 0;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .mat-mdc-dialog-surface {
+    border-radius: 12px;
+  }
+}

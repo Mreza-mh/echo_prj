@@ -65,4 +65,26 @@ export class IndexHttpService {
   getUserAppointments(data: any = {}): Observable<any> {
     return this.genericHttpService.post('/appointment/list', data);
   }
+
+  // Patient Report APIs (LLM Reports)
+  getPatientVisits(patientId: string): Observable<any> {
+    return this.genericHttpService.get(`/patient-report/visits/${patientId}`);
+  }
+
+  getPatientReport(patientId: string, visitDate: string): Observable<any> {
+    return this.genericHttpService.get(`/patient-report/report/${patientId}/${visitDate}`);
+  }
+
+  getPatientReportText(patientId: string, visitDate: string): Observable<any> {
+    return this.genericHttpService.get(`/patient-report/text/${patientId}/${visitDate}`);
+  }
+
+  getPatientSummary(patientId: string): Observable<any> {
+    return this.genericHttpService.get(`/patient-report/summary/${patientId}`);
+  }
+
+  getPatientReportHtmlUrl(patientId: string, visitDate: string): string {
+    // Return the URL for opening in browser/iframe
+    return `${this.genericHttpService.getBaseUrl()}/patient-report/html/${patientId}/${visitDate}`;
+  }
 }

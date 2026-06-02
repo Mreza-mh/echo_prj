@@ -15,9 +15,19 @@
             {{ getTranslation('appointmentsAndEchoHistory') }}
           </p>
         </div>
-        <button mat-icon-button (click)="refresh()" class="refresh-btn">
-          <mat-icon>refresh</mat-icon>
-        </button>
+        <div class="d-flex gap-2">
+          <button mat-raised-button color="accent" (click)="openPatientFormModal()">
+            <mat-icon>favorite</mat-icon>
+            {{ getTranslation('healthRiskAssessment') || 'ارزیابی ریسک سلامت' }}
+          </button>
+          <button mat-raised-button color="primary" (click)="openProfileModal()">
+            <mat-icon>person</mat-icon>
+            {{ getTranslation('yourProfile') || 'پروفایل' }}
+          </button>
+          <button mat-icon-button (click)="refresh()" class="refresh-btn">
+            <mat-icon>refresh</mat-icon>
+          </button>
+        </div>
       </div>
     </header>
 
@@ -27,137 +37,71 @@
         <p>{{ error }}</p>
       </div>
     }
-
+    
+    <!-- 3D HEART VISUALIZATION -->
+    @if (heartVisualizationData) {
+      <div class="row g-4 mb-4">
+        <div class="col-12">
+          <mat-card class="heart-visualization-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon class="me-2">favorite</mat-icon>
+                {{ getTranslation('3dHeartVisualization') || 'مدل سه‌بعدی قلب' }}
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div style="height: 600px;">
+                <app-heart-visualization 
+                  [patientData]="heartVisualizationData"
+                  modelPath="/assets/models/heart.glb">
+                </app-heart-visualization>
+              </div>
+            </mat-card-content>
+          </mat-card>
+        </div>
+      </div>
+    }
+    
     <div class="row g-4">
 
-      <!-- LEFT -->
-      <div class="col-lg-6">
-
-        <!-- PROFILE -->
-        <mat-card class="profile-card mb-4">
-          <mat-card-header>
-            <div class="mat-card-header-content">
-              <mat-card-title>
-                {{ getTranslation('yourProfile') }}
-              </mat-card-title>
-
-              @if (isEditingProfile) {
-                <button mat-icon-button (click)="toggleEditProfile()">
-                  <mat-icon>close</mat-icon>
-                </button>
-              } @else {
-                <button mat-icon-button (click)="toggleEditProfile()">
-                  <mat-icon>edit</mat-icon>
-                </button>
-              }
-            </div>
-          </mat-card-header>
-
-          <mat-card-content>
-
-            @if (isEditingProfile) {
-              <form [formGroup]="profileForm" (ngSubmit)="onProfileSubmit()">
-
-                <div class="row g-3">
-                  <div class="col-md-6">
-                    <mat-form-field appearance="fill" class="w-100">
-                      <mat-label>{{ getTranslation('name') }}</mat-label>
-                      <input matInput formControlName="name">
-                    </mat-form-field>
-                  </div>
-
-                  <div class="col-md-6">
-                    <mat-form-field appearance="fill" class="w-100">
-                      <mat-label>{{ getTranslation('birthdate') }}</mat-label>
-                      <input matInput [matDatepicker]="picker" formControlName="birthday">
-                      <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
-                      <mat-datepicker #picker></mat-datepicker>
-                    </mat-form-field>
-                  </div>
-                </div>
-
-                <div class="d-flex justify-content-between mt-3">
-                  <button mat-button type="button" (click)="toggleEditProfile()">
-                    {{ getTranslation('cancel') }}
-                  </button>
-                  <button mat-flat-button color="primary" type="submit">
-                    {{ getTranslation('save') }}
-                  </button>
-                </div>
-
-              </form>
-
-            } @else {
-
-              <div class="row g-3">
-
-                <div class="col-md-6">
-                  <div class="info-item">
-                    <span class="label">{{ getTranslation('name') }}</span>
-                    <span class="value">
-                      {{ userData.name || getTranslation('notSpecified') }}
-                    </span>
-                  </div>
-                </div>
-
-                <div class="col-md-6">
-                  <div class="info-item">
-                    <span class="label">{{ getTranslation('birthdate') }}</span>
-                    <span class="value">
-                      {{ userData.birthday || getTranslation('notSpecified') }}
-                    </span>
-                  </div>
-                </div>
-
-                <div class="col-md-6">
-                  <div class="info-item">
-                    <span class="label">{{ getTranslation('mobileNumber') }}</span>
-                    <span class="value">
-                      {{ userData.mobile || getTranslation('notSpecified') }}
-                    </span>
-                  </div>
-                </div>
-
-                <div class="col-md-6">
-                  <div class="info-item">
-                    <span class="label">{{ getTranslation('role') }}</span>
-                    <span class="value">
-                      {{ userData.roleLabel || getUserRoleLabel(userData.role) || getTranslation('notSpecified') }}
-                    </span>
-                  </div>
-                </div>
-
-              </div>
-            }
-
-          </mat-card-content>
-        </mat-card>
-
-        <!-- ECHO -->
+      <!-- ECHO HISTORY - Full Width -->
+      <div class="col-12">
         @if (echoData) {
           <mat-card class="echo-card mb-4">
             <mat-card-header>
               <mat-card-title>
-                {{ getTranslation('yourEchoHistory') }}
+                <mat-icon>monitor_heart</mat-icon>
+                {{ getTranslation('yourEchoHistory') || 'تاریخچه اکوکاردیوگرافی' }}
               </mat-card-title>
             </mat-card-header>
 
             <mat-card-content>
 
               @if (patientInfo) {
-                <div class="mb-3">
-                  <strong>{{ getTranslation('patientInfo') }}:</strong>
-                  {{ getTranslation('id') }}: {{ patientInfo.id }},
-                  {{ getTranslation('gender') }}: {{ patientInfo.gender }},
-                  {{ getTranslation('weight') }}: {{ patientInfo.weight }} kg,
-                  {{ getTranslation('height') }}: {{ patientInfo.height }} cm
+                <div class="patient-info-banner mb-3">
+                  <div class="info-chip">
+                    <mat-icon>badge</mat-icon>
+                    <span>{{ getTranslation('id') }}: {{ patientInfo.id }}</span>
+                  </div>
+                  <div class="info-chip">
+                    <mat-icon>wc</mat-icon>
+                    <span>{{ patientInfo.gender == 'زن' ? ' مرد' : 'مرد' }}</span>
+                  </div>
+                  <div class="info-chip">
+                    <mat-icon>monitor_weight</mat-icon>
+                    <span>{{ patientInfo.weight }} kg</span>
+                  </div>
+                  <div class="info-chip">
+                    <mat-icon>height</mat-icon>
+                    <span>{{ patientInfo.height }} cm</span>
+                  </div>
                 </div>
               }
 
               @if (visitDates.length > 0) {
-                <mat-form-field appearance="fill" class="w-100 mb-3">
-                  <mat-label>{{ getTranslation('selectDate') }}</mat-label>
-                  <mat-select [(ngModel)]="selectedDate">
+                <mat-form-field appearance="outline" class="w-100 mb-3">
+                  <mat-label>{{ getTranslation('selectDate') || 'انتخاب تاریخ' }}</mat-label>
+                  <mat-select [(ngModel)]="selectedDate" (ngModelChange)="onDateChange($event)">
                     <mat-option *ngFor="let date of visitDates" [value]="date">
                       {{ date }}
                     </mat-option>
@@ -165,73 +109,194 @@
                 </mat-form-field>
               }
 
+              <!-- LLM REPORT CARD -->
+              @if (hasLlmReport && llmReportText) {
+                <div class="llm-report-card mb-4">
+                  <div class="report-header">
+                    <div class="header-content">
+                      <mat-icon class="report-icon">description</mat-icon>
+                      <div>
+                        <h4>{{ getTranslation('smartReport') || 'گزارش هوشمند' }}</h4>
+                        <p class="report-subtitle">
+                          {{ getTranslation('aiGeneratedReport') || 'گزارش تولید شده توسط هوش مصنوعی' }}
+                        </p>
+                      </div>
+                    </div>
+                    <div class="report-actions">
+                      <button mat-icon-button (click)="viewFullHtmlReport()" 
+                              matTooltip="{{ getTranslation('viewFullReport') || 'مشاهده گزارش کامل' }}">
+                        <mat-icon>open_in_new</mat-icon>
+                      </button>
+                      <button mat-icon-button (click)="downloadReportPdf()"
+                              matTooltip="{{ getTranslation('downloadPdf') || 'دانلود PDF' }}">
+                        <mat-icon>download</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div class="report-content">
+                    <div class="report-text">
+                      @for (paragraph of llmReportText.split('\n\n'); track $index) {
+                        @if (paragraph.trim()) {
+                          <p>{{ paragraph }}</p>
+                        }
+                      }
+                    </div>
+                    
+                    @if (llmReportData?.generated_at) {
+                      <div class="report-footer">
+                        <mat-icon>schedule</mat-icon>
+                        <span>
+                          {{ getTranslation('generatedAt') || 'تولید شده در' }}: 
+                          {{ llmReportData.generated_at | date:'yyyy/MM/dd - HH:mm' }}
+                        </span>
+                      </div>
+                    }
+                  </div>
+                  
+                  <div class="report-disclaimer">
+                    <mat-icon>info</mat-icon>
+                    <p>
+                      {{ getTranslation('reportDisclaimer') || 'این گزارش توسط سیستم هوش مصنوعی تولید شده و جایگزین مشاوره پزشکی نمی‌شود. حتماً با پزشک معالج خود مشورت کنید.' }}
+                    </p>
+                  </div>
+                </div>
+              }
+
               @if (selectedDate && getVisitList(selectedDate).length > 0) {
 
-                @for (visit of getVisitList(selectedDate); track visit.view_instance) {
-                  <div class="visit-summary mb-3 p-3 border rounded">
-
-                    <h5>
-                      {{ getTranslation('viewInstance') }}: {{ visit.view_instance }}
-                    </h5>
-
-                    @if (visit.detected_view && visit.detected_view !== visit.view_instance) {
-                      <span class="text-muted">
-                        ({{ getTranslation('detected') }}: {{ visit.detected_view }})
-                      </span>
-                    }
-
-                    <div>
-                      <strong>{{ getTranslation('video') }}:</strong> {{ visit.video_name }} |
-                      <strong>{{ getTranslation('processedAt') }}:</strong> {{ visit.processed_at }}
-                    </div>
-
-                     @if (visit.measurements?.length) {
-                       <div class="mt-2">
-                         <strong>{{ getTranslation('measurements') }}:</strong>
-                         <table class="table table-sm table-hover">
-                           <thead>
-                             <tr>
-                               <th>{{ getTranslation('eventName') }}</th>
-                               <th>{{ getTranslation('measurementName') }}</th>
-                               <th>{{ getTranslation('value') }}</th>
-                               <th>{{ getTranslation('unit') }}</th>
-                               <th>{{ getTranslation('text') }}</th>
-                               <th>{{ getTranslation('frameImage') }}</th>
-                               <th>{{ getTranslation('previewImage') }}</th>
-                             </tr>
-                           </thead>
-                           <tbody>
-                             @for (m of visit.measurements; track m.event_frame_number) {
-                               <tr>
-                                 <td>{{ m.event_name }}</td>
-                                 <td>{{ m.measurement_name }}</td>
-                                 <td>{{ m.value }}</td>
-                                 <td>{{ m.unit }}</td>
-                                 <td>{{ m.text }}</td>
-                                 <td>
-                                   @if (m.event_frame_image_url) {
-                                     <img [src]="m.event_frame_image_url" width="40" height="40" style="object-fit: cover;" (click)="viewEchoFile(m.event_frame_image_url)" class="cursor-pointer">
-                                   }
-                                 </td>
-                                 <td>
-                                   @if (m.measurement_preview_image_url) {
-                                     <img [src]="m.measurement_preview_image_url" width="40" height="40" style="object-fit: cover;" (click)="viewEchoFile(m.measurement_preview_image_url)" class="cursor-pointer">
-                                   }
-                                 </td>
-                               </tr>
-                             }
-                           </tbody>
-                         </table>
+                 @for (visit of getVisitList(selectedDate); track visit.view_instance) {
+                   @if (visit.type === 'fuzzy_summary') {
+                     <div class="visit-summary summary-card mb-3">
+                       <div class="summary-header">
+                         <mat-icon>assessment</mat-icon>
+                         <h5>{{ getTranslation('fuzzySummary') || 'خلاصه تشخیصی' }}</h5>
                        </div>
-                     }
+                       <div class="summary-content">
+                         <div class="summary-item">
+                           <span class="label">{{ getTranslation('score') || 'امتیاز' }}:</span>
+                           <span class="value score">{{ visit.result.score | number:'1.1-1' }}</span>
+                         </div>
+                         <div class="summary-item">
+                           <span class="label">{{ getTranslation('category') || 'دسته‌بندی' }}:</span>
+                           <span class="value badge" 
+                                 [class.badge-normal]="visit.result.category === 'Normal'"
+                                 [class.badge-warn]="visit.result.category !== 'Normal'">
+                             {{ visit.result.category }}
+                           </span>
+                         </div>
+                         <div class="summary-item full-width">
+                           <span class="label">{{ getTranslation('text') || 'توضیحات' }}:</span>
+                           <span class="value">{{ visit.result.text }}</span>
+                         </div>
+                       </div>
+                       @if (visit.result.plots?.links) {
+                         <div class="plots-gallery mt-3">
+                           <h6>{{ getTranslation('plots') || 'نمودارها' }}:</h6>
+                           <div class="gallery-grid">
+                             @for (plot of visit.result.plots.links; track plot.url) {
+                               <div class="gallery-item" (click)="viewEchoFile(plot.url); $event.stopPropagation()">
+                                 <img [src]="plot.url" alt="plot">
+                                 <div class="overlay">
+                                   <mat-icon>zoom_in</mat-icon>
+                                 </div>
+                               </div>
+                             }
+                           </div>
+                         </div>
+                       }
+                     </div>
+                   } @else {
+                     <div class="visit-summary visit-card mb-3">
+                       <div class="visit-header">
+                         <div>
+                           <h5>
+                             <mat-icon>videocam</mat-icon>
+                             {{ getTranslation('viewInstance') || 'نمای' }}: {{ visit.view_instance }}
+                           </h5>
+                           @if (visit.detected_view && visit.detected_view !== visit.view_instance) {
+                             <span class="detected-badge">
+                               {{ getTranslation('detected') || 'تشخیص داده شده' }}: {{ visit.detected_view }}
+                             </span>
+                           }
+                         </div>
+                         <div class="visit-meta">
+                           <span class="meta-item">
+                             <mat-icon>movie</mat-icon>
+                             {{ visit.video_name }}
+                           </span>
+                           <span class="meta-item">
+                             <mat-icon>schedule</mat-icon>
+                             {{ visit.processed_at }}
+                           </span>
+                         </div>
+                       </div>
 
-                  </div>
-                }
+                       @if (visit.measurements?.length) {
+                         <div class="measurements-section mt-3">
+                           <h6>
+                             <mat-icon>straighten</mat-icon>
+                             {{ getTranslation('measurements') || 'اندازه‌گیری‌ها' }}
+                           </h6>
+                           <div class="table-responsive">
+                             <table class="measurements-table">
+                               <thead>
+                                 <tr>
+                                   <th>{{ getTranslation('eventName') || 'رویداد' }}</th>
+                                   <th>{{ getTranslation('measurementName') || 'اندازه‌گیری' }}</th>
+                                   <th>{{ getTranslation('value') || 'مقدار' }}</th>
+                                   <th>{{ getTranslation('text') || 'توضیحات' }}</th>
+                                   <th>{{ getTranslation('frameImage') || 'تصویر فریم' }}</th>
+                                   <th>{{ getTranslation('previewImage') || 'پیش‌نمایش' }}</th>
+                                 </tr>
+                               </thead>
+                               <tbody>
+                                 @for (m of visit.measurements; track m.event_frame_number) {
+                                   <tr>
+                                     <td>
+                                       <span class="event-badge">{{ m.event_name }}</span>
+                                     </td>
+                                     <td>
+                                       <strong>{{ m.measurement_name }}</strong>
+                                     </td>
+                                     <td>
+                                       <span class="value-highlight">{{ m.value | number:'1.2-2' }} {{ m.unit }}</span>
+                                     </td>
+                                     <td>
+                                       <small class="text-muted">{{ m.text }}</small>
+                                     </td>
+                                     <td>
+                                       <div class="image-preview" (click)="viewEchoFile(m.event_frame_image_url); $event.stopPropagation()">
+                                         <img [src]="m.event_frame_image_url" alt="Event Frame">
+                                         <div class="image-overlay">
+                                           <mat-icon>zoom_in</mat-icon>
+                                         </div>
+                                       </div>
+                                     </td>
+                                     <td>
+                                       <div class="image-preview" (click)="viewEchoFile(m.measurement_preview_image_url); $event.stopPropagation()">
+                                         <img [src]="m.measurement_preview_image_url" alt="Measurement">
+                                         <div class="image-overlay">
+                                           <mat-icon>zoom_in</mat-icon>
+                                         </div>
+                                       </div>
+                                     </td>
+                                   </tr>
+                                 }
+                               </tbody>
+                             </table>
+                           </div>
+                         </div>
+                       }
+                     </div>
+                   }
+                 }
 
               } @else {
-                <p class="text-muted">
-                  {{ getTranslation('noEchoHistoryRecorded') }}
-                </p>
+                <div class="no-data-state">
+                  <mat-icon>folder_open</mat-icon>
+                  <p>{{ getTranslation('noEchoHistoryRecorded') || 'تاریخچه اکو ثبت نشده است' }}</p>
+                </div>
               }
 
             </mat-card-content>
@@ -240,58 +305,84 @@
         } @else {
           <mat-card class="no-echo-card mb-4">
             <mat-icon>info</mat-icon>
-            <p>{{ getTranslation('noEchoHistoryRecorded') }}</p>
+            <p>{{ getTranslation('noEchoHistoryRecorded') || 'تاریخچه اکو ثبت نشده است' }}</p>
           </mat-card>
         }
-
       </div>
 
-      <!-- RIGHT -->
-      <div class="col-lg-6">
-
+      <!-- APPOINTMENTS - Full Width -->
+      <div class="col-12">
         <mat-card class="appointments-card mb-4">
 
-          <div class="card-header d-flex align-items-center gap-2">
-            <mat-icon class="text-primary">event_available</mat-icon>
-            <h2 class="h6 mb-0 fw-bold">
-              {{ getTranslation('yourAppointments') }}
-            </h2>
-          </div>
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>event_available</mat-icon>
+              {{ getTranslation('yourAppointments') || 'نوبت‌های شما' }}
+            </mat-card-title>
+          </mat-card-header>
 
           <mat-card-content class="pt-3">
 
             @if (userAppointments.length === 0) {
-              <div class="text-center py-4 text-muted">
-                <mat-icon>sentiment_dissatisfied</mat-icon>
-                <p class="mb-0 mt-2">
-                  {{ getTranslation('noAppointmentsBooked') }}
-                </p>
+              <div class="no-data-state">
+                <mat-icon>event_busy</mat-icon>
+                <p>{{ getTranslation('noAppointmentsBooked') || 'نوبتی ثبت نشده است' }}</p>
               </div>
             } @else {
 
               <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
+                <table class="appointments-table">
 
                   <thead>
                     <tr>
-                      <th>{{ getTranslation('date') }}</th>
-                      <th>{{ getTranslation('time') }}</th>
-                      <th>{{ getTranslation('status') }}</th>
+                      <th>{{ getTranslation('service') || 'خدمت' }}</th>
+                      <th>{{ getTranslation('doctor') || 'پزشک' }}</th>
+                      <th>{{ getTranslation('date') || 'تاریخ' }}</th>
+                      <th>{{ getTranslation('time') || 'زمان' }}</th>
+                      <th>{{ getTranslation('duration') || 'مدت' }}</th>
+                      <th>{{ getTranslation('status') || 'وضعیت' }}</th>
                     </tr>
                   </thead>
 
                   <tbody>
                     @for (app of userAppointments; track app.id) {
                       <tr>
-                        <td>{{ app.date_of_turn }}</td>
-                        <td>{{ app.start_time }}</td>
                         <td>
-                          <span class="status-dot"
-                                [style.background-color]="getStatusColor(app.status_title)">
-                          </span>
-                          <span class="status-text">
-                            {{ app.status_title }}
-                          </span>
+                          <div class="service-cell">
+                            <mat-icon>medical_services</mat-icon>
+                            <strong>{{ app.service?.title || 'N/A' }}</strong>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="doctor-cell">
+                            <mat-icon>person</mat-icon>
+                            <span>{{ app.staff?.user?.name || 'N/A' }}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="date-cell">
+                            <mat-icon>calendar_today</mat-icon>
+                            <span>{{ app.date_of_turn }}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="time-cell">
+                            <mat-icon>schedule</mat-icon>
+                            <span>{{ app.start_time }}</span>
+                          </div>
+                        </td>
+                        <td>
+                          <span class="duration-badge">{{ app.service?.duration || '00:45:00' }}</span>
+                        </td>
+                        <td>
+                          <div class="status-cell">
+                            <span class="status-dot"
+                                  [style.background-color]="getStatusColor(app.status?.title || 'pending')">
+                            </span>
+                            <span class="status-text">
+                              {{ app.status?.label || app.status?.title || 'در انتظار' }}
+                            </span>
+                          </div>
                         </td>
                       </tr>
                     }
@@ -304,7 +395,6 @@
 
           </mat-card-content>
         </mat-card>
-
       </div>
 
     </div>

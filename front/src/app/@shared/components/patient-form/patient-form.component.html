@@ -1,0 +1,430 @@
+<div class="patient-form-container">
+  <div class="form-header">
+    <h2 class="form-title">
+      <span class="icon">❤️</span>
+      فرم ارزیابی ریسک بیماری‌های قلبی و عروقی
+    </h2>
+    <p class="form-subtitle">لطفاً اطلاعات پزشکی خود را با دقت وارد نمایید</p>
+  </div>
+
+  <mat-stepper [linear]="false" #stepper>
+    <!-- Step 1: اطلاعات پایه -->
+    <mat-step [stepControl]="basicInfoForm">
+      <ng-template matStepLabel>اطلاعات پایه</ng-template>
+      <form [formGroup]="basicInfoForm" class="form-section">
+        <div class="form-grid">
+          <!-- سن -->
+          <div class="form-field">
+            <label class="form-label">
+              سن
+              <span class="tooltip-icon" title="سن شما به سال (18 تا 120 سال)">ℹ️</span>
+            </label>
+            <input 
+              type="number" 
+              class="form-input" 
+              formControlName="age" 
+              placeholder="مثال: 45"
+              [class.error]="basicInfoForm.get('age')?.invalid && basicInfoForm.get('age')?.touched">
+            <div class="error-message" *ngIf="basicInfoForm.get('age')?.hasError('min') && basicInfoForm.get('age')?.touched">
+              سن باید حداقل 18 سال باشد
+            </div>
+            <div class="error-message" *ngIf="basicInfoForm.get('age')?.hasError('max') && basicInfoForm.get('age')?.touched">
+              سن باید حداکثر 120 سال باشد
+            </div>
+          </div>
+
+          <!-- جنسیت -->
+          <div class="form-field">
+            <label class="form-label">
+              جنسیت
+              <span class="tooltip-icon" title="جنسیت بیمار">ℹ️</span>
+            </label>
+            <select class="form-select" formControlName="gender">
+              <option value="">انتخاب کنید</option>
+              <option value="male">مرد</option>
+              <option value="female">زن</option>
+            </select>
+          </div>
+
+          <!-- قد -->
+          <div class="form-field">
+            <label class="form-label">
+              قد (سانتی‌متر)
+              <span class="tooltip-icon" title="قد به سانتی‌متر (100 تا 230)">ℹ️</span>
+            </label>
+            <input 
+              type="number" 
+              class="form-input" 
+              formControlName="height" 
+              placeholder="مثال: 175"
+              [class.error]="basicInfoForm.get('height')?.invalid && basicInfoForm.get('height')?.touched">
+            <div class="error-message" *ngIf="basicInfoForm.get('height')?.hasError('min') && basicInfoForm.get('height')?.touched">
+              قد باید حداقل 100 سانتی‌متر باشد
+            </div>
+            <div class="error-message" *ngIf="basicInfoForm.get('height')?.hasError('max') && basicInfoForm.get('height')?.touched">
+              قد باید حداکثر 230 سانتی‌متر باشد
+            </div>
+          </div>
+
+          <!-- وزن -->
+          <div class="form-field">
+            <label class="form-label">
+              وزن (کیلوگرم)
+              <span class="tooltip-icon" title="وزن به کیلوگرم (30 تا 250)">ℹ️</span>
+            </label>
+            <input 
+              type="number" 
+              class="form-input" 
+              formControlName="weight" 
+              placeholder="مثال: 75"
+              [class.error]="basicInfoForm.get('weight')?.invalid && basicInfoForm.get('weight')?.touched">
+            <div class="error-message" *ngIf="basicInfoForm.get('weight')?.hasError('min') && basicInfoForm.get('weight')?.touched">
+              وزن باید حداقل 30 کیلوگرم باشد
+            </div>
+            <div class="error-message" *ngIf="basicInfoForm.get('weight')?.hasError('max') && basicInfoForm.get('weight')?.touched">
+              وزن باید حداکثر 250 کیلوگرم باشد
+            </div>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <button type="button" class="btn btn-primary" matStepperNext>
+            بعدی
+            <span class="icon">◀</span>
+          </button>
+        </div>
+      </form>
+    </mat-step>
+
+    <!-- Step 2: فشار خون و متابولیسم -->
+    <mat-step [stepControl]="cardiovascularForm">
+      <ng-template matStepLabel>فشار خون و متابولیسم</ng-template>
+      <form [formGroup]="cardiovascularForm" class="form-section">
+        <div class="form-grid">
+          <!-- فشار خون سیستولیک -->
+          <div class="form-field">
+            <label class="form-label">
+              فشار خون سیستولیک (mmHg)
+              <span class="tooltip-icon" title="فشار خون بالا - حداقل 60، حداکثر 300">ℹ️</span>
+            </label>
+            <input 
+              type="number" 
+              class="form-input" 
+              formControlName="ap_hi" 
+              placeholder="مثال: 120"
+              [class.error]="cardiovascularForm.get('ap_hi')?.invalid && cardiovascularForm.get('ap_hi')?.touched">
+            <div class="error-message" *ngIf="cardiovascularForm.get('ap_hi')?.hasError('min') && cardiovascularForm.get('ap_hi')?.touched">
+              فشار خون سیستولیک باید حداقل 60 باشد
+            </div>
+            <div class="error-message" *ngIf="cardiovascularForm.get('ap_hi')?.hasError('max') && cardiovascularForm.get('ap_hi')?.touched">
+              فشار خون سیستولیک باید حداکثر 300 باشد
+            </div>
+          </div>
+
+          <!-- فشار خون دیاستولیک -->
+          <div class="form-field">
+            <label class="form-label">
+              فشار خون دیاستولیک (mmHg)
+              <span class="tooltip-icon" title="فشار خون پایین - حداقل 40، حداکثر 200">ℹ️</span>
+            </label>
+            <input 
+              type="number" 
+              class="form-input" 
+              formControlName="ap_lo" 
+              placeholder="مثال: 80"
+              [class.error]="cardiovascularForm.get('ap_lo')?.invalid && cardiovascularForm.get('ap_lo')?.touched">
+            <div class="error-message" *ngIf="cardiovascularForm.get('ap_lo')?.hasError('min') && cardiovascularForm.get('ap_lo')?.touched">
+              فشار خون دیاستولیک باید حداقل 40 باشد
+            </div>
+            <div class="error-message" *ngIf="cardiovascularForm.get('ap_lo')?.hasError('max') && cardiovascularForm.get('ap_lo')?.touched">
+              فشار خون دیاستولیک باید حداکثر 200 باشد
+            </div>
+          </div>
+
+          <!-- کلسترول -->
+          <div class="form-field">
+            <label class="form-label">
+              وضعیت کلسترول
+              <span class="tooltip-icon" title="سطح کلسترول خون">ℹ️</span>
+            </label>
+            <select class="form-select" formControlName="cholesterol">
+              <option value="">انتخاب کنید</option>
+              <option [value]="1">نرمال</option>
+              <option [value]="2">بالاتر از نرمال</option>
+              <option [value]="3">بسیار بالاتر از نرمال</option>
+            </select>
+          </div>
+
+          <!-- قند خون -->
+          <div class="form-field">
+            <label class="form-label">
+              وضعیت قند خون
+              <span class="tooltip-icon" title="سطح گلوکز خون">ℹ️</span>
+            </label>
+            <select class="form-select" formControlName="gluc">
+              <option value="">انتخاب کنید</option>
+              <option [value]="1">نرمال</option>
+              <option [value]="2">بالاتر از نرمال</option>
+              <option [value]="3">بسیار بالاتر از نرمال</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="validation-error" *ngIf="cardiovascularForm.hasError('invalidBloodPressure')">
+          <span class="error-icon">⚠️</span>
+          فشار خون سیستولیک باید بزرگتر از دیاستولیک باشد
+        </div>
+
+        <div class="step-actions">
+          <button type="button" class="btn btn-secondary" matStepperPrevious>
+            <span class="icon">▶</span>
+            قبلی
+          </button>
+          <button type="button" class="btn btn-primary" matStepperNext>
+            بعدی
+            <span class="icon">◀</span>
+          </button>
+        </div>
+      </form>
+    </mat-step>
+
+    <!-- Step 3: اطلاعات تخصصی قلبی -->
+    <mat-step [stepControl]="heartDiseaseForm">
+      <ng-template matStepLabel>اطلاعات تخصصی قلبی</ng-template>
+      <form [formGroup]="heartDiseaseForm" class="form-section">
+        <div class="form-grid">
+          <!-- نوع درد قفسه سینه -->
+          <div class="form-field">
+            <label class="form-label">
+              نوع درد قفسه سینه
+              <span class="tooltip-icon" title="نوع درد قفسه سینه که تجربه می‌کنید">ℹ️</span>
+            </label>
+            <select class="form-select" formControlName="cp">
+              <option value="">انتخاب کنید</option>
+              <option [value]="0">آنژین معمولی</option>
+              <option [value]="1">آنژین غیرمعمول</option>
+              <option [value]="2">درد غیر آنژینی</option>
+              <option [value]="3">بدون علامت</option>
+            </select>
+          </div>
+
+          <!-- فشار خون استراحت -->
+          <div class="form-field">
+            <label class="form-label">
+              فشار خون استراحت (mmHg)
+              <span class="tooltip-icon" title="فشار خون در حالت استراحت (60-250)">ℹ️</span>
+            </label>
+            <input 
+              type="number" 
+              class="form-input" 
+              formControlName="trestbps" 
+              placeholder="مثال: 120">
+          </div>
+
+          <!-- کلسترول خون -->
+          <div class="form-field">
+            <label class="form-label">
+              کلسترول خون (mg/dL)
+              <span class="tooltip-icon" title="سطح کلسترول سرم (100-600)">ℹ️</span>
+            </label>
+            <input 
+              type="number" 
+              class="form-input" 
+              formControlName="chol" 
+              placeholder="مثال: 200">
+          </div>
+
+          <!-- قند خون ناشتا -->
+          <div class="form-field">
+            <label class="form-label">
+              قند خون ناشتا
+              <span class="tooltip-icon" title="آیا قند خون ناشتا بیشتر از 120 است؟">ℹ️</span>
+            </label>
+            <select class="form-select" formControlName="fbs">
+              <option value="">انتخاب کنید</option>
+              <option [value]="0">کمتر از 120 mg/dL</option>
+              <option [value]="1">بیشتر از 120 mg/dL</option>
+            </select>
+          </div>
+
+          <!-- نتیجه ECG استراحت -->
+          <div class="form-field">
+            <label class="form-label">
+              نتیجه ECG استراحت
+              <span class="tooltip-icon" title="نتیجه الکتروکاردیوگرام در حالت استراحت">ℹ️</span>
+            </label>
+            <select class="form-select" formControlName="restecg">
+              <option value="">انتخاب کنید</option>
+              <option [value]="0">نرمال</option>
+              <option [value]="1">ناهنجاری ST-T</option>
+              <option [value]="2">هیپرتروفی بطن چپ</option>
+            </select>
+          </div>
+
+          <!-- حداکثر ضربان قلب -->
+          <div class="form-field">
+            <label class="form-label">
+              حداکثر ضربان قلب
+              <span class="tooltip-icon" title="حداکثر ضربان قلب به دست آمده (40-220)">ℹ️</span>
+            </label>
+            <input 
+              type="number" 
+              class="form-input" 
+              formControlName="thalach" 
+              placeholder="مثال: 150">
+          </div>
+
+          <!-- آنژین ناشی از ورزش -->
+          <div class="form-field">
+            <label class="form-label">
+              آنژین ناشی از ورزش
+              <span class="tooltip-icon" title="آیا ورزش باعث آنژین می‌شود؟">ℹ️</span>
+            </label>
+            <select class="form-select" formControlName="exang">
+              <option value="">انتخاب کنید</option>
+              <option [value]="0">خیر</option>
+              <option [value]="1">بله</option>
+            </select>
+          </div>
+
+          <!-- افت ST -->
+          <div class="form-field">
+            <label class="form-label">
+              افت ST (oldpeak)
+              <span class="tooltip-icon" title="افت ST ناشی از ورزش نسبت به استراحت (0-6.2)">ℹ️</span>
+            </label>
+            <input 
+              type="number" 
+              step="0.1" 
+              class="form-input" 
+              formControlName="oldpeak" 
+              placeholder="مثال: 1.5">
+          </div>
+
+          <!-- شیب ST -->
+          <div class="form-field">
+            <label class="form-label">
+              شیب ST
+              <span class="tooltip-icon" title="شیب قطعه ST در اوج ورزش">ℹ️</span>
+            </label>
+            <select class="form-select" formControlName="slope">
+              <option value="">انتخاب کنید</option>
+              <option [value]="0">صعودی</option>
+              <option [value]="1">مسطح</option>
+              <option [value]="2">نزولی</option>
+            </select>
+          </div>
+
+          <!-- تعداد رگ‌های اصلی -->
+          <div class="form-field">
+            <label class="form-label">
+              تعداد رگ‌های اصلی (فلوروسکوپی)
+              <span class="tooltip-icon" title="تعداد رگ‌های اصلی رنگ‌شده توسط فلوروسکوپی">ℹ️</span>
+            </label>
+            <select class="form-select" formControlName="ca">
+              <option value="">انتخاب کنید</option>
+              <option [value]="0">0</option>
+              <option [value]="1">1</option>
+              <option [value]="2">2</option>
+              <option [value]="3">3</option>
+              <option [value]="4">4</option>
+            </select>
+          </div>
+
+          <!-- وضعیت تالاسمی -->
+          <div class="form-field">
+            <label class="form-label">
+              وضعیت تالاسمی
+              <span class="tooltip-icon" title="نتیجه تست تالاسمی">ℹ️</span>
+            </label>
+            <select class="form-select" formControlName="thal">
+              <option value="">انتخاب کنید</option>
+              <option [value]="0">نرمال</option>
+              <option [value]="1">نقص ثابت</option>
+              <option [value]="2">نقص قابل برگشت</option>
+              <option [value]="3">نامشخص</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <button type="button" class="btn btn-secondary" matStepperPrevious>
+            <span class="icon">▶</span>
+            قبلی
+          </button>
+          <button type="button" class="btn btn-primary" matStepperNext>
+            بعدی
+            <span class="icon">◀</span>
+          </button>
+        </div>
+      </form>
+    </mat-step>
+
+    <!-- Step 4: سبک زندگی -->
+    <mat-step [stepControl]="lifestyleForm">
+      <ng-template matStepLabel>سبک زندگی</ng-template>
+      <form [formGroup]="lifestyleForm" class="form-section">
+        <div class="form-grid">
+          <!-- سیگار -->
+          <div class="form-field">
+            <label class="form-label">
+              مصرف سیگار
+              <span class="tooltip-icon" title="آیا سیگار می‌کشید؟">ℹ️</span>
+            </label>
+            <select class="form-select" formControlName="smoke">
+              <option value="">انتخاب کنید</option>
+              <option [value]="0">خیر</option>
+              <option [value]="1">بله</option>
+            </select>
+          </div>
+
+          <!-- الکل -->
+          <div class="form-field">
+            <label class="form-label">
+              مصرف الکل
+              <span class="tooltip-icon" title="آیا الکل مصرف می‌کنید؟">ℹ️</span>
+            </label>
+            <select class="form-select" formControlName="alco">
+              <option value="">انتخاب کنید</option>
+              <option [value]="0">خیر</option>
+              <option [value]="1">بله</option>
+            </select>
+          </div>
+
+          <!-- فعالیت بدنی -->
+          <div class="form-field">
+            <label class="form-label">
+              فعالیت بدنی
+              <span class="tooltip-icon" title="آیا به طور منظم ورزش می‌کنید؟">ℹ️</span>
+            </label>
+            <select class="form-select" formControlName="active">
+              <option value="">انتخاب کنید</option>
+              <option [value]="0">غیرفعال</option>
+              <option [value]="1">فعال</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <button type="button" class="btn btn-secondary" matStepperPrevious>
+            <span class="icon">▶</span>
+            قبلی
+          </button>
+        </div>
+      </form>
+    </mat-step>
+  </mat-stepper>
+
+  <!-- Form Actions -->
+  <div class="form-footer">
+    <button type="button" class="btn btn-secondary" (click)="onCancel()" [disabled]="loading">
+      <span class="icon">✕</span>
+      انصراف
+    </button>
+    <button type="button" class="btn btn-primary" (click)="onSubmit()" [disabled]="loading">
+      <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+      <span class="icon" *ngIf="!loading">💾</span>
+      {{ loading ? 'در حال ذخیره...' : 'ذخیره اطلاعات' }}
+    </button>
+  </div>
+</div>

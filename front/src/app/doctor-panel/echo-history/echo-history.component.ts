@@ -15,6 +15,10 @@ import { ToastService } from '../../@shared/services/toast/toast.service';
 import { TranslationService } from '../../@shared/services/translation.service';
 import { MatExpansionPanel, MatExpansionPanelDescription, MatExpansionPanelHeader, MatExpansionPanelTitle } from '@angular/material/expansion';
 import { MatTabNavPanel } from '@angular/material/tabs';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatDialog } from '@angular/material/dialog';
+import { ImageViewerDialogComponent } from './image-viewer-dialog.component';
+import { HeartVisualizationComponent } from '../../index/heart-visualization/heart-visualization';
 
 @Component({
   selector: 'app-echo-history',
@@ -31,18 +35,22 @@ import { MatTabNavPanel } from '@angular/material/tabs';
     MatInputModule,
     FormsModule,
     MatSelectModule,
-    MatExpansionPanelDescription, 
+    MatExpansionPanelDescription,
     MatExpansionPanelTitle,
     MatExpansionPanel,
-    MatExpansionPanelHeader
+    MatExpansionPanelHeader,
+    MatDialogModule,
+    ImageViewerDialogComponent,
+    HeartVisualizationComponent
   ],
   templateUrl: './echo-history.component.html',
-  styleUrls: ['./echo-history.component.scss']
+  styleUrls: ['./echo-history.component.scss'],
 })
 export class EchoHistoryComponent implements OnInit {
   private doctorHttp = inject(DoctorHttpService);
   private toast = inject(ToastService);
   private translationService = inject(TranslationService);
+  private dialog = inject(MatDialog);
 
   echoData: any = null;
   loading = true;
@@ -106,7 +114,7 @@ export class EchoHistoryComponent implements OnInit {
         console.error('Error fetching echo history:', err);
         this.error = this.getTranslation('errorFetchingEchoHistory');
         this.loading = false;
-      }
+      },
     });
   }
 
@@ -114,7 +122,9 @@ export class EchoHistoryComponent implements OnInit {
     if (!this.echoData) return;
     this.patientInfo = this.echoData.patient_info || {};
     const visits = this.echoData.visits || {};
-    this.visitDates = Object.keys(visits).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
+    this.visitDates = Object.keys(visits).sort(
+      (a, b) => new Date(b).getTime() - new Date(a).getTime(),
+    );
     this.visitsByDate = visits;
     if (this.visitDates.length > 0) {
       this.selectedDate = this.visitDates[0];
@@ -138,23 +148,14 @@ export class EchoHistoryComponent implements OnInit {
     return typeof val === 'boolean';
   }
 
-  // Helper to get a safe URL for viewing a file
-  getFileUrl(address: string): string {
-    // Assuming the address is relative to the API base, but the service already handles full URL?
-    // We'll just return the address as is; the viewFile method will use the service.
-    return address;
-  }
-
   viewFile(address: string): void {
     if (address) {
-      this.doctorHttp.getEchoFile(address).subscribe({
-        next: (blob: Blob) => {
-          const url = window.URL.createObjectURL(blob);
-          window.open(url, '_blank');
-        },
-        error: (err) => {
-          this.toast.error(this.getTranslation('errorFetchingEchoFile'));
-        }
+      this.dialog.open(ImageViewerDialogComponent, {
+        data: { imageUrl: address },
+        width: '90%',
+        maxWidth: '600px',
+        height: '90%',
+        maxHeight: '700px',
       });
     }
   }

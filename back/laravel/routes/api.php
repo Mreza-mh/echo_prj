@@ -10,9 +10,14 @@ use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\StaffController;
 use App\Http\Controllers\StatusController;
 use App\Http\Controllers\AIChatController;
+use App\Http\Controllers\PatientReportController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('ai/chat', [AIChatController::class, 'chat']);
+
+// Patient Data Routes
+Route::post('patient-profile/store', [\App\Http\Controllers\PatientDataController::class, 'store']);
+Route::get('patient-profile/{user_id}', [\App\Http\Controllers\PatientDataController::class, 'show']);
 
 Route::group(['prefix' => 'auth'], function () {
     Route::post('send/verification', [AuthController::class, 'sendVerificationCode']);
@@ -90,6 +95,24 @@ Route::group(['prefix' => 'echo-history'], function () {
     Route::get('info-doctor/{patient_id}', [EchoHistoryController::class, 'getInfoByDoctor'])->middleware('auth:api');
     Route::get('info', [EchoHistoryController::class, 'getInfo'])->middleware('auth:api');
     Route::get('file/{address}', [EchoHistoryController::class, 'getFile'])->where('address', '.*')->middleware('auth:api');
+});
+
+// Patient Report Routes (گزارش‌های نهایی اکو)
+Route::group(['prefix' => 'patient-report'], function () {
+    // دریافت لیست ویزیت‌های یک بیمار
+    Route::get('visits/{patient_id}', [PatientReportController::class, 'getPatientVisits'])->middleware('auth:api');
+    
+    // دریافت گزارش کامل یک ویزیت خاص
+    Route::get('report/{patient_id}/{visit_date}', [PatientReportController::class, 'getPatientReport'])->middleware('auth:api');
+    
+    // دریافت فقط متن گزارش (برای نمایش سریع)
+    Route::get('text/{patient_id}/{visit_date}', [PatientReportController::class, 'getReportText'])->middleware('auth:api');
+    
+    // نمایش گزارش HTML (بدون نیاز به احراز هویت برای نمایش در مرورگر)
+    Route::get('html/{patient_id}/{visit_date}', [PatientReportController::class, 'showHtmlReport']);
+    
+    // دریافت خلاصه وضعیت بیمار (برای داشبورد)
+    Route::get('summary/{patient_id}', [PatientReportController::class, 'getPatientSummary'])->middleware('auth:api');
 });
 
 Route::get('/api-docs', function () {

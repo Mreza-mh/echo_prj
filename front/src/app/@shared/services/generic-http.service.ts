@@ -53,4 +53,8 @@ get<T>(url: string, options?: any): Observable<Object> {
       return this.httpClient.patch(this.appRoot + url, body, { headers });
     }
   }
+
+  getBaseUrl(): string {
+    return this.appRoot;
+  }
 }

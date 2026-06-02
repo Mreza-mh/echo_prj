@@ -1,0 +1,239 @@
+<div class="heart-visualization-container">
+  
+  <!-- 3D Canvas -->
+  <canvas #heartCanvas class="heart-canvas"></canvas>
+
+  <!-- Loading Overlay -->
+  @if (!modelLoaded) {
+    <div class="loading-overlay">
+      <div class="loading-content">
+        <div class="spinner"></div>
+        <p class="loading-text">Loading 3D Heart Model...</p>
+        <div class="progress-bar">
+          <div class="progress-fill" [style.width.%]="loadProgress"></div>
+        </div>
+        <p class="progress-text">{{ loadProgress }}%</p>
+      </div>
+    </div>
+  }
+
+  <!-- Measurement Labels Overlay -->
+  <div #overlayEl class="labels-overlay">
+    @for (label of measurementLabels; track label.id) {
+      @if (label.visible) {
+        <div 
+          class="measurement-label"
+          [class.status-normal]="label.status === 'normal'"
+          [class.status-warn]="label.status === 'warn'"
+          [class.status-danger]="label.status === 'danger'"
+          [class.status-info]="label.status === 'info'"
+          [style.left.px]="label.screenX"
+          [style.top.px]="label.screenY">
+          <div class="label-content">
+            <div class="label-name">{{ label.text }}</div>
+            <div class="label-value">
+              {{ label.value }} <span class="label-unit">{{ label.unit }}</span>
+            </div>
+          </div>
+        </div>
+      }
+    }
+  </div>
+
+  <!-- Controls Panel -->
+  <div class="controls-panel">
+    
+    <!-- Tabs -->
+    <div class="tabs">
+      <button 
+        class="tab-btn"
+        [class.active]="activeTab === 'echo'"
+        (click)="setTab('echo')">
+        <i class="icon">📊</i>
+        Echo Data
+      </button>
+      <button 
+        class="tab-btn"
+        [class.active]="activeTab === 'patient'"
+        (click)="setTab('patient')">
+        <i class="icon">👤</i>
+        Patient Info
+      </button>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+      
+      <!-- Echo Data Tab -->
+      @if (activeTab === 'echo' && patientData) {
+        <div class="info-grid">
+          
+          @if (patientData.lvid_d) {
+            <div class="info-item">
+              <span class="info-label">LVIDd</span>
+              <span class="info-value">{{ patientData.lvid_d | number:'1.2-2' }} cm</span>
+              <span class="info-status" [class.normal]="patientData.lvid_d <= 5.2" [class.warn]="patientData.lvid_d > 5.2">
+                {{ patientData.lvid_d <= 5.2 ? '✓' : '⚠' }}
+              </span>
+            </div>
+          }
+
+          @if (patientData.lvid_s) {
+            <div class="info-item">
+              <span class="info-label">LVIDs</span>
+              <span class="info-value">{{ patientData.lvid_s | number:'1.2-2' }} cm</span>
+              <span class="info-status" [class.normal]="patientData.lvid_s <= 3.8" [class.warn]="patientData.lvid_s > 3.8">
+                {{ patientData.lvid_s <= 3.8 ? '✓' : '⚠' }}
+              </span>
+            </div>
+          }
+
+          @if (patientData.ivs) {
+            <div class="info-item">
+              <span class="info-label">IVS</span>
+              <span class="info-value">{{ patientData.ivs | number:'1.1-1' }} mm</span>
+              <span class="info-status" [class.normal]="patientData.ivs <= 12" [class.warn]="patientData.ivs > 12">
+                {{ patientData.ivs <= 12 ? '✓' : '⚠' }}
+              </span>
+            </div>
+          }
+
+          @if (patientData.pw) {
+            <div class="info-item">
+              <span class="info-label">PW</span>
+              <span class="info-value">{{ patientData.pw | number:'1.1-1' }} mm</span>
+              <span class="info-status" [class.normal]="patientData.pw >= 6 && patientData.pw <= 12" [class.warn]="patientData.pw < 6 || patientData.pw > 12">
+                {{ (patientData.pw >= 6 && patientData.pw <= 12) ? '✓' : '⚠' }}
+              </span>
+            </div>
+          }
+
+          @if (patientData.la_volume) {
+            <div class="info-item">
+              <span class="info-label">LA Volume</span>
+              <span class="info-value">{{ patientData.la_volume | number:'1.1-1' }} mL</span>
+              <span class="info-status" 
+                [class.normal]="patientData.la_volume <= 28" 
+                [class.warn]="patientData.la_volume > 28 && patientData.la_volume <= 34"
+                [class.danger]="patientData.la_volume > 34">
+                {{ patientData.la_volume <= 28 ? '✓' : patientData.la_volume <= 34 ? '⚠' : '✗' }}
+              </span>
+            </div>
+          }
+
+          @if (patientData.ra_volume) {
+            <div class="info-item">
+              <span class="info-label">RA Volume</span>
+              <span class="info-value">{{ patientData.ra_volume | number:'1.1-1' }} mL</span>
+              <span class="info-status" [class.normal]="patientData.ra_volume <= 45" [class.warn]="patientData.ra_volume > 45">
+                {{ patientData.ra_volume <= 45 ? '✓' : '⚠' }}
+              </span>
+            </div>
+          }
+
+          @if (patientData.aortic_root) {
+            <div class="info-item">
+              <span class="info-label">Aortic Root</span>
+              <span class="info-value">{{ patientData.aortic_root | number:'1.2-2' }} cm</span>
+              <span class="info-status" [class.normal]="patientData.aortic_root <= 3.8" [class.warn]="patientData.aortic_root > 3.8">
+                {{ patientData.aortic_root <= 3.8 ? '✓' : '⚠' }}
+              </span>
+            </div>
+          }
+
+          @if (ef !== null) {
+            <div class="info-item highlight">
+              <span class="info-label">Ejection Fraction</span>
+              <span class="info-value">{{ ef | number:'1.0-0' }}%</span>
+              <span class="info-status" 
+                [class.normal]="ef >= 55" 
+                [class.warn]="ef >= 40 && ef < 55"
+                [class.danger]="ef < 40">
+                {{ ef >= 55 ? '✓' : ef >= 40 ? '⚠' : '✗' }}
+              </span>
+            </div>
+          }
+
+          @if (patientData.score !== undefined) {
+            <div class="info-item highlight">
+              <span class="info-label">Risk Score</span>
+              <span class="info-value">{{ patientData.score | number:'1.1-1' }}</span>
+              <span class="info-badge" 
+                [class.badge-normal]="patientData.category === 'normal'"
+                [class.badge-warn]="patientData.category === 'mild' || patientData.category === 'moderate'"
+                [class.badge-danger]="patientData.category === 'severe'">
+                {{ patientData.category || 'N/A' }}
+              </span>
+            </div>
+          }
+
+        </div>
+      }
+
+      <!-- Patient Info Tab -->
+      @if (activeTab === 'patient' && patientData) {
+        <div class="info-grid">
+          
+          <div class="info-item">
+            <span class="info-label">Patient ID</span>
+            <span class="info-value">{{ patientData.patient_info.id }}</span>
+          </div>
+
+          <div class="info-item">
+            <span class="info-label">Gender</span>
+            <span class="info-value">{{ patientData.patient_info.gender }}</span>
+          </div>
+
+          @if (patientData.patient_info.age) {
+            <div class="info-item">
+              <span class="info-label">Age</span>
+              <span class="info-value">{{ patientData.patient_info.age }} years</span>
+            </div>
+          }
+
+          <div class="info-item">
+            <span class="info-label">Weight</span>
+            <span class="info-value">{{ patientData.patient_info.weight }} kg</span>
+          </div>
+
+          <div class="info-item">
+            <span class="info-label">Height</span>
+            <span class="info-value">{{ patientData.patient_info.height }} cm</span>
+          </div>
+
+          @if (bmi !== null) {
+            <div class="info-item">
+              <span class="info-label">BMI</span>
+              <span class="info-value">{{ bmi | number:'1.1-1' }}</span>
+              <span class="info-status" 
+                [class.normal]="bmi >= 18.5 && bmi < 25" 
+                [class.warn]="bmi >= 25 && bmi < 30"
+                [class.danger]="bmi < 18.5 || bmi >= 30">
+                {{ (bmi >= 18.5 && bmi < 25) ? '✓' : '⚠' }}
+              </span>
+            </div>
+          }
+
+          <div class="info-item">
+            <span class="info-label">Est. BPM</span>
+            <span class="info-value">{{ estimatedBPM }}</span>
+          </div>
+
+        </div>
+      }
+
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <button class="action-btn" (click)="togglePause()" [title]="paused ? 'Resume' : 'Pause'">
+        {{ paused ? '▶️' : '⏸️' }}
+      </button>
+      <button class="action-btn" (click)="resetCamera()" title="Reset Camera">
+        🔄
+      </button>
+    </div>
+
+  </div>
+
+</div>

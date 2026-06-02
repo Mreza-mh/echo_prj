@@ -245,10 +245,16 @@ class EchoHistoryService
             }
         }
 
+        // اگر مسیر از قبل نسبی است (مثلاً 2/2026-06-02/a4c/media/...):
+        // ابتدا تبدیل به مسیر مطلق کنیم و سپس بررسی کنیم
         $basePath = realpath(public_path('echos'));
         if ($basePath) {
-            $absoluteCandidate = realpath(str_replace('/', DIRECTORY_SEPARATOR, $path));
+            // اگر مسیر نسبی است، آن را نسبت به basePath ساخته و چک می‌کنیم
+            $fullPath = $basePath . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $path);
+            $absoluteCandidate = realpath($fullPath);
+            
             if ($absoluteCandidate && $this->isPathInside($absoluteCandidate, $basePath)) {
+                // تبدیل به مسیر نسبی نسبت به basePath
                 $path = ltrim(str_replace('\\', '/', substr($absoluteCandidate, strlen($basePath))), '/');
             }
         }

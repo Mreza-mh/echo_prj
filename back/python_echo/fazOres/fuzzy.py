@@ -202,7 +202,16 @@ def evaluate_patient(patient_data, patient_name="Patient", show_plot=False):
     # ========================================================================
     # قدم ۱: استخراج اطلاعات پایه و محاسبه BSA
     # ========================================================================
-    gender = patient_data.get('gender', 'male')  # 'male'
+    # تبدیل gender از عدد به string (MongoDB: 1=زن, 2=مرد یا 0=زن, 1=مرد)
+    gender_raw = patient_data.get('gender', patient_data.get('sex', 'male'))
+    if isinstance(gender_raw, (int, float)):
+        # اگر 2 یا 1 باشد → مرد، در غیر این صورت → زن
+        gender = 'male' if int(gender_raw) in (1, 2) else 'female'
+    elif isinstance(gender_raw, str):
+        gender = 'male' if gender_raw.lower() in ('male', 'مرد', 'm', '1', '2') else 'female'
+    else:
+        gender = 'male'  # پیش‌فرض
+    
     weight = patient_data.get('weight')           # 10
     height = patient_data.get('height')           # 160
     bsa = calculate_bsa(weight, height)

@@ -3,6 +3,8 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+        "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
     "strict": true,
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
