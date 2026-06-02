@@ -40,7 +40,7 @@
     
     <!-- 3D HEART VISUALIZATION -->
     @if (heartVisualizationData) {
-      <div class="row g-4 mb-4">
+      <div class="row ">
         <div class="col-12">
           <mat-card class="heart-visualization-card">
             <mat-card-header>
@@ -81,19 +81,25 @@
                 <div class="patient-info-banner mb-3">
                   <div class="info-chip">
                     <mat-icon>badge</mat-icon>
-                    <span>{{ getTranslation('id') }}: {{ patientInfo.id }}</span>
+                    <span><strong>ID:</strong> {{ patientInfo.id }}</span>
                   </div>
                   <div class="info-chip">
                     <mat-icon>wc</mat-icon>
-                    <span>{{ patientInfo.gender == 'زن' ? ' مرد' : 'مرد' }}</span>
+                    <span><strong>{{ getTranslation('gender') || 'جنسیت' }}:</strong> {{ patientInfo.gender }}</span>
                   </div>
+                  @if (patientInfo.age) {
+                    <div class="info-chip">
+                      <mat-icon>cake</mat-icon>
+                      <span><strong>{{ getTranslation('age') || 'سن' }}:</strong> {{ patientInfo.age }} سال</span>
+                    </div>
+                  }
                   <div class="info-chip">
                     <mat-icon>monitor_weight</mat-icon>
-                    <span>{{ patientInfo.weight }} kg</span>
+                    <span><strong>{{ getTranslation('weight') || 'وزن' }}:</strong> {{ patientInfo.weight_kg || patientInfo.weight || 'N/A' }} kg</span>
                   </div>
                   <div class="info-chip">
                     <mat-icon>height</mat-icon>
-                    <span>{{ patientInfo.height }} cm</span>
+                    <span><strong>{{ getTranslation('height') || 'قد' }}:</strong> {{ patientInfo.height_cm || patientInfo.height || 'N/A' }} cm</span>
                   </div>
                 </div>
               }

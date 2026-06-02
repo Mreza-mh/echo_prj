@@ -193,7 +193,7 @@ export class HeartVisualizationComponent
       const normal = pd.lvid_d <= 5.2;
       this.measurementLabels.push({
         id: 'lvid_d',
-        text: 'LV (d)',
+        text: 'LVIDd',
         value: pd.lvid_d.toFixed(2),
         unit: 'cm',
         status: normal ? 'normal' : 'warn',
@@ -209,7 +209,7 @@ export class HeartVisualizationComponent
       const normal = pd.lvid_s <= 3.8;
       this.measurementLabels.push({
         id: 'lvid_s',
-        text: 'LV (s)',
+        text: 'LVIDs',
         value: pd.lvid_s.toFixed(2),
         unit: 'cm',
         status: normal ? 'normal' : 'warn',
@@ -257,7 +257,7 @@ export class HeartVisualizationComponent
       const status = pd.la_volume > 34 ? 'danger' : pd.la_volume > 28 ? 'warn' : 'normal';
       this.measurementLabels.push({
         id: 'la_volume',
-        text: 'LA',
+        text: 'LA Vol',
         value: pd.la_volume.toFixed(1),
         unit: 'mL',
         status,
@@ -273,7 +273,7 @@ export class HeartVisualizationComponent
       const status = pd.ra_volume > 45 ? 'warn' : 'normal';
       this.measurementLabels.push({
         id: 'ra_volume',
-        text: 'RA',
+        text: 'RA Vol',
         value: pd.ra_volume.toFixed(1),
         unit: 'mL',
         status,
@@ -304,7 +304,7 @@ export class HeartVisualizationComponent
       const dilated = pd.aortic_root > 3.8;
       this.measurementLabels.push({
         id: 'aortic_root',
-        text: 'Aorta',
+        text: 'Ao Root',
         value: pd.aortic_root.toFixed(2),
         unit: 'cm',
         status: dilated ? 'warn' : 'normal',
@@ -623,6 +623,9 @@ export class HeartVisualizationComponent
     const canvas = this.canvasRef.nativeElement;
     const w = canvas.clientWidth;
     const h = canvas.clientHeight;
+    
+    // Check if on mobile
+    const isMobile = w < 480;
 
     this.measurementLabels.forEach(label => {
       // Project 3D position to screen
@@ -632,11 +635,18 @@ export class HeartVisualizationComponent
       const vector = labelPos.clone().project(this.camera);
       
       // Check if behind camera
-      label.visible = vector.z < 1;
+      const behindCamera = vector.z >= 1;
+      
+      // Hide labels on very small screens or if behind camera
+      label.visible = !behindCamera && !isMobile;
       
       if (label.visible) {
         label.screenX = (vector.x * 0.5 + 0.5) * w;
         label.screenY = (-vector.y * 0.5 + 0.5) * h;
+        
+        // Keep labels within bounds
+        label.screenX = Math.max(60, Math.min(w - 60, label.screenX));
+        label.screenY = Math.max(40, Math.min(h - 40, label.screenY));
       }
     });
 

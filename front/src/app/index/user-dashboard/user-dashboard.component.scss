@@ -3,9 +3,6 @@
 // ─────────────────────────────────────────────────────────────
 
 .user-dashboard {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 2rem 1rem;
   min-height: 100vh;
   
   // Dark theme support
@@ -265,13 +262,9 @@ mat-card {
       align-items: center;
       gap: 0.5rem;
       padding: 0.5rem 1rem;
-      background: #ffffff;
+      background: var(--bg-primary);
       border-radius: 20px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-
-      @media (prefers-color-scheme: dark) {
-        background: rgba(255, 255, 255, 0.05);
-      }
+      box-shadow: 0 2px 8px var(--shadow);
 
       mat-icon {
         font-size: 1.2rem;
@@ -281,12 +274,9 @@ mat-card {
       }
 
       span {
-        font-weight: 500;
-        color: #2c3e50;
-
-        @media (prefers-color-scheme: dark) {
-          color: #e8eaf0;
-        }
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 0.95rem;
       }
     }
   }
@@ -376,12 +366,9 @@ mat-card {
 
         .report-text {
           line-height: 2;
-          color: #2c3e50;
+          color: var(--text-primary);
           font-size: 1.05rem;
-
-          @media (prefers-color-scheme: dark) {
-            color: #e8eaf0;
-          }
+          font-weight: 500;
 
           p {
             margin-bottom: 1.5rem;
@@ -400,12 +387,8 @@ mat-card {
           margin-top: 2rem;
           padding-top: 1.5rem;
           border-top: 2px solid rgba(74, 124, 255, 0.2);
-          color: #6c757d;
+          color: var(--text-secondary);
           font-size: 0.9rem;
-
-          @media (prefers-color-scheme: dark) {
-            color: #a0a0b0;
-          }
 
           mat-icon {
             font-size: 1.2rem;
@@ -512,12 +495,8 @@ mat-card {
 
           .value {
             font-size: 1.1rem;
-            font-weight: 500;
-            color: #2c3e50;
-
-            @media (prefers-color-scheme: dark) {
-              color: #e8eaf0;
-            }
+            font-weight: 600;
+            color: var(--text-primary);
 
             &.score {
               font-size: 1.5rem;
@@ -533,12 +512,12 @@ mat-card {
               font-weight: 600;
 
               &.badge-normal {
-                background: rgba(16, 185, 129, 0.1);
+                background: rgba(16, 185, 129, 0.2);
                 color: #10b981;
               }
 
               &.badge-warn {
-                background: rgba(245, 158, 11, 0.1);
+                background: rgba(245, 158, 11, 0.2);
                 color: #f59e0b;
               }
             }
@@ -1169,18 +1148,287 @@ button {
     h1 {
       font-size: 1.5rem;
     }
+    
+    .d-flex {
+      flex-direction: column;
+      gap: 1rem;
+      
+      > div {
+        width: 100%;
+      }
+      
+      .d-flex.gap-2 {
+        flex-direction: row;
+        flex-wrap: wrap;
+        
+        button {
+          flex: 1;
+          min-width: 120px;
+          font-size: 0.85rem;
+          padding: 0.5rem 0.75rem;
+          
+          mat-icon {
+            font-size: 1.2rem;
+          }
+        }
+      }
+    }
   }
   
   mat-card-content {
     padding: 1rem;
   }
   
-  .table {
-    font-size: 0.85rem;
+  .measurements-table,
+  .appointments-table {
+    font-size: 0.8rem;
+    display: block;
+    overflow-x: auto;
     
     thead th,
     tbody td {
       padding: 0.75rem 0.5rem;
+      white-space: nowrap;
+    }
+  }
+  
+  .patient-info-banner {
+    .info-chip {
+      padding: 0.4rem 0.75rem;
+      
+      mat-icon {
+        font-size: 1rem;
+        width: 1rem;
+        height: 1rem;
+      }
+      
+      span {
+        font-size: 0.85rem;
+      }
+    }
+  }
+  
+  .visit-summary {
+    padding: 1rem;
+    
+    &.llm-report-card {
+      .report-header {
+        padding: 1rem;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+        
+        .header-content {
+          .report-icon {
+            font-size: 2rem;
+            width: 2rem;
+            height: 2rem;
+          }
+          
+          h4 {
+            font-size: 1.1rem;
+          }
+          
+          .report-subtitle {
+            font-size: 0.85rem;
+          }
+        }
+      }
+      
+      .report-content {
+        padding: 1.25rem;
+        
+        .report-text {
+          font-size: 0.95rem;
+          line-height: 1.8;
+        }
+      }
+      
+      .report-disclaimer {
+        padding: 0.75rem 1.25rem;
+        flex-direction: row;
+        
+        mat-icon {
+          font-size: 1.2rem;
+          width: 1.2rem;
+          height: 1.2rem;
+        }
+        
+        p {
+          font-size: 0.85rem;
+        }
+      }
+    }
+  }
+  
+  .gallery-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)) !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-dashboard {
+    padding: 0.75rem 0.25rem;
+  }
+  
+  .dashboard-header {
+    padding: 1rem;
+    
+    h1 {
+      font-size: 1.25rem;
+    }
+    
+    p {
+      font-size: 0.85rem;
+    }
+    
+    .d-flex.gap-2 {
+      button {
+        min-width: 100px;
+        font-size: 0.75rem;
+        padding: 0.4rem 0.5rem;
+        
+        mat-icon {
+          font-size: 1rem;
+        }
+        
+        span {
+          display: none; // Hide button text on very small screens
+        }
+      }
+    }
+  }
+  
+  mat-card {
+    border-radius: 12px;
+    
+    mat-card-header {
+      padding: 1rem;
+      
+      mat-card-title {
+        font-size: 1rem;
+        
+        mat-icon {
+          font-size: 1.2rem;
+          width: 1.2rem;
+          height: 1.2rem;
+        }
+      }
+    }
+    
+    mat-card-content {
+      padding: 0.75rem;
+    }
+  }
+  
+  .measurements-table,
+  .appointments-table {
+    font-size: 0.75rem;
+    
+    thead th,
+    tbody td {
+      padding: 0.5rem 0.35rem;
+    }
+    
+    .image-preview {
+      width: 50px !important;
+      height: 50px !important;
+    }
+  }
+  
+  .patient-info-banner {
+    gap: 0.5rem;
+    padding: 0.75rem;
+    
+    .info-chip {
+      padding: 0.35rem 0.6rem;
+      
+      mat-icon {
+        font-size: 0.9rem;
+        width: 0.9rem;
+        height: 0.9rem;
+      }
+      
+      span {
+        font-size: 0.75rem;
+      }
+    }
+  }
+  
+  .visit-summary {
+    padding: 0.75rem;
+    
+    &.llm-report-card {
+      .report-header {
+        padding: 0.75rem;
+        
+        .header-content {
+          .report-icon {
+            font-size: 1.75rem;
+            width: 1.75rem;
+            height: 1.75rem;
+          }
+          
+          h4 {
+            font-size: 1rem;
+          }
+          
+          .report-subtitle {
+            font-size: 0.75rem;
+          }
+        }
+        
+        .report-actions {
+          width: 100%;
+          justify-content: flex-end;
+        }
+      }
+      
+      .report-content {
+        padding: 1rem;
+        
+        .report-text {
+          font-size: 0.9rem;
+          line-height: 1.7;
+        }
+        
+        .report-footer {
+          font-size: 0.8rem;
+        }
+      }
+      
+      .report-disclaimer {
+        padding: 0.6rem 1rem;
+        
+        mat-icon {
+          font-size: 1.1rem;
+          width: 1.1rem;
+          height: 1.1rem;
+        }
+        
+        p {
+          font-size: 0.8rem;
+        }
+      }
+    }
+  }
+  
+  .gallery-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)) !important;
+  }
+  
+  .no-data-state,
+  .no-echo-card {
+    padding: 2rem 1rem;
+    
+    mat-icon {
+      font-size: 3rem !important;
+      width: 3rem !important;
+      height: 3rem !important;
+    }
+    
+    p {
+      font-size: 0.95rem !important;
     }
   }
 }
