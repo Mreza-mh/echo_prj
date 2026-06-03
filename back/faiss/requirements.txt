@@ -1,0 +1,27 @@
+# FAISS AI Service Requirements
+# این فایل شامل تمام پکیج‌های مورد نیاز برای سرویس FAISS است
+
+# Core ML/NLP Libraries
+torch>=2.0.0
+transformers>=4.30.0
+sentence-transformers>=2.2.0
+
+# Vector Database
+qdrant-client>=1.6.0
+
+# API Framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+pydantic>=2.0.0
+
+# Utilities
+numpy>=1.24.0
+scikit-learn>=1.3.0
+
+# Optional: FAISS for CPU (اگر نیاز به FAISS مستقیم دارید)
+# faiss-cpu>=1.7.0
+
+# Note: برای نصب با pip ایرانی:
+# pip install -r requirements.txt -i https://pypi.devneeds.ir/simple/
+# یا
+# pip install -r requirements.txt --index-url https://pypi.devneeds.ir/simple/
