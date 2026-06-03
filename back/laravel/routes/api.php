@@ -49,7 +49,7 @@ Route::group(['prefix' => 'staff'], function () {
 });
 Route::group(['prefix' => 'staff-schedule'], function () {
     Route::post('list', [StaffController::class, 'getStaffList'])->middleware('auth:api');
-    Route::post('add', [StaffController::class, 'addStaffSchedule'])->middleware('auth:api');
+    Route::post('add/{staff_id}', [StaffController::class, 'addStaffSchedule'])->middleware('auth:api');
 });
 
 Route::group(['prefix' => 'resource'], function () {

@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('expertise_id')->nullable()->constrained('expertises')->cascadeOnDelete();
-            $table->json('schedule');
+            $table->json('schedule')->nullable();
             $table->timestamps();
         });
     }

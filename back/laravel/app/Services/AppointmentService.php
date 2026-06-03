@@ -140,17 +140,16 @@ class AppointmentService
     ---------------------------------------------------------------------------*/
     public function getAvailableSlots(AvailableSlotsRequest $request)
     {
-        $service = Service::find($request->service_id);
-        if (!$service) {
+        $service = Service::where('id',$request->service_id)->first();
+                if (!$service) {
             throw new ErrorException('خدمت یافت نشد.');
         }
 
         $date = Carbon::parse($request->date)->format('Y-m-d');
 
         // Duration
-        $duration = 30;
-        if (!empty($service->default_duration)) {
-            $parts = explode(':', $service->default_duration);
+        if (!empty($service->duration)) {
+            $parts = explode(':', $service->duration);
             if (count($parts) >= 2) {
                 $duration = ((int)$parts[0] * 60) + (int)$parts[1];
             }
@@ -189,8 +188,8 @@ class AppointmentService
 
         // duration from service
         $duration = 30;
-        if (!empty($service->default_duration)) {
-            $p = explode(':', $service->default_duration);
+        if (!empty($service->duration)) {
+            $p = explode(':', $service->duration);
             $duration = ((int)$p[0] * 60) + (int)$p[1];
         }
 
@@ -268,8 +267,8 @@ class AppointmentService
         $start_time = $request->start_time;
 
         $duration = 30;
-        if (!empty($service->default_duration)) {
-            $p = explode(':', $service->default_duration);
+        if (!empty($service->duration)) {
+            $p = explode(':', $service->duration);
             $duration = ((int)$p[0] * 60) + (int)$p[1];
         }
 
