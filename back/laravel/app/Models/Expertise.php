@@ -7,8 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Expertise extends Model
 {
-    protected $fillable = ['title'];
-
+    protected $fillable = ['title','label'];
     public function staffs(): HasMany
     {
         return $this->hasMany(Staff::class);

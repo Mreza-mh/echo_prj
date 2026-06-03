@@ -20,7 +20,7 @@ class StaffService
         $is_paginate = $request->filled('is_paginate') ? filter_var($request->is_paginate, FILTER_VALIDATE_BOOLEAN) : false;
         $count_item  = $request->filled('count_item') ? filter_var($request->count_item, FILTER_VALIDATE_INT) : 10;
 
-        $query = Staff::with(['user:id,name,mobile', 'expertise:id,title']);
+        $query = Staff::with(['user:id,name,mobile,role', 'expertise:id,title']);
 
         if ($request->filled('expertise_id')) {
             $query->where('staffs.expertise_id', $request->expertise_id);
@@ -38,6 +38,7 @@ class StaffService
         $staffs->each(function ($staff) {
             $staff->name = $staff->user->name; // نام کاربر به عنوان نام پرسنل
             $staff->expertise_name = $staff->expertise->title ?? null; // عنوان تخصص
+            $staff->role = $staff->user->role ?? null;
             //$staff->organization_staff_id = $staff->id; // ایدی برای سازگاری
         });
 
@@ -92,23 +93,23 @@ class StaffService
         ];
     }
 
-    public function StaffScheduleList(StaffFilterRequest $request)
-    {
-        $staff = Staff::where('id', $staff_id)->first();
-
-        if ($staff == null) {
-            throw new ErrorException('پرسنل وجود ندارد!');
-        }
-
-        $staff = Staff::update([
-            'schedule' => $request->schedule,
-        ]);
-
-        return [
-            'message' => 'برنامه کاری با موفقیت افزوده شد',
-            'data'    => $staff
-        ];
-    }
+    //    public function StaffScheduleList(StaffFilterRequest $request)
+//    {
+//        $staff = Staff::where('id', $staff_id)->first();
+//
+//        if ($staff == null) {
+//            throw new ErrorException('پرسنل وجود ندارد!');
+//        }
+//
+//        $staff = Staff::update([
+//            'schedule' => $request->schedule,
+//        ]);
+//
+//        return [
+//            'message' => 'برنامه کاری با موفقیت افزوده شد',
+//            'data'    => $staff
+//        ];
+//    }
 
     public function editStaff(StaffEditRequest $request, $staff_id)
     {
