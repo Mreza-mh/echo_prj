@@ -91,3 +91,22 @@ htmlcov/
 # 🐳 Docker
 ############################
 docker-compose.override.yml
+
+############################
+# 🤖 FAISS AI Models & Databases
+############################
+back/faiss/local_model/
+back/faiss/embed_database/
+*.safetensors
+*.bin
+*.sentencepiece
+*.bpe.model
+
+# FAISS cache files
+back/faiss/model_cache/
+back/faiss/__pycache__/
+
+
+# FAISS gitkeep exceptions
+!back/faiss/local_model/.gitkeep
+!back/faiss/embed_database/.gitkeep
