@@ -250,7 +250,25 @@ class AppointmentController
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="عملیات موفق"),
-     *             @OA\Property(property="data", type="array")
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="object",
+     *                     @OA\Property(property="id", type="integer", example=1),
+     *                     @OA\Property(property="service_id", type="integer", example=1),
+     *                     @OA\Property(property="user_id", type="integer", example=1),
+     *                     @OA\Property(property="staff_id", type="integer", example=1),
+     *                     @OA\Property(property="date_of_turn", type="string", format="date", example="2026-01-05"),
+     *                     @OA\Property(property="start_time", type="string", format="time", example="09:00:00"),
+     *                     @OA\Property(property="end_time", type="string", format="time", example="09:30:00"),
+     *                     @OA\Property(property="status_id", type="integer", example=1),
+     *                     @OA\Property(property="reservation_type", type="string", example="online"),
+     *                     @OA\Property(property="permissible_interference", type="boolean", example=true),
+     *                     @OA\Property(property="created_at", type="string", format="date-time"),
+     *                     @OA\Property(property="updated_at", type="string", format="date-time")
+     *                 )
+     *             )
      *         )
      *     )
      * )

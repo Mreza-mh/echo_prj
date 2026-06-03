@@ -441,6 +441,121 @@
                 }
             }
         },
+        "/appointment/list": {
+            "post": {
+                "tags": [
+                    "Appointment"
+                ],
+                "summary": "دریافت لیست نوبت‌ها",
+                "operationId": "7416ddc33bc17172abcab4de7e8bec8b",
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "example": "2026-01-05"
+                                    },
+                                    "is_paginate": {
+                                        "type": "boolean",
+                                        "example": false
+                                    },
+                                    "staff_id": {
+                                        "type": "integer",
+                                        "example": 2
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "لیست نوبت‌ها بازگردانده شد",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "عملیات موفق"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "service_id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "user_id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "staff_id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "date_of_turn": {
+                                                        "type": "string",
+                                                        "format": "date",
+                                                        "example": "2026-01-05"
+                                                    },
+                                                    "start_time": {
+                                                        "type": "string",
+                                                        "format": "time",
+                                                        "example": "09:00:00"
+                                                    },
+                                                    "end_time": {
+                                                        "type": "string",
+                                                        "format": "time",
+                                                        "example": "09:30:00"
+                                                    },
+                                                    "status_id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "reservation_type": {
+                                                        "type": "string",
+                                                        "example": "online"
+                                                    },
+                                                    "permissible_interference": {
+                                                        "type": "boolean",
+                                                        "example": true
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/auth/send/verification": {
             "post": {
                 "tags": [
@@ -1906,7 +2021,6 @@
             "delete": {
                 "tags": [
                     "Service"
-
                 ],
                 "summary": "حذف سرویس",
                 "operationId": "c1631be4e16077c53c2b1381eed54e11",
@@ -2687,6 +2801,10 @@
         {
             "name": "Staff",
             "description": "Staff"
+        },
+        {
+            "name": "Staff Schedule",
+            "description": "Staff Schedule"
         },
         {
             "name": "Status",
