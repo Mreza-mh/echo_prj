@@ -371,6 +371,16 @@
                                         "example": [
                                             3
                                         ]
+                                    },
+                                    "user_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": [
+                                            5,
+                                            6
+                                        ]
                                     }
                                 },
                                 "type": "object"

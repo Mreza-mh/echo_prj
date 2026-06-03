@@ -337,6 +337,7 @@ class AppointmentService
         $date = Carbon::parse($request->date)->format('Y-m-d');
         $staff_ids = $request->staff_ids ?? [];
         $resource_ids = $request->resource_ids ?? [];
+        $user_ids = $request->user_ids ?? [];
 
         // If no staff_ids provided and user is a doctor, filter by their staff ID
         if (empty($staff_ids)) {
@@ -362,6 +363,7 @@ class AppointmentService
             ->when(!empty($resource_ids), fn($q) =>
             $q->whereHas('resources', fn($rq) => $rq->whereIn('resource_id', $resource_ids))
             )
+            ->when(!empty($user_ids), fn($q) => $q->whereIn('user_id', $user_ids))
             ->whereDate('date_of_turn', $date)
             ->get();
 
@@ -376,13 +378,20 @@ class AppointmentService
                 'staff_name' => $staff->user->name ?? 'نامشخص',
                 'expertise' => $staff->expertise->title ?? 'بدون تخصص',
                 'working_hours' => [
-                    'start' => '00:00',
-                    'end'   => '23:59'
+                    'start' => $start->format('H:i'),
+                    'end'   => $end->format('H:i')
                 ],
                 'appointments' => $staff_apps->map(function ($app) {
                     return [
                         'id' => $app->id,
                         'customer_name' => $app->user->name ?? 'مشتری گذری',
+                        'customer_user_id' => $app->user_id,
+                        'customer_info' => [
+                            'id' => $app->user->id ?? null,
+                            'name' => $app->user->name ?? 'مشتری گذری',
+                            'phone' => $app->user->phone ?? null,
+                            'email' => $app->user->email ?? null,
+                        ],
                         'service_name' => $app->service->title ?? 'خدمت نامشخص',
                         'start' => $app->start_time,
                         'end'   => $app->end_time,
@@ -407,6 +416,8 @@ class AppointmentService
                         'start' => $app->start_time,
                         'end' => $app->end_time,
                         'staff' => $app->staff->user->name ?? 'نامشخص',
+                        'customer_user_id' => $app->user_id,
+                        'customer_name' => $app->user->name ?? 'مشتری گذری',
                     ];
                 })->values(),
             ];

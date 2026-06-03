@@ -188,6 +188,12 @@ class AppointmentController
      *                 type="array",
      *                 @OA\Items(type="integer"),
      *                 example={3}
+     *             ),
+     *             @OA\Property(
+     *                 property="user_ids",
+     *                 type="array",
+     *                 @OA\Items(type="integer"),
+     *                 example={5,6}
      *             )
      *         )
      *     ),
