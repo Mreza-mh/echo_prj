@@ -13,7 +13,6 @@ use App\Models\Status;
 use App\Models\Resource;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
 class AppointmentService
@@ -28,58 +27,57 @@ class AppointmentService
     /* --------------------------------------------------------------------------
        (1) GET STAFF WORKING HOURS → No StaffSchedule — Using staff->schedule JSON
     ---------------------------------------------------------------------------*/
-    private function getStaffWorkingHours($staff_id, $date)
+//    private function getStaffWorkingHours($staff_id, $date)
+//    {
+//        try {
+//            $staff = Staff::find($staff_id);
+//
+//            if (!$staff || empty($staff->schedule)) {
+//                // زمان پیش‌فرض در صورت نبود برنامه
+//                return [Carbon::parse($date . ' 08:00'), Carbon::parse($date . ' 20:00')];
+//            }
+//
+//            $schedule = is_string($staff->schedule) ? json_decode($staff->schedule, true) : $staff->schedule;
+//
+//            // تبدیل نام روز به حروف کوچک برای مطابقت با دیتابیس (مثلا Saturday -> saturday)
+//            $day_name = strtolower(Carbon::parse($date)->format('l'));
+//
+//            // پیدا کردن برنامه روز مورد نظر
+//            $day_schedule = collect($schedule)->firstWhere('day', $day_name);
+//
+//            if (!$day_schedule || empty($day_schedule['slots'])) {
+//                // اگر برای اون روز خاص شیفتی تعریف نشده بود
+//                return [Carbon::parse($date . ' 00:00'), Carbon::parse($date . ' 00:00')];
+//            }
+//
+//            // فرض می‌کنیم هر روز فعلاً یک بازه اصلی دارد (slot اول)
+//            // طبق دیتابیس شما: "slots": [{"start": "08:00", "end": "12:00"}]
+//            $firstSlot = $day_schedule['slots'][0];
+//
+//            return [
+//                Carbon::parse($date . ' ' . ($firstSlot['start'] ?? '00:00')),
+//                Carbon::parse($date . ' ' . ($firstSlot['end'] ?? '00:00')),
+//            ];
+//        } catch (\Throwable $e) {
+//            Log::error('Error in Staff Schedule: ' . $e->getMessage());
+//            return [Carbon::parse($date . ' 00:00'), Carbon::parse($date . ' 00:00')];
+//        }
+//    }
+
+    private function getStaffWorkingPeriods($staff_id, $date)
     {
-        try {
-            $staff = Staff::find($staff_id);
+        $staff = Staff::find($staff_id);
+        if (!$staff || empty($staff->schedule)) return [];
 
-            if (!$staff || empty($staff->schedule)) {
-                return [
-                    Carbon::parse($date . ' 00:00'),
-                    Carbon::parse($date . ' 23:59'),
-                ];
-            }
+        $schedule = is_string($staff->schedule) ? json_decode($staff->schedule, true) : $staff->schedule;
+        $day_name = strtolower(Carbon::parse($date)->format('l'));
+        $day_schedule = collect($schedule)->firstWhere('day', $day_name);
 
-            $schedule = is_string($staff->schedule)
-                ? json_decode($staff->schedule, true)
-                : $staff->schedule;
+        if (!$day_schedule || empty($day_schedule['slots'])) return [];
 
-            if (!is_array($schedule)) {
-                return [
-                    Carbon::parse($date . ' 00:00'),
-                    Carbon::parse($date . ' 23:59'),
-                ];
-            }
-
-            $days_map = [
-                0 => 'sun', 1 => 'mon', 2 => 'tue',
-                3 => 'wed', 4 => 'thu', 5 => 'fri', 6 => 'sat',
-            ];
-
-            $day_name = $days_map[Carbon::parse($date)->dayOfWeek];
-
-            $day_schedule = collect($schedule)->firstWhere('day', $day_name);
-
-            if (!$day_schedule) {
-                return [
-                    Carbon::parse($date . ' 00:00'),
-                    Carbon::parse($date . ' 23:59'),
-                ];
-            }
-
-            return [
-                Carbon::parse($date . ' ' . ($day_schedule['start_time'] ?? '00:00')),
-                Carbon::parse($date . ' ' . ($day_schedule['end_time'] ?? '23:59')),
-            ];
-        } catch (\Throwable $e) {
-            return [
-                Carbon::parse($date . ' 00:00'),
-                Carbon::parse($date . ' 23:59'),
-            ];
-        }
+        // خروجی به صورت آرایه‌ای از بازه‌ها: [['start'=>'08:30', 'end'=>'12:30'], [...]]
+        return $day_schedule['slots'];
     }
-
-
     /* --------------------------------------------------------------------------
        (2) GET BOOKED SLOTS → status_id instead of status
     ---------------------------------------------------------------------------*/
@@ -138,36 +136,73 @@ class AppointmentService
     /* --------------------------------------------------------------------------
        (3) Get Available Slots →Organization Removed, same output kept
     ---------------------------------------------------------------------------*/
+//    public function getAvailableSlots(AvailableSlotsRequest $request)
+//    {
+//        $service = Service::where('id',$request->service_id)->first();
+//        if (!$service) {
+//            throw new ErrorException('خدمت یافت نشد.');
+//        }
+//
+//        $date = Carbon::parse($request->date)->format('Y-m-d');
+//
+//        // Duration
+//        //dd($service->duration);
+//        //$duration = 0;
+//        if (!empty($service->duration)) {
+//            $parts = explode(':', $service->duration);
+//            if (count($parts) >= 2) {
+//                $duration = ((int)$parts[0] * 60) + (int)$parts[1];
+//            }
+//        }
+//
+//        [$start_work, $end_work] = $this->getStaffWorkingHours($request->staff_id, $date);
+//
+//        $booked = $this->getBookedSlots($request->staff_id, $date);
+//
+//        $available = $this->generateAndFilterSlots($start_work, $end_work, $duration, $booked);
+//
+//        return [
+//            'message' => 'زمان‌های خالی با موفقیت دریافت شدند',
+//            'data'    => $available,
+//        ];
+//    }
+
     public function getAvailableSlots(AvailableSlotsRequest $request)
     {
-        $service = Service::where('id',$request->service_id)->first();
-                if (!$service) {
-            throw new ErrorException('خدمت یافت نشد.');
-        }
+        $service = Service::find($request->service_id);
+        if (!$service) throw new ErrorException('خدمت یافت نشد.');
 
         $date = Carbon::parse($request->date)->format('Y-m-d');
-
-        // Duration
+        $duration = 30; // پیش‌فرض
         if (!empty($service->duration)) {
             $parts = explode(':', $service->duration);
-            if (count($parts) >= 2) {
-                $duration = ((int)$parts[0] * 60) + (int)$parts[1];
-            }
+            $duration = ((int)$parts[0] * 60) + (int)$parts[1];
         }
 
-        [$start_work, $end_work] = $this->getStaffWorkingHours($request->staff_id, $date);
+        // ۱. دریافت تمام بازه‌های کاری پزشک در آن روز
+        $workPeriods = $this->getStaffWorkingPeriods($request->staff_id, $date);
 
+        // ۲. دریافت نوبت‌های رزرو شده
         $booked = $this->getBookedSlots($request->staff_id, $date);
 
-        $available = $this->generateAndFilterSlots($start_work, $end_work, $duration, $booked);
+        $allAvailableSlots = [];
+
+        // ۳. تولید اسلات برای هر بازه کاری (مثلاً یک بار صبح، یک بار عصر)
+        foreach ($workPeriods as $period) {
+            $slots = $this->generateAndFilterSlots(
+                Carbon::parse($date . ' ' . $period['start']),
+                Carbon::parse($date . ' ' . $period['end']),
+                $duration,
+                $booked
+            );
+            $allAvailableSlots = array_merge($allAvailableSlots, $slots);
+        }
 
         return [
             'message' => 'زمان‌های خالی با موفقیت دریافت شدند',
-            'data'    => $available,
+            'data'    => $allAvailableSlots,
         ];
     }
-
-
     /* --------------------------------------------------------------------------
        (4) Add Appointment → no organization, fixed FK fields
     ---------------------------------------------------------------------------*/
@@ -329,7 +364,7 @@ class AppointmentService
     }
 
 
-/* --------------------------------------------------------------------------
+    /* --------------------------------------------------------------------------
        (6) Calendar Dashboard → outputs unchanged, organization removed
     ---------------------------------------------------------------------------*/
     public function getCalendarDashboard(Request $request)
@@ -339,16 +374,6 @@ class AppointmentService
         $resource_ids = $request->resource_ids ?? [];
         $user_ids = $request->user_ids ?? [];
 
-        // If no staff_ids provided and user is a doctor, filter by their staff ID
-        if (empty($staff_ids)) {
-            $user = Auth::user();
-            if ($user && $user->role === 'doctor') {
-                $staff = Staff::where('user_id', $user->id)->first();
-                if ($staff) {
-                    $staff_ids = [$staff->id];
-                }
-            }
-        }
 
         $staff_query = Staff::with(['user', 'expertise']);
         if (!empty($staff_ids)) {
@@ -443,18 +468,7 @@ class AppointmentService
 
         $active_status_ids = Status::whereIn('title', self::ACTIVE_APPOINTMENT_STATUSES)->pluck('id');
 
-        $query = Appointment::with(['user','staff.user','service','status']);
-
-        // Filter by doctor's staff ID if user is a doctor
-        $user = Auth::user();
-        if ($user && $user->role === 'doctor') {
-            $staff = Staff::where('user_id', $user->id)->first();
-            if ($staff) {
-                $query->where('staff_id', $staff->id);
-            }
-        }
-
-        $appointment = $query
+        $appointment = Appointment::with(['user','staff.user','service','status'])
             ->whereDate('date_of_turn', $today)
             ->whereIn('status_id', $active_status_ids)
             ->where('start_time', '<=', $current_time)

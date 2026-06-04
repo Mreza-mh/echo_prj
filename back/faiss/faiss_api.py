@@ -25,7 +25,8 @@ def mean_pooling(model_output, attention_mask):
     return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
 
 
-def encode_text(text):
+def encode_text(text: str) -> list:
+    # text باید رشته باشه، نه لیست
     encoded_input = tokenizer(text, padding=True, truncation=True, return_tensors='pt')
     with torch.no_grad():
         model_output = model(**encoded_input)
@@ -33,71 +34,144 @@ def encode_text(text):
     embedding = torch.nn.functional.normalize(embedding, p=2, dim=1)
     return embedding[0].cpu().numpy().tolist()
 
+# ۱. لیست کلمات کلیدی را غنی‌تر کنید
+support_keywords = ["آدرس", "ادرس", "کجا", "لوکیشن", "مکان", "محل", "تلفن", "شماره", "بیمه"]
 
+# ۲. آستانه را کمی پایین بیاورید یا منطق را جابجا کنید
+THRESHOLD = 0.40 # کاهش از 0.5 به 0.4
+# ۳. مهم‌ترین اصلاح: اولویت کلمات کلیدی را بالاتر ببرید
+@app.post("/route")
 @app.post("/route")
 def route_request(request: UserRequest):
-    """
-    مسیریابی هوشمند بر اساس میزان شباهت معنایی با داده‌های کلینیک
-    """
     try:
-        query_vector = encode_text([request.sentence])
+        user_text_lower = request.sentence.lower()
+        
+        # ۱. تعریف لیست کلمات کلیدی (بهتر است خارج از تابع یا ابتدای آن باشد)
+        appointment_keywords = ["نوبت بگیر", "رزرو کن", "وقت بگیر", "تایم بگیر", "برنامه ریز", "نوبت دهی", "نوبت گیری"]
+        support_keywords = ["آدرس", "ادرس", "کجا", "لوکیشن", "مکان", "محل", "تلفن", "شماره", "بیمه", "هزینه", "ساعت کاری"]
 
-        # جستجوی نزدیک‌ترین رکورد در Qdrant
+        # ۲. بررسی سریع کلمات کلیدی
+        has_support_keyword = any(keyword in user_text_lower for keyword in support_keywords)
+        has_appointment_keyword = any(keyword in user_text_lower for keyword in appointment_keywords)
+
+        # ۳. پردازش برداری
+        query_vector = encode_text(request.sentence)
         search_result = client.query_points(
             collection_name=collection_name,
             query=query_vector,
-            limit=1
+            limit=5
         )
 
-        # حد آستانه برای تشخیص سوالات عمومی کلینیک (بیمه، آدرس و ...)
-        # با توجه به داده‌های شما، امتیاز بالای 0.40 نشان‌دهنده شباهت قوی است
-        THRESHOLD = 0.60
+        if not search_result.points:
+            intent = "support" if has_support_keyword else "appointment"
+            return {"intent": intent, "score": 0.0, "reason": "no vector results"}
 
-        if search_result.points and search_result.points[0].score >= THRESHOLD:
-            print("support")
-            return {
-                "intent": "support",
-                "score": search_result.points[0].score,
-                "matched_sentence": search_result.points[0].payload.get("sentence_text")
-            }
+        top_score = search_result.points[0].score
+        top_category = search_result.points[0].payload.get("category", "unknown")
+        
+        # ۴. منطق تصمیم‌گیری نهایی (Priority Logic)
+        # اولویت ۱: کلمات کلیدی صریح (اگر فقط یکی از دو نوع باشد)
+        if has_support_keyword and not has_appointment_keyword:
+            intent, reason = "support", "explicit support keyword"
+        elif has_appointment_keyword and not has_support_keyword:
+            intent, reason = "appointment", "explicit appointment keyword"
+        
+        # اولویت ۲: استفاده از امتیاز برداری (اگر کلمات کلیدی مبهم بودند یا وجود نداشتند)
         else:
-            print("appointment")
-            return {
-                "intent": "appointment",
-                "score": search_result.points[0].score if search_result.points else 0.0,
-                "matched_sentence": None
-            }
+            THRESHOLD = 0.45 
+            if top_score >= THRESHOLD:
+                intent = top_category
+                reason = "high vector score"
+            else:
+                # اگر امتیاز پایین بود، به نفع "appointment" (رزرو نوبت) رای بده (طبق نیاز سیستم شما)
+                intent = "appointment"
+                reason = "low score fallback"
 
-
+        print(f"Final Decision -> Intent: {intent} (Score: {top_score:.3f}, Reason: {reason})")
+        
+        return {
+            "intent": intent,
+            "score": top_score,
+            "matched_sentence": search_result.points[0].payload.get("sentence_text"),
+            "category": top_category,
+            "reason": reason
+        }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
+DIRECT_ANSWERS = {
+    ("آدرس", "کجا", "لوکیشن", "مکان", "محل"): 
+        "آدرس کلینیک: زنجان، خیابان هفت تیر",
+    ("آدرس", "کجا", "لوکیشن", "مکان", "محل"): 
+        "آدرس مطب کجاست: زنجان، خیابان هفت تیر",
+    ("ساعت", "کاری", "باز", "تعطیل", "وقت کاری"): 
+        "شنبه تا چهارشنبه ۸ صبح تا ۸ شب، پنجشنبه تا ۲ بعدازظهر، جمعه تعطیل",
+    ("تلفن", "شماره", "تماس"):
+        "شماره پذیرش: ۳۳۳۳۳۳۳۶",
+    ("بیمه",):
+        "بیمه‌های طرف قرارداد: تامین اجتماعی، سلامت، نیروهای مسلح، بانک تجارت، بیمه ایران",
+}
 
 @app.post("/search-faiss")
 def search(request: UserRequest):
-    # این متد کماکان برای بخش RAG و واکشی تمام جملات مشابه حفظ می‌شود
-    threshold = 0.20
-    query_vector = encode_text([request.sentence])
+    # اول keyword check
+    for keywords, answer in DIRECT_ANSWERS.items():
+        if any(kw in request.sentence for kw in keywords):
+            return {
+                "query": request.sentence,
+                "matches_found": 1,
+                "results": [{"sentence": answer, "similarity": 1.0}],
+                "threshold_used": 0
+            }
+    
+    # بعد vector search
+    threshold = 0.50
+    query_vector = encode_text(request.sentence)
 
     search_result = client.query_points(
         collection_name=collection_name,
         query=query_vector,
-        limit=5
+        limit=10  # افزایش limit برای بازیابی بیشتر
     )
 
     results = []
+    seen_sentences = set()  # برای جلوگیری از تکرار جملات
+    
+    # اولویت‌بندی: جملات با امتیاز بالا
     for hit in search_result.points:
         if hit.score >= threshold:
-            results.append({
-                "sentence": hit.payload["sentence_text"],
-                "similarity": hit.score
-            })
-
+            sentence = hit.payload["sentence_text"]
+            if sentence not in seen_sentences:
+                seen_sentences.add(sentence)
+                results.append({
+                    "sentence": sentence,
+                    "similarity": hit.score
+                })
+    
+    # اگر نتایج کم بود، آستانه را کاهش بده
+    if len(results) < 3 and threshold > 0.15:
+        threshold = 0.15
+        for hit in search_result.points:
+            if 0.15 <= hit.score < 0.20:
+                sentence = hit.payload["sentence_text"]
+                if sentence not in seen_sentences:
+                    seen_sentences.add(sentence)
+                    results.append({
+                        "sentence": sentence,
+                        "similarity": hit.score
+                    })
+    
+    # مرتب‌سازی بر اساس شباهت (بالاترین اول)
+    results.sort(key=lambda x: x["similarity"], reverse=True)
+    
+    # محدود کردن به 7 نتیجه
+    results = results[:7]
+    
     return {
         "query": request.sentence,
         "matches_found": len(results),
-        "results": results
+        "results": results,
+        "threshold_used": threshold
     }
 
 

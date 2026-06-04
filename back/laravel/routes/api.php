@@ -13,6 +13,7 @@ use App\Http\Controllers\AIChatController;
 use App\Http\Controllers\PatientReportController;
 use Illuminate\Support\Facades\Route;
 
+
 Route::post('ai/chat', [AIChatController::class, 'chat']);
 
 // Patient Data Routes
@@ -88,7 +89,7 @@ Route::group(['prefix' => 'appointment'], function () {
 });
 
 Route::group(['prefix' => 'ai'], function () {
-    Route::post('chat', [AIChatController::class, 'chat']);
+    Route::post('chat', [AIChatController::class, 'chat'])->middleware('auth:api');
 });
 
 Route::group(['prefix' => 'echo-history'], function () {

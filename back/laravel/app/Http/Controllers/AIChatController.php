@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Services\AppointmentService;
+use Illuminate\Support\Facades\Auth;
+
 
 class AIChatController extends Controller
 {
@@ -26,47 +28,62 @@ class AIChatController extends Controller
     }
 
     public function chat(ChatRequest $request)
-    {
-        // دریافت پیام‌ها و فیلتر کردن سیستم پرامپت احتمالی
-        $messages = array_values(array_filter(
-            $request->input('messages', []),
-            fn($m) => $m['role'] !== 'system'
-        ));
+{
+    // ۱. دریافت پیام‌ها
+    $messages = array_values(array_filter(
+        $request->input('messages', []),
+        fn($m) => $m['role'] !== 'system'
+    ));
 
-        // دریافت وضعیت قبلی از درخواست (اگر وجود داشته باشد)
-        $previousState = $request->input('current_slots', [
-            'doctor_name' => null,
-            'service_name' => null,
-            'date' => null,
-            'start_time' => null
+    // ۲. دریافت وضعیت فعلی اسلات‌ها
+    $previousState = $request->input('current_slots', [
+        'doctor_name' => null,
+        'service_name' => null,
+        'date' => null,
+        'start_time' => null
+    ]);
+
+    $lastUserMessage = end($messages)['content'] ?? '';
+
+    if (empty($lastUserMessage)) {
+        return response()->json(['message' => 'پیام نمی‌تواند خالی باشد.'], 400);
+    }
+
+    try {
+        // --- بخش اصلاح شده (Logic Logic) ---
+
+        // بررسی اینکه آیا کاربر در حال طی کردن مراحل رزرو است؟
+        // اگر نام دکتر یا خدمت از قبل مشخص شده، یعنی کاربر در "جریان رزرو" قرار دارد.
+        $isInBookingProcess = !empty($previousState['doctor_name']) || !empty($previousState['service_name']);
+
+        if ($isInBookingProcess) {
+            // بدون توجه به خروجی Router، به نوبت‌دهی ادامه بده
+            return $this->handleAppointmentIntent($messages, $lastUserMessage, $previousState);
+        }
+
+        // اگر کاربر تازه مکالمه را شروع کرده یا هیچ اسلاتی پر نشده، حالا مسیریابی کن
+        $routeResponse = Http::timeout(20)->post("{$this->pythonServiceUrl}/route", [
+            'sentence' => $lastUserMessage
         ]);
 
-        $lastUserMessage = end($messages)['content'] ?? '';
+        $routeData = $routeResponse->json();
+        $intent = $routeData['intent'] ?? 'appointment';
+        $score = $routeData['score'] ?? 0;
 
-        if (empty($lastUserMessage)) {
-            return response()->json(['message' => 'پیام نمی‌تواند خالی باشد.'], 400);
+        // سخت‌گیری بیشتر: اگر امتیاز پشتیبانی کم بود، باز هم ببرش سمت نوبت‌دهی
+        if ($intent === 'support' && $score > 0.8) {
+            return $this->handleSupportIntent($messages, $lastUserMessage);
         }
 
-        try {
-            // مسیریابی هوشمند (نوبت‌دهی یا پشتیبانی)
-            $routeResponse = Http::timeout(20)->post("{$this->pythonServiceUrl}/route", [
-                'sentence' => $lastUserMessage
-            ]);
+        return $this->handleAppointmentIntent($messages, $lastUserMessage, $previousState);
 
-            $intent = $routeResponse->successful() ? ($routeResponse->json()['intent'] ?? 'appointment') : 'appointment';
-
-            if ($intent === 'support') {
-                return $this->handleSupportIntent($messages, $lastUserMessage);
-            }
-
-            // ارسال وضعیت قبلی به هندلر نوبت‌دهی
-            return $this->handleAppointmentIntent($messages, $lastUserMessage, $previousState);
-
-        } catch (\Exception $e) {
-            Log::error('Routing Error: ' . $e->getMessage());
-            return response()->json(['error' => ['message' => 'خطا در پردازش درخواست شما.']], 500);
-        }
-    }    /**
+    } catch (\Exception $e) {
+        Log::error('Routing Error: ' . $e->getMessage());
+        return response()->json(['error' => ['message' => 'خطا در پردازش درخواست شما.']], 500);
+    }
+} 
+    
+    /**
      * مدیریت سناریوی پشتیبانی و سوالات عمومی (کاملاً بدون ابزار و سبک)
      */
     private function handleSupportIntent($messages, $lastUserMessage)
@@ -111,16 +128,20 @@ class AIChatController extends Controller
      */
     private function handleAppointmentIntent($messages, $lastUserMessage, $previousState = [])
     {
-        $user = auth('api')->user();
+        $user = Auth::user();
 
         // تبدیل وضعیت قبلی به متنی برای مدل (حافظه فشرده)
         $stateContext = 'وضعیت فعلی رزرو: ' . json_encode($previousState, JSON_UNESCAPED_UNICODE);
+        $today = now()->format('Y-m-d');
+        $dayOfWeek = now()->dayName;
 
         $systemPrompt = "تو یک استخراج‌کننده فرم هوشمند هستی.
     {$stateContext}
     وظیفه داری با توجه به آخرین پیام کاربر، اطلاعات را بروزرسانی کنی.
     فقط JSON برگردان شامل کلیدهای: doctor_name, service_name, date, start_time.
-    اگر فیلدی تغییر نکرده، همان مقدار قبلی را برگردان. ساعت را به فرمت HH:mm (انگلیسی) تبدیل کن.";
+    اگر فیلدی تغییر نکرده، همان مقدار قبلی را برگردان. ساعت را به فرمت HH:mm (انگلیسی) تبدیل کن.
+    امروز {$dayOfWeek} تاریخ {$today} است.
+اگر کاربر از کلمات نسبی مثل 'فردا' استفاده کرد، تو عیناً کلمه 'فردا' را در فیلد date بنویس و خودت تبدیل نکن.";
 
         // برای بهینه‌سازی، فقط پیام آخر کاربر را همراه با وضعیت قبلی به مدل می‌دهیم
         $aiResponse = $this->callLLMRaw([['role' => 'user', 'content' => $lastUserMessage]], $systemPrompt);
@@ -195,55 +216,105 @@ class AIChatController extends Controller
             }
         }
 
-        // ۲. شناسایی خدمت (طبق کد قبلی شما)
-        // ۲. شناسایی خدمت (طبق کد قبلی شما با یک اصلاح کوچک)
+        // ۲. شناسایی خدمت
         $serviceFound = null;
         if (!empty($slots['service_name'])) {
-            $serviceFound = \App\Models\Service::where('title', 'like', "%{$slots['service_name']}%")->first();
+            // پاکسازی نام خدمت برای جستجوی بهتر
+            $searchTerm = trim($slots['service_name']);
+            
+            $serviceFound = \App\Models\Service::where('title', 'like', "%{$searchTerm}%")->first();
+
             if ($serviceFound) {
                 $slots['service_name'] = $serviceFound->title;
+                // نکته مهم: اینجا باید مقدار helper رو خالی کنی که هوش مصنوعی گیج نشه
+                $serviceHelperText = "خدمت انتخاب شده: {$serviceFound->title}"; 
             } else {
                 $allServices = \App\Models\Service::pluck('title')->toArray();
-                $serviceHelperText = 'خدمت انتخاب شده نامعتبر است. لیست خدمات واقعی ما: [' . implode('، ', $allServices) . ']';
-                $slots['service_name'] = null;
-            }
-        } else {
-            // --- این بخش اضافه شد: اگر کاربر هنوز خدمتی انتخاب نکرده، لیست رو براش بفرست ---
-            $allServices = \App\Models\Service::pluck('title')->toArray();
-            if (!empty($allServices)) {
-                $serviceHelperText = 'کاربر هنوز خدمتی انتخاب نکرده است. حتماً این لیست دقیق را به کاربر نشان بده تا انتخاب کند: [' . implode('، ', $allServices) . ']';
+                $serviceHelperText = 'کاربر خدمتی گفت که در لیست نیست. لیست دقیق خدمات ما: [' . implode('، ', $allServices) . ']. از کاربر بخواه دقیقاً یکی از این موارد را انتخاب کند.';
+                $slots['service_name'] = null; // ریست کن تا دوباره بپرسه
             }
         }
+
+        // // ۲. شناسایی خدمت (طبق کد قبلی شما)
+        // // ۲. شناسایی خدمت (طبق کد قبلی شما با یک اصلاح کوچک)
+        // $serviceFound = null;
+        // if (!empty($slots['service_name'])) {
+        //     $serviceFound = \App\Models\Service::where('title', 'like', "%{$slots['service_name']}%")->first();
+        //     if ($serviceFound) {
+        //         $slots['service_name'] = $serviceFound->title;
+        //     } else {
+        //         $allServices = \App\Models\Service::pluck('title')->toArray();
+        //         $serviceHelperText = 'خدمت انتخاب شده نامعتبر است. لیست خدمات واقعی ما: [' . implode('، ', $allServices) . ']';
+        //         $slots['service_name'] = null;
+        //     }
+        // } else {
+        //     // --- این بخش اضافه شد: اگر کاربر هنوز خدمتی انتخاب نکرده، لیست رو براش بفرست ---
+        //     $allServices = \App\Models\Service::pluck('title')->toArray();
+        //     if (!empty($allServices)) {
+        //         $serviceHelperText = 'کاربر هنوز خدمتی انتخاب نکرده است. حتماً این لیست دقیق را به کاربر نشان بده تا انتخاب کند: [' . implode('، ', $allServices) . ']';
+        //     }
+        // }
 
         // ۳. بررسی تاریخ و استخراج زمان‌های خالی
-        if ($staffFound && $serviceFound && !empty($slots['date'])) {
-            // تبدیل تاریخ "فردا" یا "شنبه" به تاریخ میلادی استاندارد Y-m-d
-            $standardDate = $this->convertRelativeDateToStandard($slots['date']);
+        // if ($staffFound && $serviceFound && !empty($slots['date'])) {
+        //     // تبدیل تاریخ "فردا" یا "شنبه" به تاریخ میلادی استاندارد Y-m-d
+        //     $standardDate = $this->convertRelativeDateToStandard($slots['date']);
 
-            // ساخت یک Request فیک برای پاس دادن به سرویس نوبت‌دهی شما
-            $availableSlotsRequest = new \App\Http\Requests\Appointment\AvailableSlotsRequest([
-                'staff_id' => $staffFound->id,
-                'service_id' => $serviceFound->id,
-                'date' => $standardDate
-            ]);
+        //     // ساخت یک Request فیک برای پاس دادن به سرویس نوبت‌دهی شما
+        //     $availableSlotsRequest = new \App\Http\Requests\Appointment\AvailableSlotsRequest([
+        //         'staff_id' => $staffFound->id,
+        //         'service_id' => $serviceFound->id,
+        //         'date' => $standardDate
+        //     ]);
 
-            try {
-                $availableData = $this->appointmentService->getAvailableSlots($availableSlotsRequest);
-                $availableSlots = $availableData['data'];
+        //     try {
+        //         $availableData = $this->appointmentService->getAvailableSlots($availableSlotsRequest);
+        //         $availableSlots = $availableData['data'];
 
-                if (empty($availableSlots)) {
-                    $slotsText = "متاسفانه برای تاریخ {$slots['date']} هیچ زمان خالی پیدا نشد. لطفاً روز دیگری را بپرسید.";
-                    $slots['date'] = null; // ریست تاریخ برای پرسش مجدد
-                } else {
-                    // تبدیل لیست زمان‌ها به یک رشته متنی برای هوش مصنوعی
-                    $times = collect($availableSlots)->map(fn($s) => $s['start_time'])->take(8)->implode('، ');
-                    $slotsText = "زمان‌های خالی پیدا شده برای {$slots['date']}: [{$times}]. از کاربر بخواه یکی را انتخاب کند.";
+        //         if (empty($availableSlots)) {
+        //             $slotsText = "متاسفانه برای تاریخ {$slots['date']} هیچ زمان خالی پیدا نشد. لطفاً روز دیگری را بپرسید.";
+        //             $slots['date'] = null; // ریست تاریخ برای پرسش مجدد
+        //         } else {
+        //             // تبدیل لیست زمان‌ها به یک رشته متنی برای هوش مصنوعی
+        //             $times = collect($availableSlots)->map(fn($s) => $s['start_time'])->take(8)->implode('، ');
+        //             $slotsText = "زمان‌های خالی پیدا شده برای {$slots['date']}: [{$times}]. از کاربر بخواه یکی را انتخاب کند.";
+        //         }
+        //     } catch (\Exception $e) {
+        //         $slotsText = 'خطا در استخراج زمان‌های خالی.';
+        //     }
+        // }
+
+        // ۳. بررسی تاریخ و استخراج زمان‌های خالی
+        if ($staffFound && $serviceFound) {
+            if (empty($slots['date'])) {
+                // اگر تاریخ نداریم، از کاربر بخواهیم تاریخ بدهد
+                $slotsText = "هنوز تاریخی انتخاب نشده است. از کاربر بخواه برای چه روزی (مثلاً فردا، شنبه یا ...) نوبت می‌خواهد.";
+            } else {
+                $standardDate = $this->convertRelativeDateToStandard($slots['date']);
+                
+                $availableSlotsRequest = new \App\Http\Requests\Appointment\AvailableSlotsRequest([
+                    'staff_id' => $staffFound->id,
+                    'service_id' => $serviceFound->id,
+                    'date' => $standardDate
+                ]);
+
+                try {
+                    $availableData = $this->appointmentService->getAvailableSlots($availableSlotsRequest);
+                    $availableSlots = $availableData['data'] ?? [];
+
+                    if (empty($availableSlots)) {
+                        $slotsText = "متاسفانه برای تاریخ {$slots['date']} هیچ زمان خالی پیدا نشد. از کاربر بخواه روز دیگری را انتخاب کند.";
+                        $slots['date'] = null; // ریست کردن تاریخ برای پرسش مجدد
+                    } else {
+                        $times = collect($availableSlots)->map(fn($s) => $s['start_time'])->take(8)->implode('، ');
+                        // مقدار واقعی که باید به هوش مصنوعی برسد
+                        $slotsText = "زمان‌های خالی در تاریخ {$slots['date']}: [{$times}]. حتماً این زمان‌ها را به کاربر نشان بده تا یکی را انتخاب کند.";
+                    }
+                } catch (\Exception $e) {
+                    $slotsText = "خطا در دریافت نوبت‌ها: " . $e->getMessage();
                 }
-            } catch (\Exception $e) {
-                $slotsText = 'خطا در استخراج زمان‌های خالی.';
             }
         }
-
         // ۴. بررسی وجود ساعت و ثبت نهایی
         if ($staffFound && $serviceFound && !empty($slots['date']) && !empty($slots['start_time'])) {
 
@@ -307,7 +378,9 @@ class AIChatController extends Controller
     {
         $date = now();
 
-        if (str_contains($relativeDate, 'فردا')) $date->addDay();
+        if (str_contains($relativeDate, 'فردا')){
+            $date->addDay(1);     
+        }
         if (str_contains($relativeDate, 'پس‌فردا')) $date->addDays(2);
 
         // نگاشت روزهای هفته (ساده شده)
