@@ -1,4 +1,4 @@
-<div class="user-dashboard animate__animated animate__fadeIn">
+<div class="user-dashboard animate__animated animate__fadeIn ">
 
   @if (loading) {
     <div class="loading-container">
@@ -40,7 +40,7 @@
     
     <!-- 3D HEART VISUALIZATION -->
     @if (heartVisualizationData) {
-      <div class="row ">
+      <div class="row mb-5">
         <div class="col-12">
           <mat-card class="heart-visualization-card">
             <mat-card-header>
@@ -104,19 +104,7 @@
                 </div>
               }
 
-              @if (visitDates.length > 0) {
-                <mat-form-field appearance="outline" class="w-100 mb-3">
-                  <mat-label>{{ getTranslation('selectDate') || 'انتخاب تاریخ' }}</mat-label>
-                  <mat-select [(ngModel)]="selectedDate" (ngModelChange)="onDateChange($event)">
-                    <mat-option *ngFor="let date of visitDates" [value]="date">
-                      {{ date }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-              }
-
-              <!-- LLM REPORT CARD -->
-              @if (hasLlmReport && llmReportText) {
+                            @if (hasLlmReport && llmReportText) {
                 <div class="llm-report-card mb-4">
                   <div class="report-header">
                     <div class="header-content">
@@ -169,11 +157,25 @@
                 </div>
               }
 
+
+              @if (visitDates.length > 0) {
+                <mat-form-field appearance="outline" class="w-100 mb-3">
+                  <mat-label>{{ getTranslation('selectDate') || 'انتخاب تاریخ' }}</mat-label>
+                  <mat-select [(ngModel)]="selectedDate" (ngModelChange)="onDateChange($event)">
+                    <mat-option *ngFor="let date of visitDates" [value]="date">
+                      {{ date }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              }
+
+              <!-- LLM REPORT CARD -->
+
               @if (selectedDate && getVisitList(selectedDate).length > 0) {
 
                  @for (visit of getVisitList(selectedDate); track visit.view_instance) {
                    @if (visit.type === 'fuzzy_summary') {
-                     <div class="visit-summary summary-card mb-3">
+                     <!-- <div class="visit-summary summary-card mb-3">
                        <div class="summary-header">
                          <mat-icon>assessment</mat-icon>
                          <h5>{{ getTranslation('fuzzySummary') || 'خلاصه تشخیصی' }}</h5>
@@ -211,10 +213,10 @@
                            </div>
                          </div>
                        }
-                     </div>
+                     </div> -->
                    } @else {
                      <div class="visit-summary visit-card mb-3">
-                       <div class="visit-header">
+                       <!-- <div class="visit-header">
                          <div>
                            <h5>
                              <mat-icon>videocam</mat-icon>
@@ -236,7 +238,7 @@
                              {{ visit.processed_at }}
                            </span>
                          </div>
-                       </div>
+                       </div> -->
 
                        @if (visit.measurements?.length) {
                          <div class="measurements-section mt-3">
