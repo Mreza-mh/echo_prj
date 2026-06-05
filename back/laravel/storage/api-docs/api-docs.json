@@ -15,6 +15,255 @@
         }
     ],
     "paths": {
+        "/ai/chat": {
+            "post": {
+                "tags": [
+                    "AI Chat"
+                ],
+                "summary": "ارسال پیام به دستیار هوشمند رزرو نوبت",
+                "description": "این endpoint یک دستیار هوشمند مبتنی بر LLM است که دو قابلیت اصلی دارد:\n *\n * **۱. رزرو نوبت (Appointment Flow):**\n * کاربر می‌تواند به صورت مکالمه‌ای اطلاعات رزرو را تکمیل کند. سیستم به صورت خودکار\n * نام پزشک، خدمت، تاریخ و ساعت را از پیام کاربر استخراج می‌کند (Slot Filling).\n * پس از تکمیل تمام فیلدها، نوبت به صورت خودکار ثبت می‌شود.\n *\n * **۲. پشتیبانی و سوالات عمومی (Support Flow):**\n * سوالات عمومی درباره کلینیک از طریق جستجوی RAG در اسناد کلینیک پاسخ داده می‌شود.\n *\n * **نحوه مکالمه چندمرحله‌ای:**\n * در هر درخواست، آرایه messages را با تمام تاریخچه مکالمه بفرستید.\n * مقدار current_slots بازگشتی از پاسخ قبلی را نیز در درخواست بعدی include کنید\n * تا حافظه مکالمه حفظ شود.\n *\n * **⚠️ نکته ۱ — current_slots در response:**\n * فقط در جریان رزرو برگشت داده می‌شود. در جریان پشتیبانی این فیلد در response وجود ندارد؛\n * کلاینت باید null-check انجام دهد.\n *\n * **⚠️ نکته ۲ — مکالمه چندمرحله‌ای:**\n * کلاینت باید هر بار هم messages کامل و هم current_slots از پاسخ قبلی را بفرستد.\n * در صورت فراموش کردن current_slots، هر پیام مثل یک مکالمه جدید پردازش می‌شود.\n *\n * **⚠️ نکته ۳ — ثبت موفق نوبت:**\n * وقتی همه ۴ اسلات (پزشک، خدمت، تاریخ، ساعت) تکمیل شوند و نوبت ثبت شود،\n * فیلد current_slots دیگر در response ارسال نمی‌شود و فقط choices با پیام تأیید برمی‌گردد.\n * کلاینت باید این حالت را تشخیص داده و state محلی رزرو را ریست کند.",
+                "operationId": "5988adeffafb373fafc7f5c8e11d4714",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "messages"
+                                ],
+                                "properties": {
+                                    "messages": {
+                                        "description": "تاریخچه کامل مکالمه. پیام‌های system به صورت خودکار فیلتر می‌شوند.",
+                                        "type": "array",
+                                        "items": {
+                                            "required": [
+                                                "role",
+                                                "content"
+                                            ],
+                                            "properties": {
+                                                "role": {
+                                                    "description": "نقش فرستنده پیام",
+                                                    "type": "string",
+                                                    "enum": [
+                                                        "user",
+                                                        "assistant"
+                                                    ],
+                                                    "example": "user"
+                                                },
+                                                "content": {
+                                                    "description": "متن پیام",
+                                                    "type": "string",
+                                                    "example": "می‌خوام با دکتر احمدی نوبت بگیرم"
+                                                }
+                                            },
+                                            "type": "object"
+                                        },
+                                        "example": [
+                                            {
+                                                "role": "user",
+                                                "content": "سلام"
+                                            },
+                                            {
+                                                "role": "assistant",
+                                                "content": "سلام! چطور می‌تونم کمکتون کنم؟"
+                                            },
+                                            {
+                                                "role": "user",
+                                                "content": "می‌خوام با دکتر احمدی نوبت بگیرم"
+                                            }
+                                        ]
+                                    },
+                                    "current_slots": {
+                                        "description": "وضعیت فعلی اسلات‌های رزرو. مقدار بازگشتی از پاسخ قبلی را اینجا بفرستید تا حافظه مکالمه حفظ شود. اگر ارسال نشود هر پیام به عنوان مکالمه جدید پردازش می‌شود.",
+                                        "properties": {
+                                            "doctor_name": {
+                                                "description": "نام پزشک استخراج‌شده از مکالمه قبلی",
+                                                "type": "string",
+                                                "example": "دکتر علی احمدی",
+                                                "nullable": true
+                                            },
+                                            "service_name": {
+                                                "description": "نام خدمت استخراج‌شده از مکالمه قبلی",
+                                                "type": "string",
+                                                "example": "اکوکاردیوگرافی",
+                                                "nullable": true
+                                            },
+                                            "date": {
+                                                "description": "تاریخ رزرو به فرمت Y-m-d یا عبارت نسبی مثل فردا",
+                                                "type": "string",
+                                                "example": "2026-06-10",
+                                                "nullable": true
+                                            },
+                                            "start_time": {
+                                                "description": "ساعت شروع به فرمت HH:mm",
+                                                "type": "string",
+                                                "example": "09:30",
+                                                "nullable": true
+                                            }
+                                        },
+                                        "type": "object",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "پاسخ موفق دستیار هوشمند",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "choices": {
+                                            "description": "آرایه پاسخ‌های مدل، سازگار با فرمت OpenAI. همیشه در response وجود دارد.",
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "message": {
+                                                        "properties": {
+                                                            "role": {
+                                                                "type": "string",
+                                                                "example": "assistant"
+                                                            },
+                                                            "content": {
+                                                                "description": "پاسخ متنی دستیار به فارسی",
+                                                                "type": "string",
+                                                                "example": "پزشکان موجود ما: دکتر علی احمدی، دکتر مریم رضایی. کدام را انتخاب می‌کنید؟"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "current_slots": {
+                                            "description": "وضعیت به‌روز شده اسلات‌های رزرو. این مقدار را در درخواست بعدی به عنوان current_slots بفرستید. ⚠️ فقط در جریان رزرو برگردانده می‌شود — در جریان پشتیبانی و پس از ثبت موفق نوبت این فیلد در response وجود ندارد. کلاینت باید null-check انجام دهد و در صورت نبود این فیلد، state محلی رزرو را ریست کند.",
+                                            "properties": {
+                                                "doctor_name": {
+                                                    "type": "string",
+                                                    "example": "دکتر علی احمدی",
+                                                    "nullable": true
+                                                },
+                                                "service_name": {
+                                                    "type": "string",
+                                                    "example": "اکوکاردیوگرافی",
+                                                    "nullable": true
+                                                },
+                                                "date": {
+                                                    "type": "string",
+                                                    "example": "2026-06-10",
+                                                    "nullable": true
+                                                },
+                                                "start_time": {
+                                                    "type": "string",
+                                                    "example": "09:30",
+                                                    "nullable": true
+                                                },
+                                                "user_id": {
+                                                    "description": "شناسه کاربر احراز هویت‌شده",
+                                                    "type": "integer",
+                                                    "example": 42,
+                                                    "nullable": true
+                                                }
+                                            },
+                                            "type": "object",
+                                            "nullable": true
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "پیام کاربر خالی است",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "پیام نمی‌تواند خالی باشد."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "توکن احراز هویت ارسال نشده یا منقضی شده است",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "خطای اعتبارسنجی داده‌های ورودی",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The messages field is required."
+                                        },
+                                        "errors": {
+                                            "type": "object",
+                                            "example": {
+                                                "messages": [
+                                                    "The messages field is required."
+                                                ]
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "خطای داخلی سرور یا عدم دسترسی به سرویس هوش مصنوعی",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "properties": {
+                                                "message": {
+                                                    "type": "string",
+                                                    "example": "خطا در پردازش درخواست شما."
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
         "/appointment/get-available-slots": {
             "post": {
                 "tags": [
@@ -2784,6 +3033,10 @@
         }
     },
     "tags": [
+        {
+            "name": "AI Chat",
+            "description": "AI Chat"
+        },
         {
             "name": "Appointment",
             "description": "Appointment"
