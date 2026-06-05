@@ -1,58 +1,75 @@
 <div class="heart-visualization-container">
-  
-  <!-- 3D Canvas -->
-  <canvas #heartCanvas class="heart-canvas"></canvas>
 
-  <!-- Loading Overlay -->
-  @if (!modelLoaded) {
-    <div class="loading-overlay">
-      <div class="loading-content">
-        <div class="spinner"></div>
-        <p class="loading-text">Loading 3D Heart Model...</p>
-        <div class="progress-bar">
-          <div class="progress-fill" [style.width.%]="loadProgress"></div>
+  <!-- Canvas Wrapper: contains canvas + all overlays (loading, labels) -->
+  <div class="canvas-wrapper">
+
+    <canvas #heartCanvas class="heart-canvas"></canvas>
+
+    <!-- Loading Overlay -->
+    @if (!modelLoaded) {
+      <div class="loading-overlay">
+        <div class="loading-content">
+          <div class="spinner"></div>
+          <p class="loading-text">Loading 3D Heart Model...</p>
+          <div class="progress-bar">
+            <div class="progress-fill" [style.width.%]="loadProgress"></div>
+          </div>
+          <p class="progress-text">{{ loadProgress }}%</p>
         </div>
-        <p class="progress-text">{{ loadProgress }}%</p>
       </div>
-    </div>
-  }
+    }
 
-  <!-- Measurement Labels Overlay -->
-  <div #overlayEl class="labels-overlay">
-    @for (label of measurementLabels; track label.id) {
-      @if (label.visible) {
-        <div 
-          class="measurement-label"
-          [class.status-normal]="label.status === 'normal'"
-          [class.status-warn]="label.status === 'warn'"
-          [class.status-danger]="label.status === 'danger'"
-          [class.status-info]="label.status === 'info'"
-          [style.left.px]="label.screenX"
-          [style.top.px]="label.screenY">
-          <div class="label-content">
-            <div class="label-name">{{ label.text }}</div>
-            <div class="label-value">
-              {{ label.value }} <span class="label-unit">{{ label.unit }}</span>
+    <!-- Measurement Labels Overlay -->
+    <div #overlayEl class="labels-overlay">
+      @for (label of measurementLabels; track label.id) {
+        @if (label.visible) {
+          <div
+            class="measurement-label"
+            [class.status-normal]="label.status === 'normal'"
+            [class.status-warn]="label.status === 'warn'"
+            [class.status-danger]="label.status === 'danger'"
+            [class.status-info]="label.status === 'info'"
+            [style.left.px]="label.screenX"
+            [style.top.px]="label.screenY">
+            <div class="label-content">
+              <div class="label-name">{{ label.text }}</div>
+              <div class="label-value">
+                {{ label.value }}<span class="label-unit">{{ label.unit }}</span>
+              </div>
             </div>
           </div>
-        </div>
+        }
       }
-    }
-  </div>
+    </div>
 
-  <!-- Controls Panel -->
+  </div>
+  <!-- /canvas-wrapper -->
+
+  <!-- Controls Panel: sibling of canvas-wrapper, floats on desktop, stacks on mobile -->
   <div class="controls-panel">
-    
+
+    <!-- ECG Decorative Header -->
+    <div class="panel-header">
+      <svg class="ecg-line" viewBox="0 0 300 28" preserveAspectRatio="none" aria-hidden="true">
+        <polyline points="
+          0,14  30,14  38,14  42,4   46,24  50,14
+          60,14  66,14  70,2   74,26  78,14
+          90,14  96,14  100,6  104,22 108,14
+          120,14 300,14
+        "/>
+      </svg>
+    </div>
+
     <!-- Tabs -->
     <div class="tabs">
-      <button 
+      <button
         class="tab-btn"
         [class.active]="activeTab === 'echo'"
         (click)="setTab('echo')">
         <i class="icon">📊</i>
         Echo Data
       </button>
-      <button 
+      <button
         class="tab-btn"
         [class.active]="activeTab === 'patient'"
         (click)="setTab('patient')">
@@ -63,16 +80,18 @@
 
     <!-- Tab Content -->
     <div class="tab-content">
-      
+
       <!-- Echo Data Tab -->
       @if (activeTab === 'echo' && patientData) {
         <div class="info-grid">
-          
+
           @if (patientData.lvid_d) {
             <div class="info-item">
               <span class="info-label">LVIDd</span>
               <span class="info-value">{{ patientData.lvid_d | number:'1.2-2' }} cm</span>
-              <span class="info-status" [class.normal]="patientData.lvid_d <= 5.2" [class.warn]="patientData.lvid_d > 5.2">
+              <span class="info-status"
+                [class.normal]="patientData.lvid_d <= 5.2"
+                [class.warn]="patientData.lvid_d > 5.2">
                 {{ patientData.lvid_d <= 5.2 ? '✓' : '⚠' }}
               </span>
             </div>
@@ -82,7 +101,9 @@
             <div class="info-item">
               <span class="info-label">LVIDs</span>
               <span class="info-value">{{ patientData.lvid_s | number:'1.2-2' }} cm</span>
-              <span class="info-status" [class.normal]="patientData.lvid_s <= 3.8" [class.warn]="patientData.lvid_s > 3.8">
+              <span class="info-status"
+                [class.normal]="patientData.lvid_s <= 3.8"
+                [class.warn]="patientData.lvid_s > 3.8">
                 {{ patientData.lvid_s <= 3.8 ? '✓' : '⚠' }}
               </span>
             </div>
@@ -92,7 +113,9 @@
             <div class="info-item">
               <span class="info-label">IVS</span>
               <span class="info-value">{{ patientData.ivs | number:'1.1-1' }} mm</span>
-              <span class="info-status" [class.normal]="patientData.ivs <= 12" [class.warn]="patientData.ivs > 12">
+              <span class="info-status"
+                [class.normal]="patientData.ivs <= 12"
+                [class.warn]="patientData.ivs > 12">
                 {{ patientData.ivs <= 12 ? '✓' : '⚠' }}
               </span>
             </div>
@@ -102,7 +125,9 @@
             <div class="info-item">
               <span class="info-label">PW</span>
               <span class="info-value">{{ patientData.pw | number:'1.1-1' }} mm</span>
-              <span class="info-status" [class.normal]="patientData.pw >= 6 && patientData.pw <= 12" [class.warn]="patientData.pw < 6 || patientData.pw > 12">
+              <span class="info-status"
+                [class.normal]="patientData.pw >= 6 && patientData.pw <= 12"
+                [class.warn]="patientData.pw < 6 || patientData.pw > 12">
                 {{ (patientData.pw >= 6 && patientData.pw <= 12) ? '✓' : '⚠' }}
               </span>
             </div>
@@ -112,8 +137,8 @@
             <div class="info-item">
               <span class="info-label">LA Volume</span>
               <span class="info-value">{{ patientData.la_volume | number:'1.1-1' }} mL</span>
-              <span class="info-status" 
-                [class.normal]="patientData.la_volume <= 28" 
+              <span class="info-status"
+                [class.normal]="patientData.la_volume <= 28"
                 [class.warn]="patientData.la_volume > 28 && patientData.la_volume <= 34"
                 [class.danger]="patientData.la_volume > 34">
                 {{ patientData.la_volume <= 28 ? '✓' : patientData.la_volume <= 34 ? '⚠' : '✗' }}
@@ -125,7 +150,9 @@
             <div class="info-item">
               <span class="info-label">RA Volume</span>
               <span class="info-value">{{ patientData.ra_volume | number:'1.1-1' }} mL</span>
-              <span class="info-status" [class.normal]="patientData.ra_volume <= 45" [class.warn]="patientData.ra_volume > 45">
+              <span class="info-status"
+                [class.normal]="patientData.ra_volume <= 45"
+                [class.warn]="patientData.ra_volume > 45">
                 {{ patientData.ra_volume <= 45 ? '✓' : '⚠' }}
               </span>
             </div>
@@ -135,7 +162,9 @@
             <div class="info-item">
               <span class="info-label">Aortic Root</span>
               <span class="info-value">{{ patientData.aortic_root | number:'1.2-2' }} cm</span>
-              <span class="info-status" [class.normal]="patientData.aortic_root <= 3.8" [class.warn]="patientData.aortic_root > 3.8">
+              <span class="info-status"
+                [class.normal]="patientData.aortic_root <= 3.8"
+                [class.warn]="patientData.aortic_root > 3.8">
                 {{ patientData.aortic_root <= 3.8 ? '✓' : '⚠' }}
               </span>
             </div>
@@ -145,8 +174,8 @@
             <div class="info-item highlight">
               <span class="info-label">Ejection Fraction</span>
               <span class="info-value">{{ ef | number:'1.0-0' }}%</span>
-              <span class="info-status" 
-                [class.normal]="ef >= 55" 
+              <span class="info-status"
+                [class.normal]="ef >= 55"
                 [class.warn]="ef >= 40 && ef < 55"
                 [class.danger]="ef < 40">
                 {{ ef >= 55 ? '✓' : ef >= 40 ? '⚠' : '✗' }}
@@ -158,7 +187,7 @@
             <div class="info-item highlight">
               <span class="info-label">Risk Score</span>
               <span class="info-value">{{ patientData.score | number:'1.1-1' }}</span>
-              <span class="info-badge" 
+              <span class="info-badge"
                 [class.badge-normal]="patientData.category === 'normal'"
                 [class.badge-warn]="patientData.category === 'mild' || patientData.category === 'moderate'"
                 [class.badge-danger]="patientData.category === 'severe'">
@@ -173,7 +202,7 @@
       <!-- Patient Info Tab -->
       @if (activeTab === 'patient' && patientData) {
         <div class="info-grid">
-          
+
           <div class="info-item">
             <span class="info-label">Patient ID</span>
             <span class="info-value">{{ patientData.patient_info.id }}</span>
@@ -205,8 +234,8 @@
             <div class="info-item">
               <span class="info-label">BMI</span>
               <span class="info-value">{{ bmi | number:'1.1-1' }}</span>
-              <span class="info-status" 
-                [class.normal]="bmi >= 18.5 && bmi < 25" 
+              <span class="info-status"
+                [class.normal]="bmi >= 18.5 && bmi < 25"
                 [class.warn]="bmi >= 25 && bmi < 30"
                 [class.danger]="bmi < 18.5 || bmi >= 30">
                 {{ (bmi >= 18.5 && bmi < 25) ? '✓' : '⚠' }}
@@ -235,5 +264,6 @@
     </div>
 
   </div>
+  <!-- /controls-panel -->
 
 </div>
