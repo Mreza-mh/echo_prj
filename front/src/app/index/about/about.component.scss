@@ -1,12 +1,12 @@
 .about-page {
-  background-color: var(--bg-secondary);
+  background-color: var(--bg-secondary, #f8f9fa);
   min-height: 100vh;
   padding-bottom: 80px;
 
   .hero-section {
     position: relative;
-    padding: 120px 0 80px;
-    background: linear-gradient(135deg, var(--accent-color) 0%, var(--mat-sys-primary) 100%);
+    padding: 140px 0 120px;
+    background: linear-gradient(135deg, var(--mat-sys-primary, #1976d2) 0%, #0d47a1 100%);
     color: white;
     overflow: hidden;
     text-align: center;
@@ -14,6 +14,14 @@
     .hero-content {
       position: relative;
       z-index: 2;
+    }
+
+    .hero-badges .badge {
+      font-size: 0.9rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      backdrop-filter: blur(5px);
     }
 
     .hero-shapes {
@@ -26,78 +34,101 @@
 
       .shape {
         position: absolute;
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
         border-radius: 50%;
+        backdrop-filter: blur(2px);
       }
 
       .shape-1 {
-        width: 300px;
-        height: 300px;
-        top: -100px;
+        width: 400px;
+        height: 400px;
+        top: -150px;
         right: -100px;
       }
 
       .shape-2 {
-        width: 200px;
-        height: 200px;
+        width: 250px;
+        height: 250px;
         bottom: -50px;
         left: -50px;
+      }
+
+      .shape-3 {
+        width: 150px;
+        height: 150px;
+        bottom: 20%;
+        right: 15%;
+        background: rgba(255, 255, 255, 0.08);
       }
     }
   }
 
   .content-section {
-    margin-top: -50px;
+    margin-top: -80px; /* Overlaps with hero section for a modern look */
     position: relative;
     z-index: 3;
   }
 
-  .card {
-    background: var(--bg-primary);
+  .story-card {
     border-radius: 24px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: var(--bg-primary, #ffffff);
+    
+    .icon-circle {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      mat-icon {
+        font-size: 40px;
+        width: 40px;
+        height: 40px;
+      }
+    }
+  }
+
+  .feature-card {
+    border-radius: 20px;
+    background: var(--bg-primary, #ffffff);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+    border: 1px solid rgba(0,0,0,0.03) !important;
 
     &:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 15px 35px var(--shadow) !important;
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08) !important;
+      
+      .feature-icon {
+        transform: scale(1.1);
+      }
     }
 
-    .icon-circle {
-      width: 60px;
-      height: 60px;
-      background: var(--hover-bg);
+    .feature-icon {
+      width: 64px;
+      height: 64px;
       border-radius: 16px;
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: transform 0.3s ease;
 
       mat-icon {
-        color: var(--accent-color);
         font-size: 32px;
         width: 32px;
         height: 32px;
       }
     }
 
-    h2 {
-      color: var(--text-primary);
+    h4 {
+      color: var(--text-primary, #2d3748);
+      font-size: 1.25rem;
     }
 
     p {
-      color: var(--text-secondary) !important;
-    }
-
-    .features-list {
-      .feature-item {
-        color: var(--text-primary);
-        font-weight: 500;
-        
-        mat-icon {
-          font-size: 20px;
-          width: 20px;
-          height: 20px;
-        }
-      }
+      color: var(--text-secondary, #718096) !important;
+      font-size: 0.95rem;
+      margin-bottom: 0;
     }
   }
 }
@@ -113,5 +144,14 @@
       left: auto;
       right: -50px;
     }
+    .shape-3 {
+      right: auto;
+      left: 15%;
+    }
+  }
+  
+  .hero-badges .badge mat-icon {
+    margin-right: 0 !important;
+    margin-left: 0.25rem !important;
   }
 }

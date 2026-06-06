@@ -17,10 +17,12 @@ interface Message {
   role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp: Date;
-  ui?: {
-    type: 'SELECT_STAFF' | 'SELECT_SERVICE' | 'SELECT_DATE' | 'SELECT_TIME' | 'CONFIRMATION';
-    data: any;
-  };
+  // ui?: {
+  //   type: 'SELECT_STAFF' | 'SELECT_SERVICE' | 'SELECT_DATE' | 'SELECT_TIME' | 'CONFIRMATION';
+  //   data: any;
+  // };
+  ui?: any; 
+  rawContent?: string;
 }
 
 @Component({
@@ -50,6 +52,7 @@ export class AiAssistantComponent {
   isOpen = signal(false);
   isLoading = signal(false);
   userInput = '';
+
   messages = signal<Message[]>([
     {
       role: 'assistant',
@@ -60,15 +63,9 @@ export class AiAssistantComponent {
   ]);
 
   formatMessage(msg: Message): SafeHtml {
-    let content = msg.content;
-    if (!content) return '';
+    let content = msg.content || '';
 
     content = content.replace(/<think>[\s\S]*?(<\/think>|$)/gi, '');
-
-    const uiStartIndex = content.indexOf('[UI:');
-    if (uiStartIndex !== -1) {
-      content = content.substring(0, uiStartIndex).trim();
-    }
 
     content = content.replace(/\[BTN:(.*?):(.*?)\]/g, (match, label, action) => {
       return `<button class="ai-btn" data-action="${action}">${label}</button>`;
@@ -88,13 +85,12 @@ export class AiAssistantComponent {
   }
 
   parseUI(content: string) {
-    const match = content.match(/\[UI:([A-Z_]+):([\s\S]+)\]/);
+    const match = content.match(/\[UI:([A-Z_]+):([\s\S]+)/); 
     if (match) {
       try {
-        let rawData = match[2].trim();
-        // تلاش برای یافتن براکت پایانی دقیق
+        let rawData = match[2];
         let openBrackets = 0;
-        let cutIndex = rawData.length;
+        let cutIndex = -1;
 
         for (let i = 0; i < rawData.length; i++) {
           if (rawData[i] === '[' || rawData[i] === '{') openBrackets++;
@@ -107,13 +103,18 @@ export class AiAssistantComponent {
           }
         }
 
-        const jsonData = rawData.substring(0, cutIndex);
-        return {
-          type: match[1] as any,
-          data: JSON.parse(jsonData),
-        };
+        if (cutIndex !== -1) {
+          const jsonData = rawData.substring(0, cutIndex);
+          const fullTag = `[UI:${match[1]}:${jsonData}]`; // گرفتن تگ کامل برای حذف صحیح و دقیق از متن
+
+          return {
+            type: match[1] as any,
+            data: JSON.parse(jsonData),
+            fullTag: fullTag,
+          };
+        }
       } catch (e) {
-        console.error('Failed to parse UI data. Content:', match[2]);
+        console.error('Failed to parse UI data.', e);
       }
     }
     return undefined;
@@ -159,6 +160,7 @@ export class AiAssistantComponent {
   }
 
   selectTime(slot: any, uiData: any) {
+    // از slot.start_time استفاده می شود که مطابق با ساختار خروجی getAvailableSlots است
     const displayText = `ساعت ${slot.start_time} را انتخاب کردم.`;
     const technicalText = `ساعت ${slot.start_time} را برای تاریخ ${uiData.date} انتخاب کردم. (staff_id: ${uiData.staff_id}, service_id: ${uiData.service_id})`;
     this.sendUiMessage(displayText, technicalText);
@@ -166,33 +168,33 @@ export class AiAssistantComponent {
 
   confirmBooking(uiData: any) {
     const displayText = `بله، نوبت را تایید و ثبت کن.`;
-    // تطابق کامل پارامترها با book_appointment
+    // پارامترها کاملاً منطبق با AppointmentCreateRequest در بک‌اند هستند (date_of_turn, start_time, staff_id, service_id)
     const technicalText = `بله، نوبت را نهایی کن و ابزار book_appointment را فراخوانی کن: (staff_id: ${uiData.staff_id}, service_id: ${uiData.service_id}, date_of_turn: ${uiData.date}, start_time: ${uiData.time})`;
     this.sendUiMessage(displayText, technicalText);
   }
 
   private sendUiMessage(display: string, technical: string) {
+    // در فرانت‌اند متن تمیز به کاربر نشان داده می‌شود، اما به API دیتای فنی می‌فرستیم
     this.messages.update((msgs) => [
       ...msgs,
       {
         role: 'user',
         content: display,
+        rawContent: technical,
         timestamp: new Date(),
       },
     ]);
 
     this.isLoading.set(true);
 
-    const apiMessages = this.messages().map((m, index) => {
-      if (index === this.messages().length - 1) {
-        return { role: m.role, content: technical };
-      }
-      return { role: m.role, content: m.content };
-    });
+    const apiMessages = this.messages().map((m) => ({
+      role: m.role,
+      content: m.rawContent || m.content, // ارسال دیتای اصلی و لاجیکال به هوش مصنوعی برای حفظ کانتکست
+    }));
 
     this.indexHttp.aiChat(apiMessages).subscribe({
       next: (res: any) => this.handleAiResponse(res),
-      error: (err) => this.handleAiError(err),
+      error: (err: any) => this.handleAiError(err),
     });
   }
 
@@ -213,19 +215,27 @@ export class AiAssistantComponent {
 
     this.isLoading.set(true);
 
-    this.indexHttp
-      .aiChat(this.messages().map((m) => ({ role: m.role, content: m.content })))
-      .subscribe({
-        next: (res: any) => this.handleAiResponse(res),
-        error: (err) => this.handleAiError(err),
-      });
+    const apiMessages = this.messages().map((m) => ({
+      role: m.role,
+      content: m.rawContent || m.content,
+    }));
+
+    this.indexHttp.aiChat(apiMessages).subscribe({
+      next: (res: any) => this.handleAiResponse(res),
+      error: (err: any) => this.handleAiError(err),
+    });
   }
 
   private handleAiResponse(res: any) {
     let aiMsg = res.choices[0].message.content || '';
     const ui = this.parseUI(aiMsg);
 
-    if (ui) {
+    let cleanText = aiMsg;
+
+    if (ui && ui.fullTag) {
+      // حذف کامل و بی نقص تگ استخراج شده از متنی که به کاربر نشان می‌دهیم
+      cleanText = aiMsg.replace(ui.fullTag, '').trim();
+
       let prompt = '';
       switch (ui.type) {
         case 'SELECT_STAFF':
@@ -245,9 +255,8 @@ export class AiAssistantComponent {
           break;
       }
 
-      let cleanText = aiMsg.replace(/\[UI:[A-Z_]+:[\s\S]*?\]/g, '').trim();
       if (prompt && !cleanText.includes(prompt) && cleanText.length < 15) {
-        aiMsg = prompt + '\n' + aiMsg;
+        cleanText = prompt + (cleanText ? '\n' + cleanText : '');
       }
     }
 
@@ -255,7 +264,8 @@ export class AiAssistantComponent {
       ...msgs,
       {
         role: 'assistant',
-        content: aiMsg,
+        content: cleanText, // متنی که کاربر می‌بیند بدون سینتکس‌های عجیب
+        rawContent: aiMsg, // متنی که با تگ‌های UI در تاریخچه حفظ می‌شود برای کانتکست‌های بعدی
         ui: ui,
         timestamp: new Date(),
       },
@@ -266,16 +276,17 @@ export class AiAssistantComponent {
   private handleAiError(err: any) {
     this.isLoading.set(false);
     let errorMsg = 'خطایی در ارتباط با هوش مصنوعی رخ داد.';
+
     if (err.error) {
       if (typeof err.error === 'string') {
         try {
           const parsed = JSON.parse(err.error);
-          errorMsg = parsed.error?.message || parsed.message;
+          errorMsg = parsed.error?.message || parsed.message || errorMsg;
         } catch (e) {
           errorMsg = err.error;
         }
       } else {
-        errorMsg = err.error.error?.message || err.error.message;
+        errorMsg = err.error.error?.message || err.error.message || errorMsg;
       }
     }
 

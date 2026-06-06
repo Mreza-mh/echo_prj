@@ -20,7 +20,6 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ImageViewerDialogComponent } from './image-viewer-dialog.component';
-import { ProfileModalComponent } from './profile-modal.component';
 import { PatientFormComponent } from '../../@shared/components/patient-form/patient-form.component';
 import { HeartVisualizationComponent, PatientEchoData } from '../heart-visualization/heart-visualization';
 
@@ -45,7 +44,6 @@ import { HeartVisualizationComponent, PatientEchoData } from '../heart-visualiza
     MatDialogModule,
     MatTooltipModule,
     ImageViewerDialogComponent,
-    ProfileModalComponent,
     PatientFormComponent,
     HeartVisualizationComponent
   ],
@@ -393,15 +391,7 @@ export class UserDashboardComponent implements OnInit {
     this.loadUserData();
   }
 
-  openProfileModal(): void {
-    this.dialog.open(ProfileModalComponent, {
-      width: '600px',
-      data: {
-        userData: this.userData,
-        profileForm: this.profileForm
-      }
-    });
-  }
+
 
   openPatientFormModal(): void {
     const dialogRef = this.dialog.open(PatientFormComponent, {

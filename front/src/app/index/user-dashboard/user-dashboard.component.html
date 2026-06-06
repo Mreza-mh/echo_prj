@@ -20,10 +20,6 @@
             <mat-icon>favorite</mat-icon>
             {{ getTranslation('healthRiskAssessment') || 'ارزیابی ریسک سلامت' }}
           </button>
-          <button mat-raised-button color="primary" (click)="openProfileModal()">
-            <mat-icon>person</mat-icon>
-            {{ getTranslation('yourProfile') || 'پروفایل' }}
-          </button>
           <button mat-icon-button (click)="refresh()" class="refresh-btn">
             <mat-icon>refresh</mat-icon>
           </button>
@@ -104,60 +100,63 @@
                 </div>
               }
 
-                            @if (hasLlmReport && llmReportText) {
-                <div class="llm-report-card mb-4">
-                  <div class="report-header">
-                    <div class="header-content">
-                      <mat-icon class="report-icon">description</mat-icon>
-                      <div>
-                        <h4>{{ getTranslation('smartReport') || 'گزارش هوشمند' }}</h4>
-                        <p class="report-subtitle">
-                          {{ getTranslation('aiGeneratedReport') || 'گزارش تولید شده توسط هوش مصنوعی' }}
-                        </p>
-                      </div>
-                    </div>
-                    <div class="report-actions">
-                      <button mat-icon-button (click)="viewFullHtmlReport()" 
-                              matTooltip="{{ getTranslation('viewFullReport') || 'مشاهده گزارش کامل' }}">
-                        <mat-icon>open_in_new</mat-icon>
-                      </button>
-                      <button mat-icon-button (click)="downloadReportPdf()"
-                              matTooltip="{{ getTranslation('downloadPdf') || 'دانلود PDF' }}">
-                        <mat-icon>download</mat-icon>
-                      </button>
-                    </div>
-                  </div>
-                  
-                  <div class="report-content">
-                    <div class="report-text">
-                      @for (paragraph of llmReportText.split('\n\n'); track $index) {
-                        @if (paragraph.trim()) {
-                          <p>{{ paragraph }}</p>
-                        }
-                      }
-                    </div>
-                    
-                    @if (llmReportData?.generated_at) {
-                      <div class="report-footer">
-                        <mat-icon>schedule</mat-icon>
-                        <span>
-                          {{ getTranslation('generatedAt') || 'تولید شده در' }}: 
-                          {{ llmReportData.generated_at | date:'yyyy/MM/dd - HH:mm' }}
-                        </span>
-                      </div>
-                    }
-                  </div>
-                  
-                  <div class="report-disclaimer">
-                    <mat-icon>info</mat-icon>
-                    <p>
-                      {{ getTranslation('reportDisclaimer') || 'این گزارش توسط سیستم هوش مصنوعی تولید شده و جایگزین مشاوره پزشکی نمی‌شود. حتماً با پزشک معالج خود مشورت کنید.' }}
-                    </p>
-                  </div>
-                </div>
+@if (hasLlmReport && llmReportText) {
+  <div class="llm-report-card animate__animated animate__fadeInUp mb-4">
+    
+    <div class="report-header">
+      <div class="header-bg-pattern"></div>
+      
+      <div class="header-content">
+        <div class="icon-wrapper pulse-animation">
+          <mat-icon>auto_awesome</mat-icon>
+        </div>
+        <div class="title-wrapper">
+          <h4 class="fw-bold mb-1">{{ getTranslation('smartReport') || 'گزارش ارزیابی هوشمند' }}</h4>
+          <div class="meta-badges">
+            <span class="badge-ai">
+              <mat-icon>memory</mat-icon>
+              {{ getTranslation('aiGeneratedReport') || 'تولید شده توسط هوش مصنوعی' }}
+            </span>
+            @if (llmReportData?.generated_at) {
+              <span class="badge-time">
+                <mat-icon>schedule</mat-icon>
+                {{ llmReportData.generated_at | date:'yyyy/MM/dd - HH:mm' }}
+              </span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="report-actions">
+        <button mat-icon-button class="action-btn" (click)="viewFullHtmlReport()" 
+                matTooltip="{{ getTranslation('viewFullReport') || 'مشاهده کامل' }}">
+          <mat-icon>fullscreen</mat-icon>
+        </button>
+        <button mat-icon-button class="action-btn" (click)="downloadReportPdf()"
+                matTooltip="{{ getTranslation('downloadPdf') || 'دانلود PDF' }}">
+          <mat-icon>picture_as_pdf</mat-icon>
+        </button>
+      </div>
+    </div>
+    
+    <div class="report-body">
+      <div class="report-text-container">
+        @for (paragraph of llmReportText.split('\n\n'); track $index) {
+          @if (paragraph.trim()) {
+            <p class="report-paragraph">
+              @if ($index === 0) {
+                <mat-icon class="first-letter-icon">format_quote</mat-icon>
               }
+              {{ paragraph }}
+            </p>
+          }
+        }
+      </div>
+    </div>
 
-
+    
+  </div>
+}
               @if (visitDates.length > 0) {
                 <mat-form-field appearance="outline" class="w-100 mb-3">
                   <mat-label>{{ getTranslation('selectDate') || 'انتخاب تاریخ' }}</mat-label>
@@ -319,91 +318,92 @@
       </div>
 
       <!-- APPOINTMENTS - Full Width -->
-      <div class="col-12">
-        <mat-card class="appointments-card mb-4">
+<div class="col-12">
+  <mat-card class="appointments-card mb-4">
+    <mat-card-header class="border-bottom pb-3 mb-3">
+      <mat-card-title class="d-flex align-items-center gap-2 m-0 fs-5">
+        <mat-icon class="text-primary">event_available</mat-icon>
+        {{ getTranslation('yourAppointments') || 'نوبت‌های شما' }}
+      </mat-card-title>
+    </mat-card-header>
 
-          <mat-card-header>
-            <mat-card-title>
-              <mat-icon>event_available</mat-icon>
-              {{ getTranslation('yourAppointments') || 'نوبت‌های شما' }}
-            </mat-card-title>
-          </mat-card-header>
-
-          <mat-card-content class="pt-3">
-
-            @if (userAppointments.length === 0) {
-              <div class="no-data-state">
-                <mat-icon>event_busy</mat-icon>
-                <p>{{ getTranslation('noAppointmentsBooked') || 'نوبتی ثبت نشده است' }}</p>
-              </div>
-            } @else {
-
-              <div class="table-responsive">
-                <table class="appointments-table">
-
-                  <thead>
-                    <tr>
-                      <th>{{ getTranslation('service') || 'خدمت' }}</th>
-                      <th>{{ getTranslation('doctor') || 'پزشک' }}</th>
-                      <th>{{ getTranslation('date') || 'تاریخ' }}</th>
-                      <th>{{ getTranslation('time') || 'زمان' }}</th>
-                      <th>{{ getTranslation('duration') || 'مدت' }}</th>
-                      <th>{{ getTranslation('status') || 'وضعیت' }}</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    @for (app of userAppointments; track app.id) {
-                      <tr>
-                        <td>
-                          <div class="service-cell">
-                            <mat-icon>medical_services</mat-icon>
-                            <strong>{{ app.service?.title || 'N/A' }}</strong>
-                          </div>
-                        </td>
-                        <td>
-                          <div class="doctor-cell">
-                            <mat-icon>person</mat-icon>
-                            <span>{{ app.staff?.user?.name || 'N/A' }}</span>
-                          </div>
-                        </td>
-                        <td>
-                          <div class="date-cell">
-                            <mat-icon>calendar_today</mat-icon>
-                            <span>{{ app.date_of_turn }}</span>
-                          </div>
-                        </td>
-                        <td>
-                          <div class="time-cell">
-                            <mat-icon>schedule</mat-icon>
-                            <span>{{ app.start_time }}</span>
-                          </div>
-                        </td>
-                        <td>
-                          <span class="duration-badge">{{ app.service?.duration || '00:45:00' }}</span>
-                        </td>
-                        <td>
-                          <div class="status-cell">
-                            <span class="status-dot"
-                                  [style.background-color]="getStatusColor(app.status?.title || 'pending')">
-                            </span>
-                            <span class="status-text">
-                              {{ app.status?.label || app.status?.title || 'در انتظار' }}
-                            </span>
-                          </div>
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-
-                </table>
-              </div>
-
-            }
-
-          </mat-card-content>
-        </mat-card>
-      </div>
+    <mat-card-content>
+      @if (userAppointments.length === 0) {
+        <div class="no-data-state text-center py-5">
+          <div class="icon-circle bg-light d-inline-flex p-4 rounded-circle mb-3">
+            <mat-icon class="text-muted" style="font-size: 40px; width: 40px; height: 40px;">event_busy</mat-icon>
+          </div>
+          <h5 class="text-dark fw-bold mb-2">{{ getTranslation('noAppointmentsBooked') || 'نوبتی ثبت نشده است' }}</h5>
+          <p class="text-muted small">شما در حال حاضر هیچ نوبت فعالی ندارید.</p>
+        </div>
+      } @else {
+        <div class="responsive-table-container">
+          <table class="modern-table">
+            <thead>
+              <tr>
+                <th>{{ getTranslation('service') || 'خدمت' }}</th>
+                <th>{{ getTranslation('doctor') || 'پزشک' }}</th>
+                <th>{{ getTranslation('date') || 'تاریخ' }}</th>
+                <th>{{ getTranslation('time') || 'زمان' }}</th>
+                <th>{{ getTranslation('duration') || 'مدت' }}</th>
+                <th>{{ getTranslation('status') || 'وضعیت' }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (app of userAppointments; track app.id) {
+                <tr class="table-row-hover">
+                  <td [attr.data-label]="getTranslation('service') || 'خدمت'">
+                    <div class="cell-content">
+                      <mat-icon class="cell-icon text-primary-light">medical_services</mat-icon>
+                      <strong class="text-dark">{{ app.service?.title || 'N/A' }}</strong>
+                    </div>
+                  </td>
+                  <td [attr.data-label]="getTranslation('doctor') || 'پزشک'">
+                    <div class="cell-content">
+                      <div class="avatar-sm bg-light-primary text-primary rounded-circle d-flex align-items-center justify-content-center me-2">
+                        <mat-icon style="font-size: 18px; width: 18px; height: 18px;">person</mat-icon>
+                      </div>
+                      <span class="fw-medium">{{ app.staff?.user?.name || 'N/A' }}</span>
+                    </div>
+                  </td>
+                  <td [attr.data-label]="getTranslation('date') || 'تاریخ'">
+                    <div class="cell-content">
+                      <mat-icon class="cell-icon text-muted">calendar_today</mat-icon>
+                      <span>{{ app.date_of_turn }}</span>
+                    </div>
+                  </td>
+                  <td [attr.data-label]="getTranslation('time') || 'زمان'">
+                    <div class="cell-content">
+                      <mat-icon class="cell-icon text-muted">schedule</mat-icon>
+                      <span dir="ltr">{{ app.start_time }}</span>
+                    </div>
+                  </td>
+                  <td [attr.data-label]="getTranslation('duration') || 'مدت'">
+                    <span class="duration-badge bg-light text-dark rounded-pill px-3 py-1 text-nowrap border">
+                      <mat-icon style="font-size: 14px; width: 14px; height: 14px; vertical-align: middle;" class="me-1">timer</mat-icon>
+                      {{ app.service?.duration || '00:45:00' }}
+                    </span>
+                  </td>
+                  <td [attr.data-label]="getTranslation('status') || 'وضعیت'">
+                    <div class="status-cell d-inline-flex align-items-center px-3 py-1 rounded-pill bg-light">
+                      <span class="status-dot rounded-circle me-2"
+                            style="width: 8px; height: 8px;"
+                            [style.background-color]="getStatusColor(app.status?.title || 'pending')">
+                      </span>
+                      <span class="status-text small fw-bold">
+                        {{ app.status?.label || app.status?.title || 'در انتظار' }}
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>
 
     </div>
   }

@@ -37,7 +37,8 @@ export class TranslationService {
       refreshData: 'Refresh Data',
       exportData: 'Export Data',
       welcomeToSuperAdminPanel: 'Welcome to Super Admin Panel',
-      selectSectionFromSidebar: 'Select a section from the sidebar to manage organizations and services.',
+      selectSectionFromSidebar:
+        'Select a section from the sidebar to manage organizations and services.',
       loadingOrganizations: 'Loading organizations...',
       loadingServices: 'Loading services...',
       searchingOrganizations: 'Searching organizations...',
@@ -101,11 +102,14 @@ export class TranslationService {
       aboutTitle: 'About Acaree',
       aboutSubtitle: 'Smart Appointment & Resource Management',
       aboutMission: 'Our Mission',
-      aboutMissionDesc: 'To simplify the process of scheduling and managing resources for organizations and individuals alike, providing a seamless and intelligent experience.',
+      aboutMissionDesc:
+        'To simplify the process of scheduling and managing resources for organizations and individuals alike, providing a seamless and intelligent experience.',
       aboutVision: 'Our Vision',
-      aboutVisionDesc: 'To become the leading platform for smart appointment management, empowering organizations to focus on what matters most: their customers.',
+      aboutVisionDesc:
+        'To become the leading platform for smart appointment management, empowering organizations to focus on what matters most: their customers.',
       aboutStory: 'Our Story',
-      aboutStoryDesc: 'Acaree was born from a simple idea: making professional scheduling accessible and efficient for everyone. We believe that technology should serve people, not the other way around.',
+      aboutStoryDesc:
+        'Acaree was born from a simple idea: making professional scheduling accessible and efficient for everyone. We believe that technology should serve people, not the other way around.',
       features: 'Features',
       smartScheduling: 'Smart Scheduling',
       resourceManagement: 'Resource Management',
@@ -167,7 +171,8 @@ export class TranslationService {
       // Home Page
       heroTitle: 'Smart Healthcare Management',
       heroSubtitle: 'Next Generation of Healthcare Services',
-      heroDesc: 'Acaree is a comprehensive platform for managing clinics and doctor offices, providing advanced tools for appointment scheduling, patient management, and medical record keeping.',
+      heroDesc:
+        'Acaree is a comprehensive platform for managing clinics and doctor offices, providing advanced tools for appointment scheduling, patient management, and medical record keeping.',
       startBooking: 'Start Booking',
       doctorRegistration: 'Doctor Registration',
       satisfiedPatients: 'Satisfied Patients',
@@ -195,7 +200,8 @@ export class TranslationService {
       joinAcareeDesc: 'Take your clinic to the next level with our digital solutions.',
       registerAsDoctor: 'Register as a Doctor',
       // Footer
-      footerDesc: 'Acaree provides a different experience in medical appointment management and services using world-class technologies. We are committed to enhancing digital health quality.',
+      footerDesc:
+        'Acaree provides a different experience in medical appointment management and services using world-class technologies. We are committed to enhancing digital health quality.',
       quickAccess: 'Quick Access',
       aboutAcaree: 'About Acaree',
       specializedServices: 'Specialized Services',
@@ -288,7 +294,8 @@ export class TranslationService {
       refreshData: 'تازه‌سازی داده‌ها',
       exportData: 'صادرات داده‌ها',
       welcomeToSuperAdminPanel: 'به پنل مدیریت ارشد خوش آمدید',
-      selectSectionFromSidebar: 'یک بخش را از نوار کناری انتخاب کنید تا سازمان‌ها و خدمات را مدیریت کنید.',
+      selectSectionFromSidebar:
+        'یک بخش را از نوار کناری انتخاب کنید تا سازمان‌ها و خدمات را مدیریت کنید.',
       loadingOrganizations: 'بارگذاری سازمان‌ها...',
       loadingServices: 'بارگذاری خدمات...',
       searchingOrganizations: 'جستجوی سازمان‌ها...',
@@ -352,25 +359,28 @@ export class TranslationService {
       aboutTitle: 'درباره آکاری',
       aboutSubtitle: 'مدیریت هوشمند نوبت‌دهی و منابع',
       aboutMission: 'ماموریت ما',
-      aboutMissionDesc: 'ساده‌سازی فرآیند نوبت‌دهی و مدیریت منابع برای سازمان‌ها و افراد، با ارائه تجربه‌ای یکپارچه و هوشمند.',
+      aboutMissionDesc:
+        'ساده‌سازی فرآیند نوبت‌دهی و مدیریت منابع برای سازمان‌ها و افراد، با ارائه تجربه‌ای یکپارچه و هوشمند.',
       aboutVision: 'چشم‌انداز ما',
-      aboutVisionDesc: 'تبدیل شدن به پلتفرم پیشرو در مدیریت هوشمند نوبت‌دهی، توانمندسازی سازمان‌ها برای تمرکز بر مهم‌ترین بخش کارشان: مشتریان.',
+      aboutVisionDesc:
+        'تبدیل شدن به پلتفرم پیشرو در مدیریت هوشمند نوبت‌دهی، توانمندسازی سازمان‌ها برای تمرکز بر مهم‌ترین بخش کارشان: مشتریان.',
       aboutStory: 'داستان ما',
-      aboutStoryDesc: 'آکاری از یک ایده ساده متولد شد: در دسترس و کارآمد کردن نوبت‌دهی حرفه‌ای برای همه. ما معتقدیم تکنولوژی باید در خدمت مردم باشد، نه برعکس.',
+      aboutStoryDesc:
+        'آکاری از یک ایده ساده متولد شد: در دسترس و کارآمد کردن نوبت‌دهی حرفه‌ای برای همه. ما معتقدیم تکنولوژی باید در خدمت مردم باشد، نه برعکس.',
       features: 'ویژگی‌ها',
       smartScheduling: 'نوبت‌دهی هوشمند',
       resourceManagement: 'مدیریت منابع',
       multiOrganization: 'پشتیبانی از چندین سازمان',
       realTimeUpdates: 'به‌روزرسانی‌های آنی',
-expertise: 'تخصص‌ها',
-       appointments: 'نوبت‌دهی',
-       management: 'مدیریت',
-       operations: 'عملیات',
-       doctorPanel: 'پنل پزشک',
-       patientManagement: 'مدیریت بیماران',
-       echoHistory: 'سوابق اکو',
-       patients: 'بیماران',
-       switchOrganization: 'تعویض سازمان',
+      expertise: 'تخصص‌ها',
+      appointments: 'نوبت‌دهی',
+      management: 'مدیریت',
+      operations: 'عملیات',
+      doctorPanel: 'پنل پزشک',
+      patientManagement: 'مدیریت بیماران',
+      echoHistory: 'سوابق اکو',
+      patients: 'بیماران',
+      switchOrganization: 'تعویض سازمان',
       toggleTheme: 'تغییر تم',
       toggleLanguage: 'تغییر زبان',
       failedToLoadStaff: 'خطا در بارگذاری پرسنل',
@@ -430,7 +440,8 @@ expertise: 'تخصص‌ها',
       // Home Page
       heroTitle: 'مدیریت هوشمند مراکز درمانی',
       heroSubtitle: 'نسل جدید خدمات سلامت و پزشکی',
-      heroDesc: 'آکاری پلتفرمی جامع برای مدیریت مطب‌ها و کلینیک‌ها است که ابزارهای پیشرفته‌ای برای نوبت‌دهی، مدیریت بیماران و پرونده الکترونیک سلامت فراهم می‌کند.',
+      heroDesc:
+        'آکاری پلتفرمی جامع برای مدیریت مطب‌ها و کلینیک‌ها است که ابزارهای پیشرفته‌ای برای نوبت‌دهی، مدیریت بیماران و پرونده الکترونیک سلامت فراهم می‌کند.',
       startBooking: 'شروع نوبت‌دهی',
       doctorRegistration: 'ثبت‌نام پزشکان',
       satisfiedPatients: 'بیمار رضایتمند',
@@ -440,7 +451,8 @@ expertise: 'تخصص‌ها',
       whyAcaree: 'چرا آکاری؟',
       smartFeatures: 'ویژگی‌های هوشمند برای مطب شما',
       onlineScheduling: 'نوبت‌دهی آنلاین',
-      onlineSchedulingDesc: 'بیماران می‌توانند ۲۴ ساعته و بدون نیاز به تماس تلفنی نوبت خود را رزرو کنند.',
+      onlineSchedulingDesc:
+        'بیماران می‌توانند ۲۴ ساعته و بدون نیاز به تماس تلفنی نوبت خود را رزرو کنند.',
       electronicRecords: 'پرونده الکترونیک',
       electronicRecordsDesc: 'سوابق پزشکی و نسخه‌های بیماران را به صورت امن مدیریت و ذخیره کنید.',
       smsReminders: 'یادآوری پیامکی',
@@ -458,7 +470,8 @@ expertise: 'تخصص‌ها',
       joinAcareeDesc: 'با راهکارهای دیجیتال ما، مدیریت مطب خود را به سطح جدیدی ارتقا دهید.',
       registerAsDoctor: 'ثبت‌نام به عنوان پزشک',
       // Footer
-      footerDesc: 'آکاری با بهره‌گیری از تکنولوژی‌های روز دنیا، تجربه‌ای متفاوت در مدیریت نوبت‌دهی و خدمات پزشکی فراهم آورده است. ما متعهد به ارتقای کیفیت سلامت دیجیتال هستیم.',
+      footerDesc:
+        'آکاری با بهره‌گیری از تکنولوژی‌های روز دنیا، تجربه‌ای متفاوت در مدیریت نوبت‌دهی و خدمات پزشکی فراهم آورده است. ما متعهد به ارتقای کیفیت سلامت دیجیتال هستیم.',
       quickAccess: 'دسترسی سریع',
       aboutAcaree: 'درباره آکاری',
       specializedServices: 'خدمات تخصصی',
@@ -510,6 +523,37 @@ expertise: 'تخصص‌ها',
       userDashboard: 'داشبورد کاربر',
       userAppointments: 'نوبت‌های شما',
       yourEcho: 'اکوی شما',
+
+      bachelorProject: 'پروژه کارشناسی',
+      projectTitle: 'سیستم هوشمند مدیریت مطب و پردازش اکو قلب',
+      projectSubtitle:
+        'یک پلتفرم جامع پزشکی با بهره‌گیری از هوش مصنوعی برای پردازش دقیق تصاویر اکوکاردیوگرافی، نوبت‌دهی هوشمند و بررسی وضعیت بیماران.',
+      badgeAI: 'مجهز به هوش مصنوعی',
+      badgeEcho: 'پردازش تصویر اکو',
+      badgeFuzzy: 'سیستم استنتاج فازی',
+      aboutTeamTitle: 'درباره تیم و پروژه ما',
+      aboutTeamDesc:
+        'این سیستم حاصل تلاش یک تیم دو نفره به عنوان پروژه کارشناسی است. هدف ما ایجاد پلی میان تکنولوژی‌های نوین مانند بینایی ماشین و سیستم‌های فازی با نیازهای روزمره مطب‌های قلب و عروق بوده است تا هم فرآیند درمان برای پزشک دقیق‌تر شود و هم تجربه بیمار بهبود یابد.',
+      coreFeaturesTitle: 'امکانات کلیدی سیستم',
+      coreFeaturesSubtitle: 'تکنولوژی‌های استفاده شده برای ارتقای سطح سلامت و مدیریت',
+      featPanelsTitle: 'پنل‌های اختصاصی و نوبت‌گیری',
+      featPanelsDesc:
+        'دارای پنل‌های مجزا و پیشرفته برای پزشک و منشی به همراه سیستم نوبت‌گیری آنلاین و مدیریت یکپارچه اطلاعات بیماران.',
+      featEchoTitle: 'پردازش دقیق ویدیوهای اکو',
+      featEchoDesc:
+        'استفاده از الگوریتم‌های بینایی ماشین برای پردازش فریم‌به‌فریم ویدیوهای اکوکاردیوگرافی جهت محاسبه دقیق اندازه و حجم‌های قلب.',
+      featFuzzyTitle: 'محاسبه ریسک با منطق فازی',
+      featFuzzyDesc:
+        'بهره‌گیری از سیستم استنتاج فازی (Fuzzy Logic) برای تحلیل داده‌های استخراج شده و محاسبه میزان خطر یا سلامت بیمار با دقت بالا.',
+      featAssistantTitle: 'پاسخگویی هوشمند به بیمار',
+      featAssistantDesc:
+        'بررسی وضعیت اختصاصی هر بیمار و ارائه پاسخ‌ها و مشاوره‌های اولیه توسط هوش مصنوعی بر اساس پرونده پزشکی شخص.',
+      featAiBookingTitle: 'نوبت‌دهی با هوش مصنوعی',
+      featAiBookingDesc:
+        'تخصیص زمان‌های ویزیت به صورت هوشمند و خودکار بر اساس فوریت وضعیت بیمار، ترافیک مطب و برنامه پزشک.',
+      featDataTitle: 'تحلیل و مقایسه داده‌ها',
+      featDataDesc:
+        'دریافت اطلاعات عمومی بیمار و مقایسه لحظه‌ای با دیتابیس بیماران قبلی برای کشف الگوهای بیماری و ارائه نتیجه شفاف به بیمار.',
     },
   };
 
@@ -527,7 +571,7 @@ expertise: 'تخصص‌ها',
     const dir = lang === 'fa' ? 'rtl' : 'ltr';
     document.documentElement.setAttribute('dir', dir);
     document.documentElement.setAttribute('lang', lang);
-    
+
     // Also update body class for theme-specific RTL adjustments if needed
     document.body.classList.remove('rtl', 'ltr');
     document.body.classList.add(dir);

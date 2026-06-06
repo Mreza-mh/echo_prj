@@ -6,8 +6,8 @@
     </div>
     
     <div class="container hero-content">
-      <div class="row align-items-center">
-        <div class="col-lg-8">
+      <div class=" d-flex align-items-center justify-content-between flex-wrap gap-4 w-75">
+        <div class="">
           <div class="org-badge mb-3" *ngIf="organization?.type">
             <mat-icon>verified</mat-icon>
             <span>{{ organization.type }}</span>
@@ -34,7 +34,7 @@
           </div>
         </div>
         
-        <div class="col-lg-4 d-none d-lg-flex justify-content-end">
+        <div class=" d-none d-lg-flex justify-content-end">
           <div class="org-main-card shadow-lg p-4 rounded-4 bg-white text-dark">
             <h3 class="h5 fw-bold mb-3">{{ getTranslate('contactInfo') }}</h3>
             <div class="contact-item mb-2 d-flex align-items-center gap-2">
@@ -79,7 +79,7 @@
     
     <!-- Mobile View: Tabs -->
     <div class="mobile-only-tabs ">
-      <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start" class="premium-tabs shadow-sm rounded-4 bg-white overflow-hidden">
+      <mat-tab-group [mat-stretch-tabs]="false" mat-align-tabs="start" class="premium-tabs shadow-sm rounded-4 bg-white overflow-hidden">
         
         <!-- Services Tab -->
         <mat-tab>

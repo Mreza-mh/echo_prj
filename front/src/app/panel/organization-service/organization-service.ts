@@ -9,10 +9,10 @@ import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { PanelHttpService } from '../panel-http.service';
 import { TranslationService } from '../../@shared/services/translation.service';
 import { PanelService } from '../panel.service';
-import { filter } from 'rxjs';
 import { Router } from '@angular/router';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { OrganizationServiceDialogComponent } from './dialogs/organization-service-dialog.component';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-organization-service',
@@ -25,7 +25,8 @@ import { OrganizationServiceDialogComponent } from './dialogs/organization-servi
     MatCardModule,
     MatSnackBarModule,
     MatDialogModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatProgressSpinnerModule
   ],
   templateUrl: './organization-service.html',
   styleUrl: './organization-service.scss',
@@ -40,20 +41,24 @@ export class OrganizationServiceComponent implements OnInit {
 
   dataSource = new MatTableDataSource<any>([]);
   displayedColumns: string[] = ['name', 'price', 'duration', 'actions'];
+  isLoading = true;
 
   ngOnInit() {
     this.loadServices();
   }
 
   loadServices() {
+    this.isLoading = true;
     this.panelHttp.getOrgServiceList({ is_paginate: false }).subscribe({
       next: (response: any) => {
         if (response.success) {
           this.dataSource.data = response.data;
         }
+        this.isLoading = false;
       },
       error: () => {
         this.snackBar.open(this.getTranslation('failedToLoadServices'), 'Close', { duration: 3000 });
+        this.isLoading = false;
       }
     });
   }

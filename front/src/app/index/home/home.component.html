@@ -1,152 +1,179 @@
 <div class="landing-page">
-  <!-- Hero Section -->
+  <div class="bg-shape bg-shape-1"></div>
+  <div class="bg-shape bg-shape-2"></div>
+
   <section class="hero-section">
-    <div class="container">
+    <div class="container relative-z">
       <div class="row align-items-center g-5">
         <div class="col-lg-6 hero-text-content" [class.text-right]="isRTL()">
           <div class="clinic-badge mb-4" data-aos="fade-up">
             <span class="pulse-dot"></span>
-            {{ getTranslation('heroSubtitle') }}
+            {{ getTranslation('heroSubtitle') || 'پلتفرم نوبت‌دهی و پزشکی هوشمند' }}
           </div>
+          
           <h1 class="hero-title" data-aos="fade-up" data-aos-delay="100">
-            {{ getTranslation('heroTitle') }}
+            {{ getTranslation('heroTitle') || 'سلامت قلب شما، در دستان هوش مصنوعی' }}
           </h1>
+          
           <p class="hero-lead" data-aos="fade-up" data-aos-delay="200">
-            {{ getTranslation('heroDesc') }}
+            {{ getTranslation('heroDesc') || 'بیماران می‌توانند به‌راحتی برای خود نوبت رزرو کنند. ما با ترکیب دانش پزشکی و هوش مصنوعی، دقیق‌ترین تحلیل‌ها را برای سلامت شما ارائه می‌دهیم.' }}
           </p>
           
           <div class="hero-cta-group" data-aos="fade-up" data-aos-delay="300">
-            <button mat-flat-button color="primary" class="cta-btn primary-btn" routerLink="/organizations">
+            <button mat-flat-button class="cta-btn primary-btn" routerLink="/organizations">
               <mat-icon>calendar_month</mat-icon>
-              {{ getTranslation('startBooking') }}
+              {{ getTranslation('startBooking') || 'رزرو آنلاین نوبت' }}
             </button>
             <button mat-stroked-button class="cta-btn secondary-btn" routerLink="/organizations">
-              <mat-icon>medical_services</mat-icon>
-              {{ getTranslation('specializedServices') }}
+              <mat-icon>psychology</mat-icon>
+              {{ getTranslation('specializedServices') || 'آشنایی با دستیار هوشمند' }}
             </button>
           </div>
 
           <div class="trust-row mt-5" data-aos="fade-up" data-aos-delay="400">
             <div class="trust-item">
               <div class="trust-icon"><mat-icon>verified_user</mat-icon></div>
-              <span>{{ getTranslation('verifiedDoctors') }}</span>
+              <span>پزشکان تایید شده</span>
             </div>
             <div class="trust-divider"></div>
+            <div class="trust-item">
+              <div class="trust-icon"><mat-icon>analytics</mat-icon></div>
+              <span>تحلیل دقیق با AI</span>
+            </div>
             <div class="trust-item">
               <div class="trust-icon"><mat-icon>lock</mat-icon></div>
-              <span>{{ getTranslation('secureData') || 'امنیت داده‌ها' }}</span>
-            </div>
-            <div class="trust-divider"></div>
-            <div class="trust-item">
-              <div class="trust-icon"><mat-icon>support_agent</mat-icon></div>
-              <span>{{ getTranslation('support247') || 'پشتیبانی ۲۴ ساعته' }}</span>
+              <span>امنیت بالای داده‌ها</span>
             </div>
           </div>
         </div>
         
         <div class="col-lg-6 hero-visuals" data-aos="zoom-in" data-aos-delay="200">
           <div class="image-stack">
+            <div class="image-backdrop-ring"></div>
             <div class="main-image-container">
-              <img src="images/female-doctor.jpg" alt="Doctor" class="hero-img">
-              <div class="floating-card card-top">
-                <div class="icon-circle bg-blue"><mat-icon>done_all</mat-icon></div>
-                <div class="card-info">
-                  <span class="label">{{ getTranslation('bookingConfirmation') || 'تایید نوبت' }}</span>
-                  <span class="value">{{ getTranslation('lessThanMinute') || 'کمتر از ۱ دقیقه' }}</span>
-                </div>
-              </div>
-              <div class="floating-card card-bottom">
-                <div class="icon-circle bg-green"><mat-icon>trending_up</mat-icon></div>
-                <div class="card-info">
-                  <span class="label">{{ getTranslation('patientSatisfaction') || 'رضایت بیماران' }}</span>
-                  <span class="value">۹۸٪ {{ getTranslation('satisfaction') || 'رضایت' }}</span>
-                </div>
+              <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=800&auto=format&fit=crop" alt="Doctor" class="hero-img">
+            </div>
+            
+            <div class="floating-card glass-panel card-top">
+              <div class="icon-circle bg-blue"><mat-icon>done_all</mat-icon></div>
+              <div class="card-info">
+                <span class="label">تایید نوبت</span>
+                <span class="value">کمتر از ۱ دقیقه</span>
               </div>
             </div>
-            <div class="shape-blob shape-1"></div>
-            <div class="shape-blob shape-2"></div>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Stats Section -->
   <section class="stats-section">
     <div class="container">
-      <div class="stats-grid">
+      <div class="stats-grid glass-panel">
         <div class="stat-card">
-          <span class="stat-number">+۵۰۰</span>
-          <span class="stat-label">{{ getTranslation('clinics') }}</span>
+          <span class="stat-number gradient-text">+۵۰۰</span>
+          <span class="stat-label">پزشک متخصص</span>
         </div>
         <div class="stat-card">
-          <span class="stat-number">+۱۰۰k</span>
-          <span class="stat-label">{{ getTranslation('successfulBookings') || 'نوبت موفق' }}</span>
+          <span class="stat-number gradient-text">+۱۰۰k</span>
+          <span class="stat-label">نوبت موفق</span>
         </div>
         <div class="stat-card">
-          <span class="stat-number">+۲۰</span>
-          <span class="stat-label">{{ getTranslation('medicalExpertises') || 'تخصص پزشکی' }}</span>
+          <span class="stat-number gradient-text">+۵۰k</span>
+          <span class="stat-label">پردازش اکو با AI</span>
         </div>
         <div class="stat-card">
-          <span class="stat-number">+۵۰</span>
-          <span class="stat-label">{{ getTranslation('activeCities') || 'شهر فعال' }}</span>
+          <span class="stat-number gradient-text">۹۹٪</span>
+          <span class="stat-label">دقت تشخیص</span>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Features -->
-  <section class="features-grid-section py-10">
+  <section class="ai-tech-section py-10 relative-z">
     <div class="container">
-      <div class="section-header text-center mb-5">
-        <h2 class="section-title">{{ getTranslation('featuresTitle') }}</h2>
-        <p class="section-subtitle">{{ getTranslation('featuresSubtitle') }}</p>
-      </div>
-      
-      <div class="row g-4">
-        <div class="col-md-4">
-          <div class="feature-card">
-            <div class="feature-icon-wrapper color-1">
-              <mat-icon>notifications_active</mat-icon>
+      <div class="row align-items-center g-5">
+        <div class="col-lg-6 text-content" [class.text-right]="isRTL()">
+          <div class="ai-badge mb-3">
+            <mat-icon>memory</mat-icon>
+            <span>تکنولوژی پردازش پیشرفته</span>
+          </div>
+          <h2 class="section-title mb-4">
+            تحلیل هوشمند قلب؛ <br>
+            <span class="gradient-text">سریع‌تر، دقیق‌تر، مطمئن‌تر</span>
+          </h2>
+          <p class="section-desc mb-5">
+            سیستم هوشمند ما نه‌تنها در گرفتن وقت به شما کمک می‌کند، بلکه با استفاده از الگوریتم‌های پیشرفته، تصاویر اکوکاردیوگرافی قلب شما را تحلیل می‌کند. اطلاعات شما با هزاران بیمار مشابه مقایسه شده و در صورت نیاز، سریعاً به شما اطلاع داده می‌شود.
+          </p>
+
+          <div class="ai-features-list">
+            <div class="ai-feature-item">
+              <div class="icon-box color-1"><mat-icon>event_available</mat-icon></div>
+              <div class="text">
+                <h4>نوبت‌دهی خودکار و هوشمند</h4>
+                <p>بیماران می‌توانند به‌سادگی و با کمک دستیار هوشمند، بهترین زمان را برای ویزیت یا اکو رزرو کنند.</p>
+              </div>
             </div>
-            <h3>{{ getTranslation('smartBookingTitle') }}</h3>
-            <p>{{ getTranslation('smartBookingDesc') }}</p>
+            <div class="ai-feature-item">
+              <div class="icon-box color-2"><mat-icon>monitor_heart</mat-icon></div>
+              <div class="text">
+                <h4>پردازش تصویری اکو قلب با AI</h4>
+                <p>تشخیص کوچک‌ترین ناهنجاری‌ها با آنالیز پیکسل‌به‌پیکسل تصاویر اکوکاردیوگرافی توسط هوش مصنوعی.</p>
+              </div>
+            </div>
+            <div class="ai-feature-item">
+              <div class="icon-box color-3"><mat-icon>manage_search</mat-icon></div>
+              <div class="text">
+                <h4>مقایسه با هزاران پرونده مشابه</h4>
+                <p>تطبیق آنی اطلاعات شما با دیتابیس عظیم بیماران برای پیش‌بینی دقیق‌تر و ارائه هشدارهای ضروری.</p>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="col-md-4">
-          <div class="feature-card">
-            <div class="feature-icon-wrapper color-2">
-              <mat-icon>description</mat-icon>
+
+        <div class="col-lg-6">
+          <div class="ai-image-grid">
+            <div class="main-scan-container glass-panel">
+              <div class="scan-header">
+                <div class="dots"><span></span><span></span><span></span></div>
+                <span class="status-text">در حال پردازش اکو قلب...</span>
+              </div>
+              <div class="image-wrapper">
+                <img src="https://images.unsplash.com/photo-1530497610245-94d3c16cda28?q=80&w=600&auto=format&fit=crop" alt="Main Heart Scan" class="scan-img">
+                <div class="scan-laser"></div>
+                <div class="point p1"><div class="ripple"></div></div>
+                <div class="point p2"><div class="ripple"></div></div>
+              </div>
             </div>
-            <h3>{{ getTranslation('electronicRecordTitle') }}</h3>
-            <p>{{ getTranslation('electronicRecordDesc') }}</p>
-          </div>
-        </div>
-        <div class="col-md-4">
-          <div class="feature-card">
-            <div class="feature-icon-wrapper color-3">
-              <mat-icon>credit_card</mat-icon>
+            
+            <div class="side-scans-container">
+              <div class="side-scan glass-panel">
+                <img src="https://images.unsplash.com/photo-1550831107-1553da8c8464?q=80&w=300&auto=format&fit=crop" alt="Database Comparison 1">
+                <div class="match-badge">۸۹٪ تطابق</div>
+              </div>
+              <div class="side-scan glass-panel">
+                <img src="https://images.unsplash.com/photo-1581093450021-4a7360e9a6b5?q=80&w=300&auto=format&fit=crop" alt="Database Comparison 2">
+                <div class="match-badge alert">نیازمند بررسی</div>
+              </div>
             </div>
-            <h3>{{ getTranslation('onlinePaymentTitle') || 'پرداخت آنلاین' }}</h3>
-            <p>{{ getTranslation('onlinePaymentDesc') || 'امکان پرداخت بیعانه یا هزینه کامل ویزیت در درگاه بانکی امن و سریع.' }}</p>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Specialized CTA -->
-  <section class="clinic-cta-section py-5">
+  <section class="clinic-cta-section py-5 relative-z">
     <div class="container">
       <div class="cta-glass-card">
-        <div class="row align-items-center">
+        <div class="cta-bg-pattern"></div>
+        <div class="row align-items-center relative-z">
           <div class="col-lg-7 text-content">
-            <h2 class="cta-title">{{ getTranslation('joinAcareeTitle') }}</h2>
-            <p class="cta-desc">{{ getTranslation('joinAcareeDesc') }}</p>
+            <h2 class="cta-title">پزشک هستید؟ به شبکه هوشمند ما بپیوندید</h2>
+            <p class="cta-desc">کلینیک خود را به پیشرفته‌ترین سیستم‌های پردازش تصویر و نوبت‌دهی مجهز کنید و خطای تشخیص را به حداقل برسانید.</p>
           </div>
           <div class="col-lg-5 action-content text-lg-end">
             <button mat-raised-button class="cta-register-btn" routerLink="/auth/register">
-              {{ getTranslation('doctorRegistration') }}
+              ثبت‌نام پزشکان
               <mat-icon>{{ isRTL() ? 'arrow_back' : 'arrow_forward' }}</mat-icon>
             </button>
           </div>
@@ -154,4 +181,267 @@
       </div>
     </div>
   </section>
+
+  <section class="fuzzy-logic-section py-10 relative-z">
+    <div class="container">
+      <div class="row align-items-center g-5">
+        <div class="col-lg-6 order-lg-2" [class.text-right]="isRTL()">
+          <div class="badge-glow mb-3">پردزاش بر پایه منطق فازی (Fuzzy Logic)</div>
+          <h2 class="section-title mb-4">
+            تحلیل هوشمند مقادیر قلب با <br>
+            <span class="text-gradient-purple">دیتاست میلیونی بیماران</span>
+          </h2>
+          <p class="section-desc mb-4">
+            ما از روش‌های کلاسیک فراتر رفته‌ایم. مقادیر اندازه‌گیری شده از اکوکاردیوگرافی شما (مانند EF, LVIDd, و...) با استفاده از <strong>منطق فازی (Fuzzy Logic)</strong> و هوش مصنوعی بررسی می‌شود تا حتی مرزهای نامشخص بیماری‌ها نیز با دقت بی‌نظیری تشخیص داده شوند.
+          </p>
+          
+          <ul class="advanced-list mb-5">
+            <li>
+              <div class="list-icon"><mat-icon>dataset</mat-icon></div>
+              <div>
+                <h5>مقایسه با دیتاست کامل بیماران</h5>
+                <p>اطلاعات قلب شما با الگوهای استخراج‌شده از هزاران پرونده پزشکی مشابه تطبیق داده می‌شود.</p>
+              </div>
+            </li>
+            <li>
+              <div class="list-icon"><mat-icon>send_to_mobile</mat-icon></div>
+              <div>
+                <h5>ارسال آنی نتایج تحلیل شده</h5>
+                <p>پس از بررسی اکو توسط AI و تایید نهایی پزشک، نتایج و هشدارهای لازم مستقیماً به پنل و پیامک بیمار ارسال می‌شود.</p>
+              </div>
+            </li>
+          </ul>
+        </div>
+
+        <div class="col-lg-6 order-lg-1">
+          <div class="data-dashboard-mockup glass-panel">
+            <div class="mockup-header">
+              <span>تحلیل فازی اکوکاردیوگرافی</span>
+              <mat-icon>analytics</mat-icon>
+            </div>
+            <div class="mockup-body">
+              <div class="chart-area">
+                <div class="bar-chart">
+                  <div class="bar safe" style="height: 60%"><span>نرمال</span></div>
+                  <div class="bar warning" style="height: 85%"><span>مرزی (فازی)</span></div>
+                  <div class="bar danger" style="height: 40%"><span>خطر</span></div>
+                </div>
+              </div>
+              <div class="metrics-grid">
+                <div class="metric-card">
+                  <span class="label">EF (LVEF)</span>
+                  <span class="value">۵۵٪</span>
+                  <div class="status-indicator safe"></div>
+                </div>
+                <div class="metric-card">
+                  <span class="label">تطابق دیتاست</span>
+                  <span class="value text-purple">+۹۴k</span>
+                  <div class="status-indicator warning"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panels-ecosystem-section py-10 relative-z">
+    <div class="container text-center">
+      <div class="section-header mb-5 text-center">
+        <h2 class="section-title">یکپارچگی کامل؛ از منشی تا پزشک و بیمار</h2>
+        <p class="section-subtitle">پلتفرم ما یک اکوسیستم کامل برای مدیریت کلینیک‌های قلب و عروق است. همه چیز به هم متصل است.</p>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-lg-4 col-md-6">
+          <div class="ecosystem-card">
+            <div class="card-img-top">
+              <img src="https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?q=80&w=600&auto=format&fit=crop" alt="Patient Panel">
+              <div class="floating-badge bg-blue">پنل بیماران</div>
+            </div>
+            <div class="card-content">
+              <h3>نوبت‌دهی کامل و خودکار</h3>
+              <p>بیماران می‌توانند تقویم پزشک را ببینند، نوبت رزرو کنند، بیعانه پرداخت کنند و سوابق اکوی خود را همراه با تحلیل‌های AI مشاهده نمایند.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+          <div class="ecosystem-card featured">
+            <div class="card-img-top">
+              <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=600&auto=format&fit=crop" alt="Secretary Panel">
+              <div class="floating-badge bg-warning text-dark">پنل منشی</div>
+            </div>
+            <div class="card-content">
+              <h3>مدیریت هوشمند مطب</h3>
+              <p>مدیریت صف انتظار، تایید نوبت‌ها، حسابداری، و بررسی وضعیت حضور بیماران در یک داشبورد سریع و بدون قطعی.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6">
+          <div class="ecosystem-card">
+            <div class="card-img-top">
+              <img src="https://images.unsplash.com/photo-1581594693702-fbdc51b2763b?q=80&w=600&auto=format&fit=crop" alt="Doctor Panel">
+              <div class="floating-badge bg-green">پنل پزشک</div>
+            </div>
+            <div class="card-content">
+              <h3>دسترسی به تمام اکوها</h3>
+              <p>پزشک می‌تواند تمامی اکوهای آپلود شده را ببیند، گزارش پردازش تصویر هوش مصنوعی را تایید یا رد کند و نسخه الکترونیک صادر کند.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ai-support-section py-10 relative-z">
+    <div class="container">
+      <div class="ai-support-wrapper glass-panel">
+        <div class="row align-items-center">
+          <div class="col-lg-6 support-text" [class.text-right]="isRTL()">
+            <div class="ai-icon-pulse mb-4"><mat-icon>smart_toy</mat-icon></div>
+            <h2 class="section-title text-white mb-3">نوبت‌گیری و پشتیبانی با دستیار هوش مصنوعی</h2>
+            <p class="section-desc text-white-50 mb-4">
+              دیگر نیازی به جستجو در صفحات نیست! دستیار هوشمند سایت به صورت ۲۴ ساعته آماده است تا به سوالات بیماران پاسخ دهد، علائم آن‌ها را اولیه بررسی کند و بهترین زمان نوبت را برایشان ثبت کند.
+            </p>
+            <div class="feature-pills">
+              <span class="pill"><mat-icon>check_circle</mat-icon> چت زنده AI</span>
+              <span class="pill"><mat-icon>check_circle</mat-icon> نوبت‌دهی صوتی/متنی</span>
+              <span class="pill"><mat-icon>check_circle</mat-icon> پشتیبانی ۲۴/۷</span>
+            </div>
+          </div>
+          
+          <div class="col-lg-6">
+            <div class="chat-mockup">
+              <div class="chat-header">
+                <div class="avatar"><mat-icon>support_agent</mat-icon></div>
+                <div class="info">
+                  <span class="name">دستیار سلامت AI</span>
+                  <span class="status">آنلاین</span>
+                </div>
+              </div>
+              <div class="chat-body">
+                <div class="message bot">سلام! من دستیار هوشمند کلینیک هستم. چطور می‌تونم کمکتون کنم؟</div>
+                <div class="message user">سلام، من اخیراً تپش قلب دارم و می‌خوام برای اکو وقت بگیرم.</div>
+                <div class="message bot">
+                  علائم شما رو یادداشت کردم. دکتر رضایی برای فردا ساعت ۱۷:۳۰ وقت خالی دارند. 
+                  <br>آیا این نوبت رو براتون رزرو کنم؟
+                </div>
+                <div class="chat-actions">
+                  <button class="action-btn">بله، رزرو کن</button>
+                  <button class="action-btn outline">مشاهده زمان‌های دیگر</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="three-d-showcase py-10 relative-z">
+    <div class="container">
+      <div class="row align-items-center g-5">
+        <div class="col-lg-5 text-content" [class.text-right]="isRTL()">
+          <div class="badge-glow mb-3">نمای سه‌بعدی پلتفرم</div>
+          <h2 class="section-title mb-4">
+            تجسم داده‌های پزشکی در <br>
+            <span class="text-gradient-cyan">فضای سه‌بعدی</span>
+          </h2>
+          <p class="section-desc mb-4">
+            ما داده‌های پیچیده اکوکاردیوگرافی را به بصری‌ترین شکل ممکن به شما و پزشکتان نمایش می‌دهیم. داشبورد ایزومتریک ما به پزشک اجازه می‌دهد تا لایه‌های مختلف اطلاعات را با یک نگاه سریع بررسی کند.
+          </p>
+          <button mat-flat-button class="cta-btn primary-btn mt-3" routerLink="/demo">
+            مشاهده دمو سه‌بعدی
+          </button>
+        </div>
+
+        <div class="col-lg-7">
+          <div class="scene-3d">
+            <div class="isometric-container">
+              <div class="layer layer-1 glass-panel">
+                <div class="layer-header">لیست بیماران امروز</div>
+                <div class="layer-body">
+                  <div class="skeleton-line"></div>
+                  <div class="skeleton-line short"></div>
+                  <div class="skeleton-line"></div>
+                </div>
+              </div>
+              
+              <div class="layer layer-2 glass-panel">
+                <div class="layer-header text-purple">پردازش تصویر در حال انجام</div>
+                <div class="layer-image">
+                  <img src="https://images.unsplash.com/photo-1559757175-5700dde675bc?q=80&w=400&auto=format&fit=crop" alt="Scan">
+                  <div class="scan-grid"></div>
+                </div>
+              </div>
+
+              <div class="layer layer-3 float-animation">
+                <div class="status-card bg-success-gradient">
+                  <mat-icon>favorite</mat-icon>
+                  <div>
+                    <span class="title">وضعیت قلب</span>
+                    <span class="value">نرمال (۹۸٪)</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="testimonials-section py-10 relative-z">
+    <div class="container">
+      <div class="section-header text-center mb-5">
+        <h2 class="section-title">اعتماد جامعه پزشکی و بیماران</h2>
+      </div>
+      
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="review-card glass-panel">
+            <div class="quote-icon"><mat-icon>format_quote</mat-icon></div>
+            <p class="review-text">"از وقتی کلینیک ما به این سیستم مجهز شده، خطاهای بررسی اکو به صفر رسیده و بیماران خیلی راحت‌تر نوبت می‌گیرند. بخش منطق فازی بی‌نظیر است."</p>
+            <div class="reviewer">
+              <div class="avatar"><img src="https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?q=80&w=150&auto=format&fit=crop" alt="Dr"></div>
+              <div class="info">
+                <h4>دکتر احمدی</h4>
+                <span>متخصص قلب و عروق</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="review-card glass-panel">
+            <div class="quote-icon"><mat-icon>format_quote</mat-icon></div>
+            <p class="review-text">"دیگه نیازی نیست ساعت‌ها پشت خط تلفن مطب منتظر بمونم. دستیار هوشمند تو کمتر از ۳۰ ثانیه برام وقت اکو ثبت کرد و نتیجه رو هم تو گوشیم دیدم!"</p>
+            <div class="reviewer">
+              <div class="avatar"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=150&auto=format&fit=crop" alt="Patient"></div>
+              <div class="info">
+                <h4>سارا م.</h4>
+                <span>بیمار</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="review-card glass-panel">
+            <div class="quote-icon"><mat-icon>format_quote</mat-icon></div>
+            <p class="review-text">"پنل منشی فوق‌العاده روان و بدون قطعی است. مدیریت صف بیماران و حسابداری روزانه الان فقط با چند تا کلیک انجام میشه."</p>
+            <div class="reviewer">
+              <div class="avatar"><img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=150&auto=format&fit=crop" alt="Secretary"></div>
+              <div class="info">
+                <h4>مریم کریمی</h4>
+                <span>مدیر داخلی کلینیک</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
 </div>
