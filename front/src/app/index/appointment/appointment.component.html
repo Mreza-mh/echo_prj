@@ -1,5 +1,5 @@
 <div class="appointment-page">
-  <div class="container py-4">
+  <div class="mx-4 py-4">
     <!-- Formal Organization Header -->
     <div class="org-profile-card mb-5 animate__animated animate__fadeIn" *ngIf="organizationDetails">
       <div class="profile-cover" [style.background-image]="organizationDetails.banner ? 'url(' + organizationDetails.banner + ')' : null">
@@ -46,8 +46,8 @@
       </div>
     </div>
 
-    <div class="row g-4">
-      <div class="col-lg-5 col-xl-4">
+    <div class="row g-4 w-100 mx-auto">
+      <div class="col-lg-5 col-xl-4 col-12">
         <div class="sticky-top-offset">
           <mat-card class="minimal-card mb-4">
             <mat-card-header class="pb-3 border-bottom">
@@ -122,7 +122,7 @@
       </div>
 
       <!-- Right Column: Time Slots -->
-      <div class="col-lg-7 col-xl-8">
+      <div class="col-lg-7 col-xl-8 col-12">
         <mat-card class="minimal-card h-100">
           <mat-card-header class="pb-3 border-bottom d-flex justify-content-between align-items-center">
             <mat-card-title class="h6 fw-bold mb-0">ساعت‌های در دسترس</mat-card-title>

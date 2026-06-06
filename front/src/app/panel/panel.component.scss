@@ -139,27 +139,16 @@
 }
 
 .panel-content {
-  background-color: var(--bg-primary);
-  padding: 24px;
-  margin: 0 !important;
+  background-color: var(--bg-page, var(--bg-primary));
+  // padding: 24px;
+  
+  /* کدهای تداخلی پاک شدند تا متریال به درستی کار کند */
+
   .content-container {
-    max-width: 1300px;
-    width: 70vw;
-    margin: 0 auto !important;
-    @media (max-width: 780px) {
-      width: 90vw;
-      margin: 0 auto !important;
-    }
-    transition: margin 0.3s ease;
-    &.full-sidebar {
-      margin: 0 0 0 auto !important;
-      @media (min-width: 1150px) {
-        margin: 0 5vw 0 auto !important;
-      }
-      @media (max-width: 780px) {
-        margin: 0 auto !important;
-      }
-    }
+    // max-width: 1300px;
+    // margin: 0 auto;
+    transition: all 0.3s ease;
+    padding: 0!important;
   }
 
   .welcome-banner {
@@ -229,25 +218,12 @@
     border-right: none;
     border-left: 1px solid var(--border-color);
   }
-
-  .panel-content {
-    .content-container {
-      &.full-sidebar {
-        margin: 0 auto 0 0 !important;
-        @media (min-width: 1150px) {
-          margin: 0 auto 0 5vw !important;
-        }
-        @media (max-width: 780px) {
-          margin: 0 auto !important;
-        }
-      }
-    }
-  }
 }
 
+/* Responsive Adjustments */
 @media (max-width: 600px) {
   .panel-content {
-    padding: 16px;
+    // padding: 16px;
   }
 
   .welcome-banner {
@@ -261,7 +237,7 @@
 
 @media (max-width: 768px) {
   .panel-content {
-    padding: 1rem;
+    // padding: 1rem;
   }
 
   .header-actions {

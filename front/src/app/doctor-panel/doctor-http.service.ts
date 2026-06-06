@@ -48,7 +48,7 @@ export class DoctorHttpService {
     return this.http.get(environment.apiUrl + `/echo-history/file/${address}`, headers);
   }
 
-  getCalendarDashboard(data: { date: string; staff_ids?: number[]; resource_ids?: number[] }): Observable<any> {
+  getCalendarDashboard(data: { date: string; user_ids?: number[]; resource_ids?: number[] }): Observable<any> {
     return this.genericHttp.post('/appointment/get-calendar-dashboard', data);
   }
 

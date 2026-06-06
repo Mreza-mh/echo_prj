@@ -40,15 +40,16 @@
     </div>
   </mat-toolbar>
 
-  <mat-sidenav-container class="sidenav-container">
-    <mat-sidenav
-      #sidenav
-      [mode]="isMobile ? 'over' : 'side'"
-      [(opened)]="sidenavOpened"
-      (closed)="sidenavOpened = false"
-      class="doctor-sidenav"
-      [class.collapsed]="sidebarCollapsed"
-    >
+<mat-sidenav-container class="sidenav-container" autosize>
+  
+  <mat-sidenav
+    #sidenav
+    [mode]="isMobile ? 'over' : 'side'"
+    [(opened)]="sidenavOpened"
+    (closed)="sidenavOpened = false"
+    class="doctor-sidenav"
+    [class.collapsed]="sidebarCollapsed"
+  >
       <div class="sidebar-header" *ngIf="!isMobile">
         <button mat-icon-button (click)="toggleSidebarCollapse()" class="collapse-btn">
           <mat-icon>{{ sidebarCollapsed ? 'chevron_right' : 'chevron_left' }}</mat-icon>
