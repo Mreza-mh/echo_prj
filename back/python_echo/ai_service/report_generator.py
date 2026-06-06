@@ -21,9 +21,9 @@ from typing import Any, Dict, List, Optional
 
 # ─── Severity / Category mappings ────────────────────────────────────────────
 _SEVERITY_META: Dict[str, Dict[str, str]] = {
-    "LOW":      {"emoji": "🟢", "fa": "پایین",  "en": "Low",      "color": "#27ae60"},
-    "MODERATE": {"emoji": "🟡", "fa": "متوسط", "en": "Moderate", "color": "#f39c12"},
-    "HIGH":     {"emoji": "🔴", "fa": "بالا",   "en": "High",     "color": "#e74c3c"},
+    "LOW":      {"fa": "پایین",  "en": "Low",      "color": "#27ae60"},
+    "MODERATE": {"fa": "متوسط", "en": "Moderate", "color": "#f39c12"},
+    "HIGH":     {"fa": "بالا",   "en": "High",     "color": "#e74c3c"},
 }
 _FUZZY_TO_SEVERITY = {"normal": "LOW", "mild": "MODERATE", "severe": "HIGH"}
 
@@ -50,15 +50,14 @@ def _sev(label: str) -> Dict[str, str]:
 
 
 def _bar(prob: float, width: int = 20) -> str:
-    """نوار پیشرفت ASCII"""
-    filled = round(max(0.0, min(1.0, prob)) * width)
-    return f"[{'█' * filled}{'░' * (width - filled)}] {prob * 100:.1f}%"
+    """نمایش درصد"""
+    return f"{prob * 100:.1f}%"
 
 
 def _quality(conf: float) -> str:
-    if conf >= 0.80: return "خوب ✅"
-    if conf >= 0.50: return "متوسط ⚠️"
-    return "ناکافی ❌ (داده‌های تکمیلی نیاز است)"
+    if conf >= 0.80: return "خوب"
+    if conf >= 0.50: return "متوسط"
+    return "ناکافی (داده‌های تکمیلی نیاز است)"
 
 
 def _gender_fa(raw: Any) -> str:
@@ -274,7 +273,6 @@ def build_final_report(
             "risk_score":       score,
             "severity":         sev,
             "severity_fa":      sev_meta["fa"],
-            "severity_emoji":   sev_meta["emoji"],
             "severity_color":   sev_meta["color"],
         },
         "ml_analysis":    ml_section,
@@ -334,7 +332,7 @@ def _build_doctor_report(
     lines += [
         "  ── ارزیابی کلی ──────────────────────────────────────────────",
         f"  امتیاز ریسک ترکیبی  : {score:.1f} / 100",
-        f"  طبقه‌بندی شدت       : {sev_info['emoji']}  {sev_info['fa'].upper()}  ({severity})",
+        f"  طبقه‌بندی شدت       : {sev_info['fa'].upper()}  ({severity})",
         "",
     ]
 
@@ -364,15 +362,15 @@ def _build_doctor_report(
         lines += [
             "  ── تحلیل اکوکاردیوگرافی (منطق فازی) ─────────────────────",
             f"  امتیاز فازی  : {float(fuzzy.get('score', 0)):.1f} / 100",
-            f"  دسته‌بندی    : {_sev(_FUZZY_TO_SEVERITY.get(cat.lower(), 'MODERATE'))['emoji']} {cat} ({cat_fa})",
+            f"  دسته‌بندی    : {cat} ({cat_fa})",
         ]
         reasons = fuzzy.get("reasons", [])
         if reasons:
             lines.append("  یافته‌های غیرنرمال اکو:")
             for r in reasons:
-                lines.append(f"    ⚠️  {r}")
+                lines.append(f"    - {r}")
         else:
-            lines.append("  ✅ تمام پارامترهای اکو در محدوده نرمال")
+            lines.append("  تمام پارامترهای اکو در محدوده نرمال")
         lines.append("")
 
     # ── Echo Measurements ─────────────────────────────────────────────────
@@ -390,7 +388,7 @@ def _build_doctor_report(
         lines += ["  ── عوامل خطر بالینی شناسایی‌شده ─────────────────────────"]
         for rf in risk_factors:
             lines.append(
-                f"  ⚠️  {rf['label_fa']:<40} "
+                f"  - {rf['label_fa']:<40} "
                 f"[{rf['feature']}={rf['value']}]"
             )
         lines.append("")
@@ -431,10 +429,6 @@ def _build_patient_report(
     pid        = patient_config.get("user_id", patient_config.get("id", "N/A"))
     age        = patient_config.get("age", "N/A")
 
-    # گیج بصری از 0 تا 100
-    gauge_filled = round(score / 5)
-    gauge = "█" * gauge_filled + "░" * (20 - gauge_filled)
-
     lines = [
         "═" * 60,
         "  گزارش ارزیابی سلامت قلب شما",
@@ -443,12 +437,8 @@ def _build_patient_report(
         "─" * 60,
         "",
         "  ── وضعیت کلی قلب شما ────────────────────────────────────",
-        f"  [{gauge}]",
-        f"   ۰             ۵۰             ۱۰۰",
-        f"   (بدون ریسک)         (ریسک بالا)",
-        "",
         f"  امتیاز کلی   : {score:.0f} / ۱۰۰",
-        f"  وضعیت قلب    : {sev_info['emoji']} {sev_info['fa']}",
+        f"  وضعیت قلب    : {sev_info['fa']}",
         "",
     ]
 
@@ -458,15 +448,15 @@ def _build_patient_report(
         cv_pct = ml.get("cv_result", {}).get("probability_pct", 50)
         lines += [
             "  ── نتایج آزمون‌های هوشمند ───────────────────────────────",
-            f"  📊 ریسک بیماری قلبی (بر اساس ECG/ورزش) : {hd_pct:.0f}٪",
-            f"  📊 ریسک قلبی-عروقی (فشار خون/سبک زندگی): {cv_pct:.0f}٪",
+            f"  ریسک بیماری قلبی (بر اساس ECG/ورزش) : {hd_pct:.0f}٪",
+            f"  ریسک قلبی-عروقی (فشار خون/سبک زندگی): {cv_pct:.0f}٪",
             "",
         ]
 
     # ── Echo results (ساده) ────────────────────────────────────────────
     if fuzzy:
         cat = fuzzy.get("category", "Normal")
-        cat_fa = {"Normal": "نرمال ✅", "Mild": "خفیف ⚠️", "Severe": "شدید 🔴"}.get(cat, cat)
+        cat_fa = {"Normal": "نرمال", "Mild": "خفیف", "Severe": "شدید"}.get(cat, cat)
         lines += [
             "  ── نتایج بررسی تصویری قلب (اکو) ───────────────────────",
             f"  وضعیت ساختار قلب : {cat_fa}",
@@ -475,16 +465,16 @@ def _build_patient_report(
         if reasons:
             lines.append("  موارد نیاز به توجه:")
             for r in reasons:
-                lines.append(f"    • {r}")
+                lines.append(f"    - {r}")
         else:
-            lines.append("  ✅ ساختار قلب در اندازه‌های طبیعی قرار دارد.")
+            lines.append("  ساختار قلب در اندازه‌های طبیعی قرار دارد.")
         lines.append("")
 
     # ── Risk factors (به زبان ساده) ────────────────────────────────────
     if risk_factors:
         lines += ["  ── عواملی که می‌توانند بر ریسک تأثیر بگذارند ─────────"]
         for rf in risk_factors:
-            lines.append(f"  ⚠️  {rf['label_fa']}")
+            lines.append(f"  - {rf['label_fa']}")
         lines.append("")
 
     # ── Recommendation ────────────────────────────────────────────────

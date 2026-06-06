@@ -208,15 +208,7 @@ class LLMReportGenerator:
         }
         severity_color = color_map.get(severity, "#95a5a6")
         
-        emoji_map = {
-            "NORMAL": "✅",
-            "LOW": "✅",
-            "MODERATE": "⚠️",
-            "MILD": "⚠️", 
-            "HIGH": "❌",
-            "SEVERE": "❌"
-        }
-        severity_emoji = emoji_map.get(severity, "ℹ️")
+        severity_emoji = ""
         
         # ساخت HTML
         html = f"""<!DOCTYPE html>
@@ -444,7 +436,7 @@ class LLMReportGenerator:
             </div>
             
             <div class="disclaimer">
-                ⚠️ <strong>توجه:</strong> این گزارش توسط سیستم هوش مصنوعی تولید شده و جایگزین مشاوره پزشکی نمی‌شود. حتماً با پزشک معالج خود مشورت کنید.
+                <strong>توجه:</strong> این گزارش توسط سیستم هوش مصنوعی تولید شده و جایگزین مشاوره پزشکی نمی‌شود. حتماً با پزشک معالج خود مشورت کنید.
             </div>
             
             <div class="report-text">
@@ -456,7 +448,7 @@ class LLMReportGenerator:
         if echo_analysis.get("available") and echo_analysis.get("echo_measurements"):
             html += """
             <div class="measurements">
-                <h3>📊 اندازه‌گیری‌های انجام شده:</h3>
+                <h3>اندازه‌گیری‌های انجام شده:</h3>
 """
             for measurement in echo_analysis.get("echo_measurements", []):
                 label = measurement.get("label_fa", measurement.get("parameter", ""))
