@@ -132,22 +132,44 @@
             </div>
           </mat-card-header>
 
-          <mat-card-content class="pt-4">
-            <div *ngIf="isLoadingSlots" class="text-center py-5">
-              <mat-progress-spinner mode="indeterminate" diameter="40" class="mx-auto"></mat-progress-spinner>
-                <p *ngIf="availableSlots">پرسنل مورد نظر را انتخاب بکنید</p>
-                <p *ngIf="!availableSlots" class="text-muted mt-3 small">در حال جستجوی زمان‌های خالی...</p>
-            </div>
-            <div *ngIf="!isLoadingSlots && availableSlots.length === 0" class="empty-state-minimal">
-              <div class="empty-icon-box">
-                <mat-icon>event_busy</mat-icon>
+<mat-card-content class="pt-4">
+            
+            <div *ngIf="!staffId || !organizationServicesId" class="empty-state-minimal text-center py-5 animate__animated animate__fadeIn">
+              <div class="empty-icon-box mx-auto mb-3 bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                <mat-icon class="text-secondary" style="font-size: 40px; width: 40px; height: 40px;">touch_app</mat-icon>
               </div>
-              <h4 class="h6 fw-bold">نوبتی یافت نشد</h4>
-              <p class="text-muted small">لطفاً روز دیگری را انتخاب کنید یا تنظیمات نوبت را تغییر دهید.</p>
+              <h4 class="h6 fw-bold text-dark">تکمیل اطلاعات نوبت</h4>
+              <p class="text-muted small mb-4">برای مشاهده زمان‌های خالی، لطفاً موارد زیر را مشخص کنید:</p>
+              
+              <div class="d-flex justify-content-center flex-wrap gap-2">
+                <span class="badge rounded-pill px-3 py-2 d-flex align-items-center" 
+                      [ngClass]="staffId ? 'bg-success text-white' : 'bg-light text-muted border'">
+                  <mat-icon class="me-1 fs-6" style="width: 18px; height: 18px;">{{ staffId ? 'check_circle' : 'pending' }}</mat-icon>
+                  انتخاب پرسنل
+                </span>
+                <span class="badge rounded-pill px-3 py-2 d-flex align-items-center" 
+                      [ngClass]="organizationServicesId ? 'bg-success text-white' : 'bg-light text-muted border'">
+                  <mat-icon class="me-1 fs-6" style="width: 18px; height: 18px;">{{ organizationServicesId ? 'check_circle' : 'pending' }}</mat-icon>
+                  انتخاب خدمت
+                </span>
+              </div>
             </div>
 
-            <!-- Slots Grid -->
-            <div *ngIf="!isLoadingSlots && availableSlots.length > 0" class="slots-grid-minimal">
+            <div *ngIf="isLoadingSlots && staffId && organizationServicesId" class="text-center py-5 animate__animated animate__fadeIn">
+              <mat-progress-spinner mode="indeterminate" diameter="45" class="mx-auto mb-3 color-primary"></mat-progress-spinner>
+              <h4 class="h6 fw-bold">در حال بررسی تقویم...</h4>
+              <p class="text-muted small">لطفاً چند لحظه منتظر بمانید</p>
+            </div>
+
+            <div *ngIf="!isLoadingSlots && staffId && organizationServicesId && availableSlots.length === 0" class="empty-state-minimal text-center py-5 animate__animated animate__fadeIn">
+              <div class="empty-icon-box mx-auto mb-3 bg-danger bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+                <mat-icon class="text-danger" style="font-size: 40px; width: 40px; height: 40px;">event_busy</mat-icon>
+              </div>
+              <h4 class="h6 fw-bold">نوبتی یافت نشد</h4>
+              <p class="text-muted small">در این تاریخ برای خدمت و پرسنل انتخابی، زمان خالی وجود ندارد.<br>لطفاً روز دیگری را بررسی کنید.</p>
+            </div>
+
+            <div *ngIf="!isLoadingSlots && availableSlots.length > 0" class="slots-grid-minimal animate__animated animate__fadeIn">
               <button 
                 *ngFor="let slot of availableSlots" 
                 (click)="selectSlot(slot)"
@@ -158,8 +180,7 @@
               </button>
             </div>
 
-            <!-- Resource Selection (Bottom) -->
-            <div class="mt-5 pt-4 border-top" *ngIf="resourceList.length > 0">
+            <div class="mt-5 pt-4 border-top animate__animated animate__fadeInUp" *ngIf="resourceList.length > 0">
               <label class="form-label d-flex align-items-center mb-3">
                 <mat-icon class="me-2 fs-5 text-muted">inventory_2</mat-icon>
                 منابع جانبی مورد نیاز <small class="text-muted ms-2">(اختیاری)</small>

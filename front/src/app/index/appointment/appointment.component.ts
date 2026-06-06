@@ -49,11 +49,11 @@ export class AppointmentComponent implements OnInit {
   resourceList: any[] = [];
   isLoadingData = false;
   organizationDetails: any = null;
-  
+
   // Selection models
   selectedUserId: string = '';
   selectedResourceIds: string[] = [];
-  
+
   isEditMode = false;
   isUserMode = false;
   editingAppointmentId: string | number | null = null;
@@ -71,13 +71,13 @@ export class AppointmentComponent implements OnInit {
     private credentialsService: CredentialsService,
     private toastService: ToastService,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
-    this.route.params.subscribe(params => {
+    this.route.params.subscribe((params) => {
       const routeStaffId = params['staffid'];
-      this.route.queryParams.subscribe(queryParams => {
+      this.route.queryParams.subscribe((queryParams) => {
         this.staffId = queryParams['staff_id'] || routeStaffId || '';
         this.organizationServicesId = queryParams['service_id'] || '';
 
@@ -87,10 +87,10 @@ export class AppointmentComponent implements OnInit {
         if (queryParams['time']) {
           this.selectedSlot = {
             start_time: queryParams['time'],
-            end_time: '' 
+            end_time: '',
           };
         }
-        
+
         this.hasStaffParam = !!this.staffId;
         this.hasServiceParam = !!this.organizationServicesId;
 
@@ -114,28 +114,56 @@ export class AppointmentComponent implements OnInit {
     });
   }
 
+  onStaffChange() {
+    this.selectedSlot = null;
+    this.availableSlots = []; // اضافه شد: پاک کردن تایم‌های قبلی
+    this.checkAndFetchSlots();
+  }
+
+  onServiceChange() {
+    this.selectedSlot = null;
+    this.availableSlots = []; // اضافه شد: پاک کردن تایم‌های قبلی
+    this.checkAndFetchSlots();
+  }
+
+  onDateChange(date: Date | null): void {
+    this.selectedDate = date;
+    this.selectedSlot = null;
+    this.availableSlots = []; // اضافه شد: پاک کردن تایم‌های قبلی
+
+    if (date) {
+      this.checkAndFetchSlots(); // تغییر کرد: به جای فراخوانی مستقیم fetchSlots از این متد استفاده میکنیم تا شرط ها رعایت شود
+    }
+  }
+
   fetchCurrentUser() {
     this.authHttpService.getMe().subscribe({
       next: (res: any) => {
         if (res && res.data && res.data.id) {
           this.selectedUserId = String(res.data.id);
-        } else if (this.credentialsService.credentials?.id || this.credentialsService.credentials?.user?.id) {
-          this.selectedUserId = String(this.credentialsService.credentials?.id || this.credentialsService.credentials?.user?.id);
+        } else if (
+          this.credentialsService.credentials?.id ||
+          this.credentialsService.credentials?.user?.id
+        ) {
+          this.selectedUserId = String(
+            this.credentialsService.credentials?.id ||
+              this.credentialsService.credentials?.user?.id,
+          );
         }
       },
       error: () => {
         // Fallback to credentials if getMe fails
-        const currentId = this.credentialsService.credentials?.id || this.credentialsService.credentials?.user?.id;
+        const currentId =
+          this.credentialsService.credentials?.id || this.credentialsService.credentials?.user?.id;
         if (currentId) {
           this.selectedUserId = String(currentId);
         }
-      }
+      },
     });
   }
 
   loadInitialData() {
     this.isLoadingData = true;
-    
 
     const params = { is_paginate: false };
 
@@ -143,7 +171,7 @@ export class AppointmentComponent implements OnInit {
       next: (res) => {
         this.staffList = res.data || [];
         this.checkAndFetchSlots();
-      }
+      },
     });
 
     // Load Services
@@ -151,14 +179,14 @@ export class AppointmentComponent implements OnInit {
       next: (res) => {
         this.serviceList = res.data || [];
         this.checkAndFetchSlots();
-      }
+      },
     });
 
     // Load Resources (for selection)
     this.panelHttpService.getResourceList(params).subscribe({
       next: (res: any) => {
         this.resourceList = res.data || [];
-      }
+      },
     });
 
     // Load Users (for admin/clerk to select a customer)
@@ -172,7 +200,7 @@ export class AppointmentComponent implements OnInit {
         },
         complete: () => {
           this.isLoadingData = false;
-        }
+        },
       });
     } else {
       this.fetchCurrentUser();
@@ -186,32 +214,16 @@ export class AppointmentComponent implements OnInit {
     }
   }
 
-  onStaffChange() {
-    this.selectedSlot = null;
-    this.checkAndFetchSlots();
-  }
 
-  onServiceChange() {
-    this.selectedSlot = null;
-    this.checkAndFetchSlots();
-  }
-
-  onDateChange(date: Date | null): void {
-    this.selectedDate = date;
-    this.selectedSlot = null;
-    if (date) {
-      this.fetchSlots(date);
-    }
-  }
 
   fetchSlots(date: Date): void {
     if (!this.organizationServicesId && !this.staffId) return;
 
     this.isLoadingSlots = true;
     const formattedDate = this.formatDate(date);
-    
+
     const params: any = {
-      date: formattedDate
+      date: formattedDate,
     };
 
     if (this.organizationServicesId) params.service_id = String(this.organizationServicesId);
@@ -221,7 +233,6 @@ export class AppointmentComponent implements OnInit {
         next: (res) => {
           this.availableSlots = res.data || [];
 
-  
           if (this.isEditMode && this.selectedSlot) {
             const exists = this.availableSlots.find(
               (s) => s.start_time === this.selectedSlot.start_time,
@@ -276,16 +287,19 @@ export class AppointmentComponent implements OnInit {
       start_time: this.selectedSlot.start_time,
       type: 'Online',
       permissible_interference: false,
-      resource_ids: this.selectedResourceIds
+      resource_ids: this.selectedResourceIds,
     };
 
-    const request = this.isEditMode && this.editingAppointmentId
-      ? this.panelHttpService.editAppointment(this.editingAppointmentId, bookingData)
-      : this.indexHttpService.addAppointment(bookingData);
+    const request =
+      this.isEditMode && this.editingAppointmentId
+        ? this.panelHttpService.editAppointment(this.editingAppointmentId, bookingData)
+        : this.indexHttpService.addAppointment(bookingData);
 
     request.subscribe({
       next: (res) => {
-        this.toastService.success(this.isEditMode ? 'نوبت با موفقیت ویرایش شد' : 'نوبت شما با موفقیت ثبت شد');
+        this.toastService.success(
+          this.isEditMode ? 'نوبت با موفقیت ویرایش شد' : 'نوبت شما با موفقیت ثبت شد',
+        );
         this.isBooking = false;
         this.selectedSlot = null;
         if (this.isEditMode) {
@@ -297,7 +311,7 @@ export class AppointmentComponent implements OnInit {
       error: (err) => {
         this.toastService.error(err.message || 'خطا در ثبت نوبت');
         this.isBooking = false;
-      }
+      },
     });
   }
 
@@ -314,16 +328,16 @@ export class AppointmentComponent implements OnInit {
         this.selectedResourceIds = app.resources ? app.resources.map((r: any) => String(r.id)) : [];
 
         this.loadInitialData();
-        
+
         this.fetchSlots(this.selectedDate);
-        
+
         if (app.start_time) {
           this.selectedSlot = {
             start_time: app.start_time.substring(0, 5),
-            end_time: app.end_time ? app.end_time.substring(0, 5) : ''
+            end_time: app.end_time ? app.end_time.substring(0, 5) : '',
           };
         }
-      }
+      },
     });
   }
 

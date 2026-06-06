@@ -49,38 +49,32 @@ html {
 }
 
 body {
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
   color-scheme: light;
-
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
   background-color: var(--mat-sys-surface);
   color: var(--mat-sys-on-surface);
   font: var(--mat-sys-body-medium);
-
-  // Reset the user agent margin.
   margin: 0;
 
-  // Custom theme variables for consistent theming across the app
---bg-primary: var(--mat-sys-surface);
-   --bg-secondary: #e6e9ee50;
-   --bg-sidebar: var(--mat-sys-surface);
-   --bg-page: #f5f7fa;
-  --bg-table-header: var(--mat-sys-surface-variant);
-  --text-primary: var(--mat-sys-on-surface);
-  --text-secondary: var(--mat-sys-on-surface-variant);
-  --border-color: var(--mat-sys-outline-variant);
-  --hover-bg: rgba(144, 202, 249, 0.08);
-  --active-bg: rgba(144, 202, 249, 0.16);
-  --shadow: rgba(0, 0, 0, 0.1);
-  --loading-bg: rgba(255, 255, 255, 0.8);
-  --accent-color: var(--mat-sys-primary);
-  --success-color: #4caf50;
-  --error-color: #f44336;
-  --warning-color: #ff9800;
+  // --- اختصاصی: تم روشن مدرن و حرفه‌ای (Trust & Clean) ---
+  --bg-primary: #ffffff;           // پس‌زمینه کارت‌ها و فرم‌ها
+  --bg-secondary: #f8fafc;         // پس‌زمینه بخش‌های ثانویه
+  --bg-sidebar: #ffffff;           // سایدبار یکدست سفید
+  --bg-page: #f1f5f9;              // رنگ ملایم برای کل صفحه که کارت‌ها روی آن برجسته شوند
+  --bg-table-header: #f8fafc;      // هدر جدول‌ها (کمی متمایز از بدنه جدول)
+  
+  --text-primary: #0f172a;         // مشکی متمایل به سورمه‌ای برای خوانایی بالا
+  --text-secondary: #64748b;       // خاکستری جذاب برای متون فرعی
+  --border-color: #e2e8f0;         // حاشیه‌های بسیار ملایم
+  
+  --hover-bg: rgba(37, 99, 235, 0.06); // هاور ملایم آبی
+  --active-bg: rgba(37, 99, 235, 0.12);
+  --shadow: rgba(15, 23, 42, 0.08);    // سایه مدرن و نرم
+  --loading-bg: rgba(255, 255, 255, 0.85);
+  
+  --accent-color: #2563eb;         // آبی رویال (Royal Blue) - رنگ اصلی اکشن‌ها
+  --success-color: #10b981;        // سبز زمردی (برای موفقیت و تایید)
+  --error-color: #ef4444;          // قرمز واضح (برای خطاها)
+  --warning-color: #f59e0b;        // نارنجی/کهربایی (برای هشدار)
 }
 /* You can add global styles to this file, and also import other style files */
 
@@ -159,50 +153,39 @@ body {
   opacity: 0.5 !important;
 }
 
-// Dark theme
 [data-theme='dark'] {
-  --mat-sys-surface: #121212;
-  --mat-sys-surface-variant: #221919;
-  --mat-sys-on-surface: #f1f1f1;
-  --mat-sys-on-surface-variant: #b0b0b0;
-  --mat-sys-primary: #86dbfc;
-  --mat-sys-primary-container: #2d1b3d;
-  --mat-sys-on-primary-container: #e6d7ff;
-  --mat-sys-outline-variant: #49454f;
+  --mat-sys-surface: #1e293b;
+  --mat-sys-surface-variant: #0f172a;
+  --mat-sys-on-surface: #f8fafc;
+  --mat-sys-on-surface-variant: #94a3b8;
+  --mat-sys-primary: #3b82f6;
+  --mat-sys-primary-container: #1e3a8a;
+  --mat-sys-on-primary-container: #dbeafe;
+  --mat-sys-outline-variant: #334155;
 
-// Override custom theme variables for dark mode
-   --bg-primary: #18181af6;
-   --bg-secondary: #1e1e1e;
-   --bg-sidebar: #1e1e1e;
-   --bg-page: #0a0a0a;
-   --bg-table-header: #2a2a2a;
-  --text-primary: #e0e0e0;
-  --text-secondary: #b0b0b0;
-  --border-color: #49454f;
-  --hover-bg: rgba(144, 202, 249, 0.12);
-  --active-bg: rgba(144, 202, 249, 0.24);
-  --shadow: rgba(0, 0, 0, 0.3);
-  --loading-bg: rgba(30, 30, 30, 0.8);
-  --accent-color: #86dbfc;
-
-  // Global text overrides for dark mode
-  .text-muted {
-    color: var(--text-secondary) !important;
-  }
-
-  .text-dark {
-    color: var(--text-primary) !important;
-  }
-
-  .bg-white {
-    background-color: var(--bg-primary) !important;
-  }
-
-  .bg-light {
-    background-color: var(--bg-secondary) !important;
-  }
+  // --- اختصاصی: تم تاریک مدرن ---
+  --bg-primary: #1e293b;           // پس‌زمینه کارت‌ها
+  --bg-secondary: #0f172a;         // پس‌زمینه ثانویه
+  --bg-sidebar: #1e293b;
+  --bg-page: #020617;              // پس‌زمینه اصلی صفحه (بسیار تیره)
+  --bg-table-header: #334155;
+  
+  --text-primary: #f8fafc;         // سفید ملایم
+  --text-secondary: #94a3b8;       // خاکستری روشن برای متون فرعی
+  --border-color: #334155;
+  
+  --hover-bg: rgba(59, 130, 246, 0.15);
+  --active-bg: rgba(59, 130, 246, 0.25);
+  --shadow: rgba(0, 0, 0, 0.4);
+  --loading-bg: rgba(2, 6, 23, 0.85);
+  
+  --accent-color: #60a5fa;         // آبی روشن‌تر برای دید بهتر در پس‌زمینه تاریک
+  
+  .text-muted { color: var(--text-secondary) !important; }
+  .text-dark { color: var(--text-primary) !important; }
+  .bg-white { background-color: var(--bg-primary) !important; }
+  .bg-light { background-color: var(--bg-secondary) !important; }
 }
-
 
 
 
@@ -216,5 +199,34 @@ body {
 
   .mat-mdc-dialog-surface {
     border-radius: 12px;
+  }
+}
+// زیباتر کردن اسکرول‌بار مرورگر
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-page);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-secondary);
+}
+
+// نرم‌تر کردن انیمیشن‌های هاور روی دکمه‌ها و منوها
+.mat-mdc-menu-item, 
+button {
+  transition: background-color 0.2s ease, color 0.2s ease, transform 0.1s ease !important;
+}
+
+// استایل جذاب‌تر برای دیالوگ (فرم بیمار)
+.patient-form-dialog {
+  .mat-mdc-dialog-surface {
+    border-radius: 16px !important; // لبه‌های گردتر و مدرن‌تر
+    box-shadow: 0 20px 25px -5px var(--shadow), 0 8px 10px -6px var(--shadow) !important;
   }
 }

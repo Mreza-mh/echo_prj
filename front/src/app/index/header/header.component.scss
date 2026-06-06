@@ -1,49 +1,70 @@
+// ==========================================
+// Variables & Mixins (Assuming you have these defined)
+// ==========================================
+$transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+
+// ==========================================
+// Main Toolbar
+// ==========================================
 .header-toolbar {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: var(--bg-primary);
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-  height: 72px;
-  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-primary); // Make sure this color has slight transparency in your root like rgba(255,255,255,0.9)
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: $transition-smooth;
+  height: 76px; // Slightly taller for breathing room
+  border-bottom: 1px solid rgba(128, 128, 128, 0.08); // Ultra-subtle border
 
   &.scrolled {
     height: 64px;
     background: var(--bg-primary);
-    box-shadow: 0 4px 20px var(--shadow);
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05); // Pro, soft shadow instead of harsh ones
+    border-bottom-color: transparent;
   }
 }
 
-
+// ==========================================
+// Brand & Logo
+// ==========================================
 .brand-section {
   cursor: pointer;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
   
   .logo-wrapper {
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
     background: linear-gradient(135deg, var(--accent-color) 0%, var(--mat-sys-primary) 100%);
-    border-radius: 10px;
+    border-radius: 12px; // Modern squircle look
     display: flex; 
     align-items: center;
     justify-content: center;
-    margin-right: 12px;
-    box-shadow: 0 4px 10px var(--shadow);
+    margin-right: 14px;
+    box-shadow: 0 8px 16px -4px rgba(var(--accent-color-rgb, 0,0,0), 0.3); // Colored shadow
 
     .logo-icon {
       color: white;
-      font-size: 24px;
-      width: 24px;
-      height: 24px;
+      font-size: 22px;
+      width: 22px;
+      height: 22px;
     }
   }
 
+  .brand-text {
+    justify-content: center;
+  }
+
   .brand-name {
-    font-size: 1.5rem;
-    font-weight: 800;
-    letter-spacing: -0.5px;
+    font-size: 1.45rem;
+    font-weight: 900; // Extra bold to make it pop
+    letter-spacing: -0.03em; // Tighter kerning feels more modern
     color: var(--text-primary);
-    line-height: 1;
+    line-height: 1.1;
 
     .accent {
       color: var(--accent-color);
@@ -51,117 +72,173 @@
   }
 
   .brand-tagline {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
     font-weight: 500;
-    margin-top: 2px;
+    letter-spacing: 0.02em;
+    opacity: 0.8;
   }
 }
 
+// ==========================================
+// Desktop Navigation
+// ==========================================
 .desktop-nav {
+  gap: 24px; // Use gap instead of margins
+
   .nav-link {
+    position: relative;
     text-decoration: none;
-    color: var(--text-primary);
-    font-weight: 600;
-    padding: 0.5rem 1rem;
-    margin: 0 0.25rem;
-    border-radius: 8px;
-    transition: all 0.2s ease;
+    color: var(--text-secondary);
+    font-weight: 500;
+    padding: 0.5rem 0;
+    transition: color 0.3s ease;
     font-size: 0.95rem;
 
+    // Custom modern underline animation (No more generic hover backgrounds)
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: var(--accent-color);
+      border-radius: 2px;
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
     &:hover {
-      background: var(--hover-bg);
-      color: var(--accent-color);
+      color: var(--text-primary);
+      &::after {
+        transform: scaleX(1);
+        transform-origin: left;
+      }
     }
 
     &.active {
       color: var(--accent-color);
-      background: var(--hover-bg);
+      font-weight: 600;
+      
+      &::after {
+        transform: scaleX(1);
+        transform-origin: left;
+      }
     }
   }
 }
 
-
+// ==========================================
+// Actions & User Section
+// ==========================================
 .actions-section {
   .lang-text {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
     font-weight: 700;
+    letter-spacing: 0.5px;
   }
 
+  // Refined user button
   .user-profile-btn {
-    padding: 4px 12px;
-    border-radius: 50px;
-    background: var(--hover-bg);
+    padding: 4px 14px 4px 6px; // Asymmetric padding to wrap nicely around the text/arrow
+    border-radius: 12px;
+    background: transparent;
+    border: 1px solid rgba(128, 128, 128, 0.15);
+    transition: $transition-smooth;
+    height: 40px;
     
-    .user-avatar-mini {
-      width: 28px;
-      height: 28px;
-      background: var(--accent-color);
-      color: white;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      
-      mat-icon {
-        font-size: 20px;
-        width: 20px;
-        height: 20px;
-      }
+    &:hover {
+      border-color: var(--accent-color);
+      background: rgba(128, 128, 128, 0.02);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
     }
 
     .user-name {
       font-weight: 600;
+      font-size: 0.9rem;
       color: var(--text-primary);
     }
 
     .menu-arrow {
-      font-size: 18px;
-      width: 18px;
-      height: 18px;
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
       color: var(--text-secondary);
+      transition: transform 0.3s ease;
+    }
+    
+    // Rotate arrow when menu is open
+    &[aria-expanded="true"] .menu-arrow {
+      transform: rotate(180deg);
+      color: var(--accent-color);
+    }
+  }
+
+  .login-btn {
+    font-weight: 600;
+    color: var(--text-primary);
+    &:hover {
+      color: var(--accent-color);
+    }
+  }
+
+  .register-btn {
+    border-radius: 10px; // Standardize radius with logo
+    font-weight: 600;
+    padding: 0 24px;
+    box-shadow: 0 4px 12px -2px rgba(var(--accent-color-rgb, 0,0,0), 0.2);
+  }
+}
+
+// ==========================================
+// RTL Support
+// ==========================================
+[dir="rtl"] {
+  .brand-section .logo-wrapper {
+    margin-right: 0;
+    margin-left: 14px;
+  }
+
+  .actions-section .user-profile-btn {
+    padding: 4px 6px 4px 14px;
+    
+    .user-name {
+      margin-left: 0 !important;
+      margin-right: 8px !important;
     }
   }
 }
 
-// RTL Adjustments
-[dir="rtl"] {
-  .brand-section .logo-wrapper {
-    margin-right: 0;
-    margin-left: 12px;
-  }
-
-  .actions-section .user-profile-btn .user-name {
-    margin-left: 0 !important;
-    margin-right: 8px !important;
-  }
-}
-
-// Mobile Drawer
+// ==========================================
+// Mobile Drawer Restyling
+// ==========================================
 .mobile-drawer {
   position: fixed;
   top: 0;
-  right: -300px;
-  width: 300px;
+  right: -320px; // Slightly wider for better touch targets
+  width: 320px;
   height: 100vh;
   background: var(--bg-primary);
   z-index: 1100;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); // Smoother physics
   display: flex;
   flex-direction: column;
-  box-shadow: -5px 0 25px var(--shadow);
+  box-shadow: none;
 
   &.open {
-    right: 0;
+    transform: translateX(-320px);
+    box-shadow: -10px 0 40px rgba(0, 0, 0, 0.08); // Softer edge shadow
   }
 
   [dir="rtl"] & {
     right: auto;
-    left: -300px;
-    box-shadow: 5px 0 25px var(--shadow);
-
+    left: -320px;
+    
     &.open {
-      left: 0;
+      transform: translateX(320px);
+      box-shadow: 10px 0 40px rgba(0, 0, 0, 0.08);
     }
   }
 }
@@ -172,70 +249,146 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.3); // Lighter backdrop
   backdrop-filter: blur(4px);
   z-index: 1050;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+
+  // You will need to toggle an 'open' class on the overlay in your component if you want the fade effect
+  &.open, :host-context(.menu-open) & { // Adjust based on your Angular state
+    opacity: 1;
+    visibility: visible;
+  }
 }
 
 .mobile-nav {
   .drawer-link {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px 16px;
+    gap: 16px;
+    padding: 14px 20px;
     text-decoration: none;
     color: var(--text-primary);
-    font-weight: 600;
+    font-weight: 500;
     border-radius: 12px;
-    transition: all 0.2s;
+    transition: $transition-smooth;
+    border-left: 3px solid transparent; // Left border indicator for active states
 
     mat-icon {
       color: var(--text-secondary);
+      transition: color 0.3s ease;
     }
 
     &:hover {
-      background: var(--hover-bg);
+      background: rgba(128, 128, 128, 0.04);
       color: var(--accent-color);
       mat-icon { color: var(--accent-color); }
     }
 
     &.active {
-      background: var(--active-bg);
+      background: rgba(var(--accent-color-rgb, 100,100,100), 0.08);
       color: var(--accent-color);
+      font-weight: 600;
+      border-left-color: var(--accent-color);
+      
       mat-icon { color: var(--accent-color); }
     }
   }
 }
 
 .user-avatar {
-  width: 48px;
-  height: 48px;
-  background: var(--accent-color);
-  color: white;
-  border-radius: 12px;
+  width: 52px;
+  height: 52px;
+  background: rgba(var(--accent-color-rgb, 100,100,100), 0.1);
+  color: var(--accent-color);
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  mat-icon { font-size: 32px; width: 32px; height: 32px; }
+  mat-icon { font-size: 28px; width: 28px; height: 28px; }
 }
 
+// Clean Dropdown Menu
 .modern-menu {
   border-radius: 16px !important;
-  overflow: hidden;
-  margin-top: 10px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.1) !important;
+  padding: 8px !important;
+  box-shadow: 0 12px 36px -8px rgba(0,0,0,0.12) !important;
+  border: 1px solid rgba(128, 128, 128, 0.08);
   
-  .super-admin-item {
-    background: rgba(var(--mat-sys-error-rgb), 0.03);
-    &:hover { background: rgba(var(--mat-sys-error-rgb), 0.08); }
+  .mat-mdc-menu-item {
+    border-radius: 8px;
+    margin-bottom: 2px;
+    
+    &:hover { background: rgba(128, 128, 128, 0.04); }
   }
-  
+
   .logout-item {
     color: var(--mat-sys-error);
+    margin-top: 4px;
+    &:hover {
+      background: rgba(var(--mat-sys-error-rgb, 255,0,0), 0.05);
+    }
   }
 }
 
-@keyframes slideInRight {
-  from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+/* ============================================================
+   RESPONSIVE DESIGN (Mobile & Tablet Optimization)
+   ============================================================ */
+
+@media (max-width: 992px) {
+  /* تنظیمات برای تبلت */
+  .three-d-showcase .scene-3d {
+    height: 350px;
+    transform: scale(0.8); /* کوچک کردن صحنه سه‌بعدی برای جا شدن */
+  }
+}
+
+@media (max-width: 768px) {
+  /* تنظیمات برای موبایل */
+  
+  /* تنظیم سکشن‌های اصلی */
+  .section-title { font-size: 1.8rem !important; }
+  
+  /* تنظیم کارت‌های پنل */
+  .panels-ecosystem-section .ecosystem-card {
+    margin-bottom: 20px;
+    &.featured { transform: translateY(0); }
+  }
+
+  /* تنظیم صحنه سه‌بعدی */
+  .three-d-showcase {
+    .scene-3d {
+      height: 300px;
+      .isometric-container {
+        transform: rotateX(50deg) rotateZ(-45deg) scale(0.7);
+      }
+    }
+  }
+
+  /* تنظیمات چت‌بات */
+  .ai-support-section .ai-support-wrapper {
+    padding: 30px 15px;
+    .chat-mockup { margin-top: 30px; }
+  }
+
+  /* فوتر در موبایل */
+  .main-footer {
+    text-align: center;
+    .footer-title::after { margin: 10px auto; }
+    .social-links { justify-content: center; }
+    .footer-contact li { justify-content: center; }
+  }
+}
+
+@media (max-width: 576px) {
+  /* تنظیمات برای گوشی‌های کوچک */
+  .three-d-showcase .scene-3d .isometric-container {
+    transform: rotateX(45deg) rotateZ(-45deg) scale(0.6);
+  }
+  
+  .fuzzy-logic-section .metrics-grid {
+    grid-template-columns: 1fr; /* تبدیل دو ستونه به تک ستونه */
+  }
 }

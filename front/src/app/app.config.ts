@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZonelessChangeDetection } from '@angular/core';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection, provideZonelessChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
@@ -10,9 +10,9 @@ import { errorHandlerInterceptor } from './@shared/interceptors/error-handler/er
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
-    provideZonelessChangeDetection(),
+    provideZoneChangeDetection({ eventCoalescing: true }), // این باید باشد
     provideRouter(routes),
     provideAnimationsAsync(),
-    provideHttpClient(withInterceptors([apiPrefixInterceptor, errorHandlerInterceptor]))
-  ]
+    provideHttpClient(withInterceptors([apiPrefixInterceptor, errorHandlerInterceptor])),
+  ],
 };

@@ -2,197 +2,284 @@
 @import 'bootstrap/scss/variables';
 @import 'bootstrap/scss/mixins';
 
+// ============================================================
+// Component: org-details-container
+// ============================================================
 .org-details-container {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+  --border-color: #dee2e6;
+  --accent-color: #0d6efd;
+  --hover-bg: rgba(#0d6efd, 0.05);
+  --shadow: rgba(0,0,0,0.08);
+
   background-color: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100vh;
-  transition: all 0.3s ease;
   font-family: 'Samim', -apple-system, sans-serif;
+  transition: background-color 0.3s ease, color 0.3s ease;
 
-  // Hero Section
+  // ----------------------------------------------------------
+  // HERO SECTION
+  // ----------------------------------------------------------
   .hero-section {
     position: relative;
-    height: 500px;
+    min-height: 400px;
     display: flex;
-    align-items: center;
+    align-items: flex-end;
     color: white;
     overflow: hidden;
+    margin-bottom: -4rem; // overlap trick for tabs/cards
 
-    .hero-bg {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      z-index: 1;
-      transform: scale(1.05);
-      filter: blur(2px);
-      background-image: linear-gradient(135deg, #667eea 0%, #764ba2 100%); // Default gradient
-    }
+    @include media-breakpoint-down(lg) { margin-bottom: -3rem; }
+    @include media-breakpoint-down(md) { min-height: 350px; }
+    @include media-breakpoint-down(sm) { min-height: 300px; margin-bottom: -2rem; }
+
+.hero-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transform: scale(1.05);
+  filter: blur(3px);
+
+  /* First layer: the image (on top) */
+  /* Second layer: the gradient (shown if image fails) */
+  background-image:
+    url(/images/avala.jpg),
+    linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
 
     .hero-overlay {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7));
-      z-index: 2;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.65));
     }
 
     .hero-content {
+      display: flex;
+      justify-content: center;
+      align-self: center;
       position: relative;
+      top: 10% !important;
       z-index: 3;
-      padding-bottom: 60px;
+      width: 100%;
+      gap: 16px;
     }
 
     .org-badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      background: rgba(255, 255, 255, 0.2);
+      gap: 0.375rem;
+      background: rgba(255,255,255,0.2);
       backdrop-filter: blur(10px);
-      padding: 6px 16px;
+      padding: 0.375rem 1rem;
       border-radius: 50px;
       font-size: 0.85rem;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      
-      mat-icon { font-size: 18px; width: 18px; height: 18px; }
+      border: 1px solid rgba(255,255,255,0.3);
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
     }
 
     .org-title {
       font-size: 3.5rem;
       font-weight: 800;
       letter-spacing: -1px;
-      @include media-breakpoint-down(md) { font-size: 2.2rem; }
+      line-height: 1.15;
+      word-wrap: break-word;
+
+      @include media-breakpoint-down(lg) { font-size: 2.5rem; }
+      @include media-breakpoint-down(md) { font-size: 1.75rem; }
+      @include media-breakpoint-down(sm) { font-size: 1.5rem; }
     }
 
     .org-address {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 1.1rem;
-      opacity: 0.9;
-      mat-icon { opacity: 0.7; }
+      gap: 0.5rem;
+      font-size: 1rem;
+      opacity: 0.95;
+
+      mat-icon { opacity: 0.75; flex-shrink: 0; }
+
+      @include media-breakpoint-down(md) { font-size: 0.9rem; }
     }
 
-    .stat-item {
-      .stat-value {
-        display: block;
-        font-size: 1.8rem;
-        font-weight: 700;
-      }
-      .stat-label {
-        font-size: 0.9rem;
-        opacity: 0.7;
-      }
-    }
-
-    .floating-controls {
-      position: absolute;
-      top: 24px;
-      right: 24px;
-      z-index: 10;
+    .org-stats {
       display: flex;
-      flex-direction: column;
-      gap: 12px;
+      gap: 2rem;
+      flex-wrap: wrap;
 
-      [dir='rtl'] & {
-        right: auto;
-        left: 24px;
-      }
+      @include media-breakpoint-down(md) { gap: 1.5rem; }
+      @include media-breakpoint-down(sm) { gap: 1rem; }
 
-      button {
-        background: rgba(255, 255, 255, 0.2) !important;
-        backdrop-filter: blur(10px);
-        color: white;
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        transition: all 0.3s ease;
-
-        &:hover {
-          background: rgba(255, 255, 255, 0.3) !important;
-          transform: translateY(-2px);
+      .stat-item {
+        .stat-value {
+          display: block;
+          font-size: 1.8rem;
+          font-weight: 700;
+          line-height: 1;
+          @include media-breakpoint-down(md) { font-size: 1.5rem; }
+        }
+        .stat-label {
+          font-size: 0.9rem;
+          opacity: 0.8;
+          @include media-breakpoint-down(md) { font-size: 0.8rem; }
         }
       }
     }
+
+    // Contact card in hero (desktop only)
+    .org-main-card {
+      background: white !important;
+      color: var(--text-primary) !important;
+      padding: 1.5rem;
+      min-width: 280px;
+      flex-shrink: 0;
+      border-radius: 1.25rem !important;
+
+      @include media-breakpoint-down(lg) {
+        width: 100%;
+        min-width: auto;
+      }
+
+      h3 {
+        font-size: 1rem;
+        font-weight: 700;
+      }
+    }
   }
 
-  // Mobile Only Tabs
-  @include media-breakpoint-up(lg) {
-    .mobile-only-tabs {
-      display: none !important;
+  // ----------------------------------------------------------
+  // MAIN CONTENT WRAPPER
+  // ----------------------------------------------------------
+  .main-content-wrapper {
+    // background: var(--bg-primary);
+    position: relative;
+    z-index: 4; // sit above hero overlap
+  }
+
+  // Show mobile tabs only on lg down
+  .mobile-only-tabs {
+    display: none;
+
+    @include media-breakpoint-down(lg) {
+      display: block;
+      margin-top: -3rem;
+      padding: 0 1rem;
     }
-    .desktop-sections {
-      display: block !important;
+
+    @include media-breakpoint-down(md) {
+      margin-top: -2rem;
+      padding: 0 0.75rem;
+    }
+
+    @include media-breakpoint-down(sm) {
+      margin-top: -1.5rem;
+      padding: 0 0.5rem;
     }
   }
 
-  @include media-breakpoint-down(lg) {
-    .mobile-only-tabs {
-      display: block !important;
-    }
-    .desktop-sections {
-      display: none !important;
+  // Desktop sections hidden on mobile (shown via tabs)
+  .desktop-sections {
+    margin-top: 90px !important;
+    @include media-breakpoint-down(lg) {
+      display: none;
     }
   }
 
   .section-divider {
-    margin: 4rem 0;
+    margin: 3rem 0;
     border-top: 1px solid var(--border-color);
-    opacity: 0.1;
+    opacity: 0.15;
+    @include media-breakpoint-down(md) { margin: 2rem 0; }
   }
 
   .section-heading {
-    margin-bottom: 2.5rem;
+    margin-bottom: 2rem;
+
     .title {
       font-size: 1.75rem;
       font-weight: 800;
-      color: var(--text-primary);
-      margin-bottom: 0.5rem;
+      margin-bottom: 0.25rem;
+      @include media-breakpoint-down(md) { font-size: 1.5rem; }
     }
+
     .subtitle {
       color: var(--text-secondary);
-      font-size: 1rem;
+      @include media-breakpoint-down(md) { font-size: 0.9rem; }
     }
   }
 
-  // Tabs Styling
+  // ----------------------------------------------------------
+  // ANGULAR MATERIAL TABS OVERRIDES
+  // ----------------------------------------------------------
   .premium-tabs {
-    margin-top: -80px;
-    z-index: 4;
-    position: relative;
     border: 1px solid var(--border-color) !important;
     background: var(--bg-primary) !important;
+    border-radius: 1.5rem !important;
+    overflow: hidden;
 
     ::ng-deep {
       .mat-mdc-tab-header {
         background: var(--bg-primary);
         border-bottom: 1px solid var(--border-color);
       }
-      .mat-mdc-tab-labels { padding: 8px 16px; }
-      .mat-mdc-tab {
-        height: 64px;
-        .tab-icon { margin-inline-end: 8px; }
-        .tab-label { font-weight: 600; font-size: 1rem; }
+
+      .mat-mdc-tab-labels {
+        padding: 0.5rem;
       }
-      .mat-mdc-tab-body-wrapper { background: var(--bg-primary); }
+
+      .mat-mdc-tab {
+        height: 60px;
+        min-width: auto;
+        flex: 1;
+
+        @include media-breakpoint-down(md) { height: 56px; }
+        @include media-breakpoint-down(sm) { height: 52px; }
+
+        .tab-icon {
+          margin-inline-end: 0.5rem;
+          font-size: 20px;
+          @include media-breakpoint-down(sm) { font-size: 18px; margin-inline-end: 0.25rem; }
+        }
+
+        .tab-label {
+          font-weight: 600;
+          font-size: 1rem;
+          white-space: nowrap;
+          @include media-breakpoint-down(md) { font-size: 0.9rem; }
+          @include media-breakpoint-down(sm) { font-size: 0.75rem; }
+        }
+      }
+
+      .mat-mdc-tab-body-wrapper {
+        background: var(--bg-primary);
+      }
     }
   }
 
-  // Cards Styling
+  // ----------------------------------------------------------
+  // CARDS (services, staff, etc.)
+  // ----------------------------------------------------------
   .premium-card {
     background: var(--bg-primary) !important;
     border: 1px solid var(--border-color) !important;
-    border-radius: 20px !important;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    height: 100%;
+    border-radius: 1.25rem !important;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
 
     &:hover {
-      transform: translateY(-8px);
+      transform: translateY(-6px);
       box-shadow: 0 12px 30px var(--shadow) !important;
       border-color: var(--accent-color) !important;
     }
@@ -202,22 +289,54 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      opacity: 0.15;
-      
-      mat-icon { font-size: 64px; width: 64px; height: 64px; }
+      opacity: 0.12;
+      flex-shrink: 0;
+
+      mat-icon {
+        font-size: 64px;
+        width: 64px;
+        height: 64px;
+      }
+
+      @include media-breakpoint-down(md) {
+        height: 120px;
+        mat-icon { font-size: 48px; width: 48px; height: 48px; }
+      }
     }
 
-    .service-name { font-weight: 700; color: var(--text-primary); }
-    .service-desc { font-size: 0.9rem; color: var(--text-secondary); }
+    mat-card-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .service-name {
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--text-primary);
+    }
+
+    .service-desc {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+
+    .service-footer {
+      margin-top: auto;
+    }
   }
 
-  // Staff Avatar
+  // Staff specific
   .staff-avatar-box {
     width: 100px;
     height: 100px;
-    position: relative;
-    
-    .staff-img, .staff-placeholder {
+    margin: 0 auto;
+
+    @include media-breakpoint-down(md) { width: 90px; height: 90px; }
+    @include media-breakpoint-down(sm) { width: 80px; height: 80px; }
+
+    .staff-img,
+    .staff-placeholder {
       width: 100%;
       height: 100%;
       border-radius: 50%;
@@ -232,62 +351,73 @@
       font-size: 2rem;
       font-weight: 700;
       color: white;
+      background-size: cover;
     }
   }
 
-  // Responsive Mobile Slider
-  @include media-breakpoint-down(md) {
-    .mobile-slider {
-      display: flex;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      padding-bottom: 20px;
-      margin-inline: -15px;
-      padding-inline: 15px;
-      scrollbar-width: none;
-      
-      &::-webkit-scrollbar { display: none; }
-
-      .row {
-        flex-wrap: nowrap;
-        width: max-content;
-        margin: 0;
-      }
-
-      .col-12 {
-        width: 280px;
-        scroll-snap-align: center;
-        padding-inline: 10px;
-      }
-    }
-  }
-
-  // Empty State
+  // ----------------------------------------------------------
+  // EMPTY STATE
+  // ----------------------------------------------------------
   .empty-state {
     .empty-icon {
       font-size: 64px;
       width: 64px;
       height: 64px;
       opacity: 0.2;
-      margin-bottom: 16px;
+      margin-bottom: 1rem;
+      @include media-breakpoint-down(md) { font-size: 48px; width: 48px; height: 48px; }
     }
-    p { color: var(--text-secondary); }
+
+    p {
+      color: var(--text-secondary);
+      font-size: 1rem;
+    }
   }
 
-  // Accordion Styling
+  // ----------------------------------------------------------
+  // RESOURCES ACCORDION
+  // ----------------------------------------------------------
   .premium-accordion {
     ::ng-deep {
       .mat-expansion-panel {
         background: var(--bg-primary) !important;
         border: 1px solid var(--border-color) !important;
-        
+        border-radius: 1rem !important;
+        margin-bottom: 1rem !important;
+
         .mat-expansion-panel-header {
           height: 72px;
+          padding: 0 1.5rem !important;
           &:hover { background: var(--hover-bg); }
+
+          @include media-breakpoint-down(md) { height: 64px; padding: 0 1rem !important; }
+          @include media-breakpoint-down(sm) { height: 60px; padding: 0 0.75rem !important; }
         }
-        
-        .mat-panel-title { color: var(--text-primary); }
-        .mat-panel-description { color: var(--text-secondary); }
+
+        .mat-panel-title {
+          color: var(--text-primary);
+          font-weight: 600;
+          font-size: 1rem;
+        }
+
+        .mat-panel-description {
+          color: var(--text-secondary);
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+
+  .resource-details {
+    padding: 1.5rem;
+
+    .resource-image {
+      max-height: 250px;
+      overflow: hidden;
+      img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 0.75rem;
       }
     }
   }
@@ -295,28 +425,147 @@
   .loader-container {
     display: flex;
     justify-content: center;
-    padding: 60px 0;
+    padding: 4rem 0;
+  }
+
+  // ----------------------------------------------------------
+  // INFO CARDS (About & Working Hours)
+  // ----------------------------------------------------------
+  .info-section {
+    margin-top: 3rem;
+    @include media-breakpoint-down(md) { margin-top: 2rem; }
+  }
+
+  .info-card {
+    mat-card {
+      height: 100%;
+      border: 1px solid var(--border-color) !important;
+      border-radius: 1.25rem !important;
+
+      h2 {
+        font-size: 1.1rem;
+        @include media-breakpoint-down(md) { font-size: 1rem; }
+      }
+
+      p {
+        font-size: 0.95rem;
+        line-height: 1.65;
+      }
+    }
+  }
+
+  .working-hours-list {
+    > div {
+      padding: 0.75rem 0;
+      font-size: 0.95rem;
+
+      &:not(:last-child) {
+        border-bottom: 1px solid var(--border-color);
+      }
+    }
+  }
+
+  // ----------------------------------------------------------
+  // MOBILE CONTACT TAB
+  // ----------------------------------------------------------
+  .mobile-contact-tab {
+    display: none;
+
+    @include media-breakpoint-down(lg) {
+      display: block;
+    }
+  }
+
+  .contact-card-mobile {
+    background: white !important;
+    color: var(--text-primary) !important;
+    border-radius: 1.25rem !important;
+
+    h3 {
+      font-size: 1rem;
+    }
+
+    .contact-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+    }
+
+    .contact-item {
+      background: var(--bg-secondary);
+      border-radius: 0.75rem;
+      padding: 1rem;
+    }
+  }
+
+  // Utility helpers
+  .btn-sm {
+    padding: 0.5rem 1.25rem !important;
+    font-size: 0.9rem;
+
+    @include media-breakpoint-down(md) { padding: 0.45rem 1rem !important; font-size: 0.85rem; }
+    @include media-breakpoint-down(sm) { padding: 0.4rem 0.875rem !important; font-size: 0.8rem; }
+  }
+
+  .x-small {
+    font-size: 0.8rem;
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 }
 
-// Dark Mode Overrides
-[data-theme='dark'] {
-  .org-details-container {
-    .hero-bg {
-      filter: blur(2px) brightness(0.6);
-    }
-    .org-main-card {
-      background: #1e1e1e !important;
-      color: #e0e0e0 !important;
-    }
+// ============================================================
+// DARK MODE OVERRIDES
+// ============================================================
+[data-theme='dark'] .org-details-container {
+  --bg-primary: #1e1e2f;
+  --bg-secondary: #2a2a3c;
+  --text-primary: #e0e0e0;
+  --text-secondary: #adb5bd;
+  --border-color: #3e3e54;
+  --accent-color: #7c83ff;
+  --hover-bg: rgba(124,131,255,0.1);
+  --shadow: rgba(0,0,0,0.3);
+
+  .hero-bg {
+    filter: blur(3px) brightness(0.5);
+  }
+
+  .org-main-card,
+  .contact-card-mobile {
+    background: #2a2a3c !important;
+    color: #e0e0e0 !important;
   }
 }
 
-// RTL Adjustments
-[dir='rtl'] {
+// ============================================================
+// RTL TWEAKS
+// ============================================================
+[dir='rtl'] .org-details-container {
   .hero-section {
     text-align: right;
-    .org-address { justify-content: flex-start; }
-    .org-stats { justify-content: flex-start; }
+  }
+
+  .services-grid,
+  .staff-grid {
+    direction: rtl;
+  }
+
+  // ensure tab icons align correctly
+  .premium-tabs ::ng-deep .mat-mdc-tab .tab-icon {
+    margin-inline-end: 0;
+    margin-inline-start: 0.5rem;
   }
 }

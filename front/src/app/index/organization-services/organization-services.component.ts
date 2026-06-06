@@ -67,7 +67,9 @@ export class OrganizationServicesComponent implements OnInit {
     this.isDarkMode$ = this.themeService.isDarkMode$;
   }
 
-
+trackByService(index: number, service: any) { return service.id; }
+trackByStaff(index: number, staff: any) { return staff.id; }
+trackByResource(index: number, resource: any) { return resource.id; }
 
   ngOnInit(): void {
       // this.fetchOrganizationDetails();
