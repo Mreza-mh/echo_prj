@@ -203,7 +203,70 @@ class AppointmentController
      *         @OA\JsonContent(
      *             @OA\Property(property="success", type="boolean", example=true),
      *             @OA\Property(property="message", type="string", example="اطلاعات تقویم با موفقیت دریافت شد"),
-     *             @OA\Property(property="data", type="object")
+     *             @OA\Property(
+     *                 property="data",
+     *                 type="object",
+     *                 @OA\Property(property="date", type="string", example="2026-01-05"),
+     *                 @OA\Property(
+     *                     property="timeline",
+     *                     type="array",
+     *                     @OA\Items(
+     *                         type="object",
+     *                         @OA\Property(property="staff_id", type="integer", example=1),
+     *                         @OA\Property(property="staff_name", type="string", example="دکتر احمدی"),
+     *                         @OA\Property(property="expertise", type="string", example="قلب و عروق"),
+     *                         @OA\Property(
+     *                             property="working_periods",
+     *                             type="array",
+     *                             @OA\Items(
+     *                                 type="object",
+     *                                 @OA\Property(property="start", type="string", example="08:00"),
+     *                                 @OA\Property(property="end", type="string", example="12:00")
+     *                             )
+     *                         ),
+     *                         @OA\Property(
+     *                             property="appointments",
+     *                             type="array",
+     *                             @OA\Items(
+     *                                 type="object",
+     *                                 @OA\Property(property="id", type="integer", example=1),
+     *                                 @OA\Property(property="customer_name", type="string", example="علی محمدی"),
+     *                                 @OA\Property(property="service_name", type="string", example="معاینه قلب"),
+     *                                 @OA\Property(property="start", type="string", example="09:00"),
+     *                                 @OA\Property(property="end", type="string", example="09:30"),
+     *                                 @OA\Property(property="status", type="string", example="تایید شده")
+     *                             )
+     *                         )
+     *                     )
+     *                 ),
+     *                 @OA\Property(
+     *                     property="resource_usage",
+     *                     type="array",
+     *                     @OA\Items(
+     *                         type="object",
+     *                         @OA\Property(property="resource_id", type="integer", example=1),
+     *                         @OA\Property(property="resource_name", type="string", example="اتاق ۱"),
+     *                         @OA\Property(property="resource_type", type="string", example="room"),
+     *                         @OA\Property(
+     *                             property="usage",
+     *                             type="array",
+     *                             @OA\Items(
+     *                                 type="object",
+     *                                 @OA\Property(property="start", type="string", example="09:00"),
+     *                                 @OA\Property(property="end", type="string", example="09:30"),
+     *                                 @OA\Property(property="staff", type="string", example="دکتر احمدی")
+     *                             )
+     *                         )
+     *                     )
+     *                 ),
+     *                 @OA\Property(
+     *                     property="summary",
+     *                     type="object",
+     *                     @OA\Property(property="total_appointments", type="integer", example=10),
+     *                     @OA\Property(property="confirmed_count", type="integer", example=8),
+     *                     @OA\Property(property="pending_count", type="integer", example=2)
+     *                 )
+     *             )
      *         )
      *     )
      * )

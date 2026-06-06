@@ -95,7 +95,7 @@ Route::group(['prefix' => 'ai'], function () {
 Route::group(['prefix' => 'echo-history'], function () {
     Route::get('info-doctor/{patient_id}', [EchoHistoryController::class, 'getInfoByDoctor'])->middleware('auth:api');
     Route::get('info', [EchoHistoryController::class, 'getInfo'])->middleware('auth:api');
-    Route::get('file/{address}', [EchoHistoryController::class, 'getFile'])->where('address', '.*')->middleware('auth:api');
+    Route::get('file/{address}', [EchoHistoryController::class, 'getFile'])->where('address', '.*');
 });
 
 // Patient Report Routes (گزارش‌های نهایی اکو)

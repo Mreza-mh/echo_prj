@@ -653,6 +653,137 @@
                                             "example": "اطلاعات تقویم با موفقیت دریافت شد"
                                         },
                                         "data": {
+                                            "properties": {
+                                                "date": {
+                                                    "type": "string",
+                                                    "example": "2026-01-05"
+                                                },
+                                                "timeline": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "staff_id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "staff_name": {
+                                                                "type": "string",
+                                                                "example": "دکتر احمدی"
+                                                            },
+                                                            "expertise": {
+                                                                "type": "string",
+                                                                "example": "قلب و عروق"
+                                                            },
+                                                            "working_periods": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "properties": {
+                                                                        "start": {
+                                                                            "type": "string",
+                                                                            "example": "08:00"
+                                                                        },
+                                                                        "end": {
+                                                                            "type": "string",
+                                                                            "example": "12:00"
+                                                                        }
+                                                                    },
+                                                                    "type": "object"
+                                                                }
+                                                            },
+                                                            "appointments": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "properties": {
+                                                                        "id": {
+                                                                            "type": "integer",
+                                                                            "example": 1
+                                                                        },
+                                                                        "customer_name": {
+                                                                            "type": "string",
+                                                                            "example": "علی محمدی"
+                                                                        },
+                                                                        "service_name": {
+                                                                            "type": "string",
+                                                                            "example": "معاینه قلب"
+                                                                        },
+                                                                        "start": {
+                                                                            "type": "string",
+                                                                            "example": "09:00"
+                                                                        },
+                                                                        "end": {
+                                                                            "type": "string",
+                                                                            "example": "09:30"
+                                                                        },
+                                                                        "status": {
+                                                                            "type": "string",
+                                                                            "example": "تایید شده"
+                                                                        }
+                                                                    },
+                                                                    "type": "object"
+                                                                }
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "resource_usage": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "resource_id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "resource_name": {
+                                                                "type": "string",
+                                                                "example": "اتاق ۱"
+                                                            },
+                                                            "resource_type": {
+                                                                "type": "string",
+                                                                "example": "room"
+                                                            },
+                                                            "usage": {
+                                                                "type": "array",
+                                                                "items": {
+                                                                    "properties": {
+                                                                        "start": {
+                                                                            "type": "string",
+                                                                            "example": "09:00"
+                                                                        },
+                                                                        "end": {
+                                                                            "type": "string",
+                                                                            "example": "09:30"
+                                                                        },
+                                                                        "staff": {
+                                                                            "type": "string",
+                                                                            "example": "دکتر احمدی"
+                                                                        }
+                                                                    },
+                                                                    "type": "object"
+                                                                }
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "summary": {
+                                                    "properties": {
+                                                        "total_appointments": {
+                                                            "type": "integer",
+                                                            "example": 10
+                                                        },
+                                                        "confirmed_count": {
+                                                            "type": "integer",
+                                                            "example": 8
+                                                        },
+                                                        "pending_count": {
+                                                            "type": "integer",
+                                                            "example": 2
+                                                        }
+                                                    },
+                                                    "type": "object"
+                                                }
+                                            },
                                             "type": "object"
                                         }
                                     },

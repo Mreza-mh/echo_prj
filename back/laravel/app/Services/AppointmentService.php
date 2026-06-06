@@ -396,16 +396,13 @@ class AppointmentService
 
             $staff_apps = $appointments->where('staff_id', $staff->id);
 
-            [$start, $end] = $this->getStaffWorkingHours($staff->id, $date);
+            $working_periods = $this->getStaffWorkingPeriods($staff->id, $date);
 
             return [
                 'staff_id' => $staff->id,
                 'staff_name' => $staff->user->name ?? 'نامشخص',
                 'expertise' => $staff->expertise->title ?? 'بدون تخصص',
-                'working_hours' => [
-                    'start' => $start->format('H:i'),
-                    'end'   => $end->format('H:i')
-                ],
+                'working_periods' => empty($working_periods) ? [] : $working_periods,
                 'appointments' => $staff_apps->map(function ($app) {
                     return [
                         'id' => $app->id,

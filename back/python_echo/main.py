@@ -57,14 +57,14 @@ def run_ml_analysis(patient_config: dict) -> dict | None:
     اجرای تحلیل ML روی اطلاعات بیمار از MongoDB.
     Features را از patient_config استخراج و BMI را محاسبه می‌کند.
     """
-    print("\n🤖 اجرای تحلیل هوش مصنوعی (ML)...")
+    print("\n اجرای تحلیل هوش مصنوعی (ML)...")
     try:
         predictor   = get_ml_predictor()
         ml_result   = predictor.predict(patient_config)
 
         # بررسی اینکه آیا خطا در مدل‌ها وجود دارد
         if "error" in ml_result.get("hd_result", {}) or "error" in ml_result.get("cv_result", {}):
-            print("   ⚠️  خطا در بارگذاری مدل‌ها:")
+            print("     خطا در بارگذاری مدل‌ها:")
             if "error" in ml_result.get("hd_result", {}):
                 print(f"      - HD: {ml_result['hd_result']['error']}")
             if "error" in ml_result.get("cv_result", {}):
@@ -75,20 +75,20 @@ def run_ml_analysis(patient_config: dict) -> dict | None:
         score = ml_result.get("combined_score", 0)
         bmi = ml_result.get("bmi")
 
-        print(f"   ✓ HD_LogisticRegression : {ml_result['hd_result']['probability_pct']:.1f}%")
-        print(f"   ✓ CV_CatBoost           : {ml_result['cv_result']['probability_pct']:.1f}%")
-        print(f"   ✓ امتیاز ترکیبی        : {score:.1f}/100  |  شدت: {sev}")
+        print(f"    HD_LogisticRegression : {ml_result['hd_result']['probability_pct']:.1f}%")
+        print(f"    CV_CatBoost           : {ml_result['cv_result']['probability_pct']:.1f}%")
+        print(f"    امتیاز ترکیبی        : {score:.1f}/100  |  شدت: {sev}")
         if bmi:
-            print(f"   ✓ BMI محاسبه‌شده       : {bmi:.1f} kg/m²")
+            print(f"    BMI محاسبه‌شده       : {bmi:.1f} kg/m²")
 
         rf_count = len(ml_result.get("risk_factors", []))
         if rf_count:
-            print(f"   ⚠️  عوامل خطر شناسایی‌شده: {rf_count} مورد")
+            print(f"     عوامل خطر شناسایی‌شده: {rf_count} مورد")
 
         return ml_result
 
     except Exception as exc:
-        print(f"   ❌ خطا در ML analysis: {exc}")
+        print(f"    خطا در ML analysis: {exc}")
         import traceback
         traceback.print_exc()
         return None
@@ -106,7 +106,7 @@ def generate_and_save_final_report(
     """
     تولید گزارش جامع نهایی (ML + Fuzzy + Echo) و ذخیره در دیسک و MongoDB.
     """
-    print("\n📋 تولید گزارش نهایی...")
+    print("\n تولید گزارش نهایی...")
 
     report = build_final_report(
         patient_config = patient_config,
@@ -125,11 +125,11 @@ def generate_and_save_final_report(
     emoji  = report["overall_assessment"]["severity_emoji"]
     urgency = report["recommendation"]["urgency"]
 
-    print(f"   ✓ ریسک نهایی : {emoji} {sev}  (امتیاز: {score}/100)")
-    print(f"   ✓ فوریت      : {urgency}")
-    print(f"   ✓ گزارش پزشک : {saved_paths.get('doctor_txt', '')}")
-    print(f"   ✓ گزارش بیمار: {saved_paths.get('patient_txt', '')}")
-    print(f"   ✓ JSON کامل  : {saved_paths.get('json', '')}")
+    print(f"    ریسک نهایی : {emoji} {sev}  (امتیاز: {score}/100)")
+    print(f"    فوریت      : {urgency}")
+    print(f"    گزارش پزشک : {saved_paths.get('doctor_txt', '')}")
+    print(f"    گزارش بیمار: {saved_paths.get('patient_txt', '')}")
+    print(f"    JSON کامل  : {saved_paths.get('json', '')}")
 
     # ذخیره در MongoDB (در کنار نتایج قبلی)
     _save_report_to_mongo(patient_id, visit_date, report)
@@ -140,7 +140,7 @@ def generate_and_save_final_report(
     print("─" * 65)
     
     # تولید گزارش LLM برای بیمار
-    print("\n🤖 تولید گزارش هوشمند برای بیمار...")
+    print("\n تولید گزارش هوشمند برای بیمار...")
     try:
         from pipeline.results import generate_final_patient_report
         final_report_json = report_dir / "final_report.json"
@@ -153,9 +153,9 @@ def generate_and_save_final_report(
         )
         
         if llm_result:
-            print(f"   ✓ گزارش LLM تولید شد")
-            print(f"   ✓ HTML: {llm_result['public_files']['html']}")
-            print(f"   ✓ Text: {llm_result['public_files']['text']}")
+            print(f"    گزارش LLM تولید شد")
+            print(f"    HTML: {llm_result['public_files']['html']}")
+            print(f"    Text: {llm_result['public_files']['text']}")
             
             # نمایش متن گزارش در ترمینال
             print("\n" + "═" * 65)
@@ -164,10 +164,10 @@ def generate_and_save_final_report(
             print(llm_result['llm_report_text'])
             print("═" * 65)
         else:
-            print("   ⚠️  خطا در تولید گزارش LLM")
+            print("     خطا در تولید گزارش LLM")
             
     except Exception as exc:
-        print(f"   ❌ خطا در تولید گزارش LLM: {exc}")
+        print(f"    خطا در تولید گزارش LLM: {exc}")
         import traceback
         traceback.print_exc()
 
@@ -205,10 +205,10 @@ def _save_report_to_mongo(patient_id: str, visit_date: str, report: dict) -> Non
         coll.update_one({"_id": patient_id}, {"$pull": {date_field: {"type": "final_report"}}})
         coll.update_one({"_id": patient_id}, {"$push": {date_field: mongo_entry}})
         client.close()
-        print("   ✓ گزارش در MongoDB ذخیره شد.")
+        print("    گزارش در MongoDB ذخیره شد.")
 
     except Exception as exc:
-        print(f"   ⚠️  خطا در ذخیره MongoDB: {exc}")
+        print(f"     خطا در ذخیره MongoDB: {exc}")
 
 def main() -> None:
     patch_sys_argv_from_windows_command_line()
@@ -220,9 +220,9 @@ def main() -> None:
     visit_date  = datetime.now().strftime("%Y-%m-%d")
 
     # ── دریافت اطلاعات بیمار از MongoDB ──────────────────────────────────
-    print(f"📥 دریافت اطلاعات بیمار {patient_id}...")
+    print(f" دریافت اطلاعات بیمار {patient_id}...")
     patient_config = get_patient_config(patient_id)
-    print(f"✓ اطلاعات بیمار دریافت شد: {patient_config.get('name', 'بدون نام')}")
+    print(f" اطلاعات بیمار دریافت شد: {patient_config.get('name', 'بدون نام')}")
 
     # ── اجرای تحلیل ML (مستقل از ویدیو) ────────────────────────────────
     ml_result = run_ml_analysis(patient_config)
@@ -240,7 +240,7 @@ def main() -> None:
                 output_root / safe_name(str(patient_id)) / visit_date / "ml_only_report"
             )
             saved = save_report(report, report_dir, str(patient_id), visit_date)
-            print(f"\n✓ گزارش ML-Only ذخیره شد: {saved.get('json')}")
+            print(f"\n گزارش ML-Only ذخیره شد: {saved.get('json')}")
             print("\n" + report.get("patient_report", ""))
         return
 
@@ -248,17 +248,17 @@ def main() -> None:
     all_rows: list[dict] = []
 
     if input_path.is_dir():
-        print(f"\n📁 پردازش پوشه: {input_path}")
+        print(f"\n پردازش پوشه: {input_path}")
         video_extensions = {".avi", ".mp4", ".mov", ".mkv", ".wmv"}
         video_files = [f for f in input_path.iterdir()
                        if f.suffix.lower() in video_extensions]
 
         if not video_files:
-            print(f"❌ فایل ویدیو در {input_path} یافت نشد")
+            print(f" فایل ویدیو در {input_path} یافت نشد")
             return
 
         for video_path in video_files:
-            print(f"\n🎬 پردازش: {video_path.name}")
+            print(f"\n پردازش: {video_path.name}")
             try:
                 rows = process_video(
                     video_path, measurement_module, args, output_root,
@@ -266,7 +266,7 @@ def main() -> None:
                 )
                 all_rows.extend(rows)
             except Exception as exc:
-                print(f"❌ خطا در {video_path.name}: {exc}")
+                print(f" خطا در {video_path.name}: {exc}")
                 all_rows.append({
                     "video_name": video_path.name,
                     "video_path": str(video_path),
@@ -280,10 +280,10 @@ def main() -> None:
         )
         os.makedirs(os.path.dirname(summary_csv), exist_ok=True)
         pd.DataFrame(all_rows).to_csv(summary_csv, index=False)
-        print(f"\n✓ خلاصه pipeline: {summary_csv}")
+        print(f"\n خلاصه pipeline: {summary_csv}")
 
         # ── تحلیل فازی اکو ────────────────────────────────────────────
-        print(f"\n🔍 ارزیابی فازی اکوکاردیوگرافی...")
+        print(f"\n ارزیابی فازی اکوکاردیوگرافی...")
         fuzzy_result = aggregate_and_evaluate_fuzzy(
             output_root,
             str(patient_id),
@@ -295,9 +295,9 @@ def main() -> None:
         if fuzzy_result:
             fuzz_cat = fuzzy_result.get("category", "?")
             fuzz_score = fuzzy_result.get("score", 0)
-            print(f"✓ نتیجه فازی: {fuzz_cat} (امتیاز: {fuzz_score:.1f})")
+            print(f" نتیجه فازی: {fuzz_cat} (امتیاز: {fuzz_score:.1f})")
         else:
-            print("⚠️  نتیجه فازی موجود نیست.")
+            print("  نتیجه فازی موجود نیست.")
 
         # ── گزارش نهایی ترکیبی ────────────────────────────────────────
         generate_and_save_final_report(
@@ -313,14 +313,14 @@ def main() -> None:
     else:
         # ── پردازش یک ویدیو ───────────────────────────────────────────
         video_path = resolve_video_path(args.video, cwd=BASE_DIR)
-        print(f"\n🎬 پردازش ویدیو: {video_path}")
+        print(f"\n پردازش ویدیو: {video_path}")
         try:
             all_rows = process_video(
                 video_path, measurement_module, args, output_root,
                 patient_config=patient_config
             )
         except Exception as exc:
-            print(f"❌ خطا: {exc}")
+            print(f" خطا: {exc}")
             all_rows = [{
                 "video_name": video_path.name,
                 "video_path": str(video_path),
@@ -341,7 +341,7 @@ def main() -> None:
                 output_root / safe_name(str(patient_id)) / visit_date / "single_video_report"
             )
             saved = save_report(report, report_dir, str(patient_id), visit_date)
-            print(f"\n✓ گزارش ML ذخیره شد: {saved.get('json')}")
+            print(f"\n گزارش ML ذخیره شد: {saved.get('json')}")
 
 
 if __name__ == "__main__":
