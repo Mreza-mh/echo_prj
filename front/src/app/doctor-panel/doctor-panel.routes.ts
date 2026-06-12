@@ -17,6 +17,10 @@ export const routes: Routes = [
         loadComponent: () => import('./echo-history/echo-history.component').then(m => m.EchoHistoryComponent)
       },
       {
+        path: 'echo-history/:id',
+        loadComponent: () => import('./echo-history/echo-history.component').then(m => m.EchoHistoryComponent)
+      },
+      {
         path: 'settings',
         component: DoctorSettingsComponent
       },

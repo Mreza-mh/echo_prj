@@ -3,61 +3,61 @@
 
   <div class="container py-5">
     <div class="row g-4">
-      
+
       <div class="col-lg-4 col-md-6">
         <div class="footer-brand mb-4">
           <span class="brand-name">Aca<span class="accent">ree</span></span>
         </div>
-        <p class="brand-desc text-muted mb-4">{{ getTranslation('footerDesc') || 'آکاری؛ ارائه‌دهنده خدمات تخصصی با بالاترین کیفیت و پشتیبانی مستمر.' }}</p>
+        <p class="brand-desc mb-4">{{ getTranslation('footerDesc') }}</p>
         <div class="social-links d-flex gap-2">
-          <a href="#" class="social-btn" aria-label="Instagram"><mat-icon>camera_alt</mat-icon></a>
+          <a href="#" class="social-btn" [attr.aria-label]="getTranslation('contactUs')"><mat-icon>camera_alt</mat-icon></a>
           <a href="#" class="social-btn" aria-label="LinkedIn"><mat-icon>business</mat-icon></a>
-          <a href="#" class="social-btn" aria-label="Email"><mat-icon>alternate_email</mat-icon></a>
+          <a href="#" class="social-btn" [attr.aria-label]="getTranslation('emailLabel')"><mat-icon>alternate_email</mat-icon></a>
         </div>
       </div>
 
       <div class="col-lg-2 col-md-6">
-        <h5 class="footer-title">{{ getTranslation('quickAccess') || 'دسترسی سریع' }}</h5>
+        <h5 class="footer-title">{{ getTranslation('quickAccess') }}</h5>
         <ul class="footer-links list-unstyled">
-          <li><a routerLink="/">{{ getTranslation('home') || 'صفحه اصلی' }}</a></li>
-          <li><a href="#">{{ getTranslation('aboutAcaree') || 'درباره آکاری' }}</a></li>
-          <li><a href="#">{{ getTranslation('specializedServices') || 'خدمات تخصصی' }}</a></li>
-          <li><a href="#">{{ getTranslation('faq') || 'سوالات متداول' }}</a></li>
+          <li><a routerLink="/">{{ getTranslation('home') }}</a></li>
+          <li><a href="#">{{ getTranslation('aboutAcaree') }}</a></li>
+          <li><a href="#">{{ getTranslation('specializedServices') }}</a></li>
+          <li><a href="#">{{ getTranslation('faq') }}</a></li>
         </ul>
       </div>
 
       <div class="col-lg-3 col-md-6">
-        <h5 class="footer-title">{{ getTranslation('contactUs') || 'ارتباط با ما' }}</h5>
+        <h5 class="footer-title">{{ getTranslation('contactUs') }}</h5>
         <ul class="footer-contact list-unstyled">
           <li>
-            <mat-icon class="contact-icon">location_on</mat-icon> 
-            <span>{{ getTranslation('address') || 'تهران، خیابان ولیعصر، پلاک ۱۲۳' }}</span>
+            <mat-icon class="contact-icon">location_on</mat-icon>
+            <span>{{ getTranslation('address') }}</span>
           </li>
           <li>
-            <mat-icon class="contact-icon">phone</mat-icon> 
+            <mat-icon class="contact-icon">phone</mat-icon>
             <span dir="ltr" class="fw-medium">۰۲۱ - ۸۸۰۰ ۹۹۰۰</span>
           </li>
           <li>
-            <mat-icon class="contact-icon">email</mat-icon> 
+            <mat-icon class="contact-icon">email</mat-icon>
             <span class="text-lowercase">info@acaree.com</span>
           </li>
         </ul>
       </div>
 
       <div class="col-lg-3 col-md-6">
-        <h5 class="footer-title">{{ getTranslation('workingHours') || 'ساعات کاری' }}</h5>
+        <h5 class="footer-title">{{ getTranslation('workingHours') }}</h5>
         <div class="working-hours-card">
           <div class="hour-item">
-            <span class="day">شنبه تا چهارشنبه</span> 
-            <span class="time">۰۸:۰۰ - ۲۰:۰۰</span>
+            <span class="day">{{ getTranslation('satToWed') }}</span>
+            <span class="time">{{ getTranslation('wedHours') }}</span>
           </div>
           <div class="hour-item">
-            <span class="day">پنج‌شنبه‌ها</span> 
-            <span class="time">۰۸:۰۰ - ۱۴:۰۰</span>
+            <span class="day">{{ getTranslation('thursdays') }}</span>
+            <span class="time">{{ getTranslation('thuHours') }}</span>
           </div>
           <div class="hour-item closed">
-            <span class="day">جمعه و تعطیلات</span> 
-            <span class="badge-closed">تعطیل</span>
+            <span class="day">{{ getTranslation('friAndHolidays') }}</span>
+            <span class="badge-closed">{{ getTranslation('closed') }}</span>
           </div>
         </div>
       </div>
@@ -69,12 +69,12 @@
     <div class="container py-3">
       <div class="row align-items-center">
         <div class="col-md-6 text-center text-md-start mb-2 mb-md-0">
-          <p class="mb-0 text-muted small">© 2026 Acaree. تمامی حقوق محفوظ است.</p>
+          <p class="mb-0 text-muted small">{{ getTranslation('copyright') }}</p>
         </div>
         <div class="col-md-6 text-center text-md-end">
           <div class="bottom-links small">
-            <a href="#" class="text-muted me-3">قوانین و مقررات</a>
-            <a href="#" class="text-muted">حریم خصوصی</a>
+            <a href="#" class="text-muted me-3">{{ getTranslation('termsAndConditions') }}</a>
+            <a href="#" class="text-muted">{{ getTranslation('privacyPolicy') }}</a>
           </div>
         </div>
       </div>

@@ -1,199 +1,166 @@
-/* -------------------------------------------------------------
-   Premium Main Footer UI
-------------------------------------------------------------- */
 .main-footer {
   position: relative;
-  background: var(--bg-primary, #ffffff);
-  color: var(--text-primary, #333333);
+  background: var(--bg-primary);
+  color: var(--text-primary);
   margin-top: 60px;
-  box-shadow: 0 -4px 40px rgba(0, 0, 0, 0.02);
+  border-top: 1px solid var(--border);
 
-  // Modern Top Border Gradient (Alternatives to the wave)
   .footer-top-bar {
     height: 4px;
     width: 100%;
+    background: linear-gradient(90deg, var(--cyan), var(--purple));
   }
 
-  // Brand Name
   .brand-name {
     font-size: 2.25rem;
     font-weight: 800;
     letter-spacing: -0.5px;
-    
-    .accent { 
-      color: var(--accent-color, #0d6efd); 
-    }
+    color: var(--text-primary);
+
+    .accent { color: var(--accent-color); }
   }
 
   .brand-desc {
     line-height: 1.8;
     font-size: 0.95rem;
+    color: var(--text-secondary);
   }
 
-  // Section Titles
   .footer-title {
     font-weight: 700;
     font-size: 1.15rem;
     margin-bottom: 1.5rem;
     position: relative;
     padding-bottom: 10px;
-    
+    color: var(--text-primary);
+
     &::after {
       content: '';
       position: absolute;
-      left: 0;
+      inset-inline-start: 0;
       bottom: 0;
       width: 60px;
       height: 3px;
-      background: var(--accent-color, #0d6efd);
+      background: var(--accent-color);
       border-radius: 2px;
     }
   }
 
-  // Social Buttons
-  .social-links {
-    .social-btn {
-      width: 42px; 
-      height: 42px; 
-      border-radius: 12px; 
-      background: var(--bg-secondary, #f8f9fa);
-      color: var(--text-secondary, #6c757d);
-      display: inline-flex; 
-      align-items: center; 
-      justify-content: center; 
+  .social-links .social-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border: 1px solid var(--border);
+
+    mat-icon { font-size: 20px; width: 20px; height: 20px; }
+
+    &:hover {
+      background: var(--accent-color);
+      color: var(--btn-on-primary, #fff);
+      transform: translateY(-3px);
+      border-color: var(--accent-color);
+    }
+  }
+
+  .footer-links li {
+    margin-bottom: 0.75rem;
+
+    a {
+      color: var(--text-secondary);
       text-decoration: none;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      border: 1px solid transparent;
-      
-      mat-icon { font-size: 20px; width: 20px; height: 20px; }
+      transition: color 0.2s ease;
 
-      &:hover { 
-        background: var(--accent-color, #0d6efd); 
-        color: #ffffff; 
-        transform: translateY(-4px); 
-        box-shadow: 0 6px 15px rgba(13, 110, 253, 0.25);
-      }
+      &:hover { color: var(--accent-color); }
     }
   }
 
-  // Quick Links
-  .footer-links {
-    li {
-      margin-bottom: 0.75rem;
-      
-      a {
-        color: var(--text-secondary, #6c757d);
-        text-decoration: none;
-        transition: all 0.2s ease;
-        display: inline-flex;
-        align-items: center;
-        
-        // Custom arrow or bullet on hover
-        &::before {
-          content: '•';
-          color: var(--accent-color, #0d6efd);
-          opacity: 0;
-          margin-left: -10px; /* change to margin-right for LTR */
-          transform: translateX(-10px); /* change to positive 10px for LTR */
-          transition: all 0.3s ease;
-        }
+  .footer-contact li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
 
-        &:hover {
-          color: var(--accent-color, #0d6efd);
-          transform: translateX(-5px); /* change to positive 5px for LTR */
-          
-          &::before {
-            opacity: 1;
-            margin-left: 8px; /* change to margin-right for LTR */
-            transform: translateX(0);
-          }
-        }
-      }
-    }
-  }
-
-  // Contact List
-  .footer-contact {
-    li { 
-      display: flex; 
-      align-items: flex-start; 
-      gap: 12px; 
-      margin-bottom: 1rem; 
-      color: var(--text-secondary, #6c757d);
-      font-size: 0.95rem;
-
-      .contact-icon {
-        color: var(--accent-color, #0d6efd);
-        background: rgba(13, 110, 253, 0.1);
-        padding: 4px;
-        border-radius: 50%;
-        font-size: 18px;
-        width: 26px;
-        height: 26px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-    }
-  }
-
-  // Working Hours Card
-  .working-hours-card {
-    background: var(--bg-secondary, #f8f9fa); 
-    padding: 1.25rem; 
-    border-radius: 16px;
-    border: 1px solid rgba(0, 0, 0, 0.03);
-    
-    .hour-item { 
-      display: flex; 
-      justify-content: space-between; 
+    .contact-icon {
+      color: var(--accent-color);
+      background: var(--cyan-dim);
+      padding: 4px;
+      border-radius: 50%;
+      font-size: 18px;
+      width: 26px;
+      height: 26px;
+      display: flex;
       align-items: center;
-      margin-bottom: 12px; 
+      justify-content: center;
+      flex-shrink: 0;
+    }
+  }
+
+  .working-hours-card {
+    background: var(--bg-secondary);
+    padding: 1.25rem;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+
+    .hour-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
       font-size: 0.9rem;
       padding-bottom: 12px;
-      border-bottom: 1px dashed rgba(0,0,0,0.08);
-      
+      border-bottom: 1px dashed var(--border);
+
       &:last-child {
         margin-bottom: 0;
         padding-bottom: 0;
         border-bottom: none;
       }
 
-      .day { color: var(--text-secondary, #6c757d); }
-      
-      .time { 
-        font-weight: 700; 
-        color: var(--text-primary, #333333); 
-        background: #ffffff;
+      .day { color: var(--text-secondary); }
+
+      .time {
+        font-weight: 700;
+        color: var(--text-primary);
+        background: var(--bg-primary);
         padding: 4px 10px;
         border-radius: 6px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        border: 1px solid var(--border);
       }
 
-      &.closed {
-        .badge-closed {
-          background: rgba(220, 53, 69, 0.1);
-          color: #dc3545;
-          font-weight: 700;
-          padding: 4px 10px;
-          border-radius: 6px;
-          font-size: 0.8rem;
-        }
+      &.closed .badge-closed {
+        background: var(--red-dim);
+        color: var(--error-color);
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.8rem;
       }
     }
   }
 
-  // Bottom Copyright Section
   .footer-bottom {
-    border-color: rgba(0, 0, 0, 0.05) !important;
-    
+    border-color: var(--border) !important;
+
     .bottom-links a {
       text-decoration: none;
+      color: var(--text-secondary);
       transition: color 0.2s ease;
-      
-      &:hover {
-        color: var(--accent-color, #0d6efd) !important;
-      }
+
+      &:hover { color: var(--accent-color) !important; }
     }
   }
 }
+
+[dir='rtl'] .main-footer .text-md-start { text-align: right !important; }
+[dir='rtl'] .main-footer .text-md-end { text-align: left !important; }
+[dir='ltr'] .main-footer .text-md-start { text-align: left !important; }
+[dir='ltr'] .main-footer .text-md-end { text-align: right !important; }

@@ -1,5 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router'; // اضافه کردن ActivatedRoute
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -13,10 +14,14 @@ import { MatSelectModule } from '@angular/material/select';
 import { DoctorHttpService } from '../doctor-http.service';
 import { ToastService } from '../../@shared/services/toast/toast.service';
 import { TranslationService } from '../../@shared/services/translation.service';
-import { MatExpansionPanel, MatExpansionPanelDescription, MatExpansionPanelHeader, MatExpansionPanelTitle } from '@angular/material/expansion';
+import {
+  MatExpansionPanel,
+  MatExpansionPanelDescription,
+  MatExpansionPanelHeader,
+  MatExpansionPanelTitle,
+} from '@angular/material/expansion';
 import { MatTabNavPanel } from '@angular/material/tabs';
-import { MatDialogModule } from '@angular/material/dialog';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { ImageViewerDialogComponent } from './image-viewer-dialog.component';
 import { HeartVisualizationComponent } from '../../index/heart-visualization/heart-visualization';
 
@@ -41,7 +46,7 @@ import { HeartVisualizationComponent } from '../../index/heart-visualization/hea
     MatExpansionPanelHeader,
     MatDialogModule,
     ImageViewerDialogComponent,
-    HeartVisualizationComponent
+    HeartVisualizationComponent,
   ],
   templateUrl: './echo-history.component.html',
   styleUrls: ['./echo-history.component.scss'],
@@ -51,6 +56,7 @@ export class EchoHistoryComponent implements OnInit {
   private toast = inject(ToastService);
   private translationService = inject(TranslationService);
   private dialog = inject(MatDialog);
+  private route = inject(ActivatedRoute); // تزریق ActivatedRoute
 
   echoData: any = null;
   loading = true;
@@ -65,9 +71,23 @@ export class EchoHistoryComponent implements OnInit {
   selectedDate: string = '';
 
   ngOnInit(): void {
-    // Initially, we don't load any echo history until a patient is searched
-    this.echoData = null;
-    this.loading = false;
+    // بررسی پارامترهای مسیر (مثل: /echo-history/2)
+    const routeId = this.route.snapshot.paramMap.get('id');
+
+    // بررسی کوئری پارامترها (مثل: /echo-history?patientId=2)
+    const queryId = this.route.snapshot.queryParamMap.get('patientId');
+
+    const idFromUrl = routeId || queryId;
+
+    if (idFromUrl) {
+      // اگر آیدی در URL بود، آن را در اینپوت قرار داده و سرچ را اجرا کن
+      this.searchPatientId = idFromUrl;
+      this.searchPatient();
+    } else {
+      // اگر آیدی در URL نبود، صفحه به صورت پیش‌فرض (خالی) لود شود
+      this.echoData = null;
+      this.loading = false;
+    }
   }
 
   searchPatient(): void {
@@ -154,7 +174,7 @@ export class EchoHistoryComponent implements OnInit {
         data: { imageUrl: address },
         width: '90%',
         maxWidth: '600px',
-        height: '90%',
+        height: '60%',
         maxHeight: '700px',
       });
     }

@@ -1,5 +1,4 @@
 <div class="panel-container" [dir]="translationService.getDirection()">
-  <!-- Header -->
   <mat-toolbar color="primary" class="panel-toolbar">
     <button mat-icon-button (click)="toggleSidenav()">
       <mat-icon>menu</mat-icon>
@@ -15,7 +14,6 @@
     <span class="spacer"></span>
 
     <div class="header-actions">
-      <!-- Organization Switcher -->
       <button mat-button [matMenuTriggerFor]="orgMenu" *ngIf="(currentUser$ | async)?.organizations?.length > 1">
         <mat-icon>swap_horiz</mat-icon>
         <span *ngIf="!isMobile">{{ getTranslation('switchOrganization') }}</span>
@@ -56,7 +54,7 @@
     </div>
   </mat-toolbar>
 
-  <mat-sidenav-container class="sidenav-container">
+  <mat-sidenav-container class="sidenav-container" autosize>
     <mat-sidenav
       #sidenav
       [mode]="isMobile ? 'over' : 'side'"
@@ -72,7 +70,6 @@
       </div>
 
       <mat-nav-list>
-        <!-- Dashboard -->
         <a mat-list-item routerLink="/panel/dashboard" routerLinkActive="active" (click)="closeSidenav()">
           <mat-icon matListItemIcon>dashboard</mat-icon>
           <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('dashboard') }}</span>
@@ -81,37 +78,31 @@
         <mat-divider></mat-divider>
         <div class="nav-section-title" *ngIf="!sidebarCollapsed">{{ getTranslation('management') }}</div>
 
-        <!-- Staff -->
         <a mat-list-item routerLink="/panel/staff" routerLinkActive="active" (click)="closeSidenav()">
           <mat-icon matListItemIcon>people</mat-icon>
           <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('staff') }}</span>
         </a>
 
-        <!-- Staff Schedule -->
         <a mat-list-item routerLink="/panel/staff-schedule" routerLinkActive="active" (click)="closeSidenav()">
           <mat-icon matListItemIcon>calendar_month</mat-icon>
           <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('staffSchedule') }}</span>
         </a>
 
-        <!-- Services -->
         <a mat-list-item routerLink="/panel/organization-service" routerLinkActive="active" (click)="closeSidenav()">
           <mat-icon matListItemIcon>medical_services</mat-icon>
           <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('services') }}</span>
         </a>
 
-        <!-- Resources -->
         <a mat-list-item routerLink="/panel/resource" routerLinkActive="active" (click)="closeSidenav()">
           <mat-icon matListItemIcon>inventory_2</mat-icon>
           <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('resources') }}</span>
         </a>
 
-        <!-- Status -->
         <a mat-list-item routerLink="/panel/status" routerLinkActive="active" (click)="closeSidenav()">
           <mat-icon matListItemIcon>rule</mat-icon>
           <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('status') }}</span>
         </a>
 
-        <!-- Expertise -->
         <a mat-list-item routerLink="/panel/expertise" routerLinkActive="active" (click)="closeSidenav()">
           <mat-icon matListItemIcon>psychology</mat-icon>
           <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('expertise') }}</span>
@@ -120,7 +111,6 @@
         <mat-divider></mat-divider>
         <div class="nav-section-title" *ngIf="!sidebarCollapsed">{{ getTranslation('operations') }}</div>
 
-        <!-- Appointments -->
         <a mat-list-item 
            [routerLink]="['/panel/appointment']" 
            routerLinkActive="active" 
@@ -134,8 +124,7 @@
     </mat-sidenav>
 
     <mat-sidenav-content class="panel-content">
-      <div class="content-container" [class.full-sidebar]="!sidebarCollapsed && sidenavOpened && !isMobile">
-        <!-- Welcome Header in Main Content -->
+      <div class="content-container">
         <div class="welcome-banner" *ngIf="activeOrganization$ | async as activeOrg">
           <div class="welcome-header-flex">
             <div class="welcome-text-container">
@@ -158,4 +147,3 @@
     </mat-sidenav-content>
   </mat-sidenav-container>
 </div>
-

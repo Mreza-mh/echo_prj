@@ -2,11 +2,10 @@
   <div class="container py-4 py-lg-5">
     <div *ngIf="isLoading" class="text-center py-5">
       <mat-spinner diameter="50" class="mx-auto mb-3"></mat-spinner>
-      <p class="text-muted">در حال بارگذاری اطلاعات...</p>
+      <p class="text-muted">{{ getTranslation('loadingInfo') }}</p>
     </div>
 
     <div *ngIf="!isLoading && staff" class="row g-4">
-      <!-- Profile Sidebar -->
       <div class="col-12 col-lg-4">
         <mat-card class="profile-card border-0 shadow-sm overflow-hidden rounded-4">
           <div class="profile-header p-4 text-center">
@@ -16,75 +15,72 @@
                 {{ (staff.user?.name || 'C').charAt(0) }}
               </div>
             </div>
-            <h1 class="h4 fw-bold text-dark mb-1">{{ staff.user?.name || staff.user_name }}</h1>
-            <p class="text-primary fw-medium mb-3">{{ staff.expertise?.title || staff.expertise_title || staff.role || 'کارشناس' }}</p>
-            
+            <h1 class="h4 fw-bold mb-1">{{ staff.user?.name || staff.user_name }}</h1>
+            <p class="text-primary fw-medium mb-3">{{ staff.expertise?.title || staff.expertise_title || staff.role || getTranslation('expertise') }}</p>
+
             <div class="d-flex justify-content-center gap-2 mb-2">
               <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">
-                {{ staff.business_type || 'خدمات درمانی' }}
+                {{ staff.business_type || getTranslation('medicalServicesType') }}
               </span>
             </div>
           </div>
-          
+
           <div class="profile-info p-4 border-top">
             <div class="info-item mb-3">
-              <span class="text-muted small d-block mb-1">تخصص:</span>
+              <span class="text-muted small d-block mb-1">{{ getTranslation('expertiseLabel') }}:</span>
               <div class="d-flex align-items-center gap-2">
                 <mat-icon class="text-primary fs-5">psychology</mat-icon>
-                <span class="fw-medium">{{ staff.expertise?.title || staff.expertise_title || 'عمومی' }}</span>
+                <span class="fw-medium">{{ staff.expertise?.title || staff.expertise_title || getTranslation('expertise') }}</span>
               </div>
             </div>
-            
+
             <div class="info-item mb-3">
-              <span class="text-muted small d-block mb-1">شماره تماس:</span>
+              <span class="text-muted small d-block mb-1">{{ getTranslation('phoneNumber') }}:</span>
               <div class="d-flex align-items-center gap-2">
                 <mat-icon class="text-primary fs-5">phone</mat-icon>
-                <span class="fw-medium">{{ staff.user?.mobile || 'نامشخص' }}</span>
+                <span class="fw-medium" dir="ltr">{{ staff.user?.mobile || getTranslation('unknown') }}</span>
               </div>
             </div>
 
             <div class="info-item">
-              <span class="text-muted small d-block mb-1">آدرس:</span>
+              <span class="text-muted small d-block mb-1">{{ getTranslation('address') }}:</span>
               <div class="d-flex align-items-start gap-2">
                 <mat-icon class="text-primary fs-5">location_on</mat-icon>
-                <span class="fw-medium small">{{ staff.organization?.address || 'نامشخص' }}</span>
+                <span class="fw-medium small">{{ staff.organization?.address || getTranslation('unknown') }}</span>
               </div>
             </div>
           </div>
 
           <div class="p-4 pt-0">
             <button mat-flat-button color="primary" class="w-100 py-2 rounded-pill shadow-none" (click)="goToAppointment()">
-              رزرو نوبت آنلاین
-              <mat-icon class="ms-2">calendar_month</mat-icon>
+              {{ getTranslation('bookAppointment') }}
+              <mat-icon>calendar_month</mat-icon>
             </button>
           </div>
         </mat-card>
       </div>
 
-      <!-- Main Content / Schedule -->
       <div class="col-12 col-lg-8">
         <mat-card class="content-card border-0 shadow-sm rounded-4 p-4 mb-4">
-          <h2 class="h5 fw-bold text-dark mb-4 d-flex align-items-center gap-2">
+          <h2 class="h5 fw-bold mb-4 d-flex align-items-center gap-2">
             <mat-icon class="text-primary">info</mat-icon>
-            درباره کارشناس
+            {{ getTranslation('aboutExpert') }}
           </h2>
           <p class="text-muted leading-relaxed">
-            {{ staff.description || 'توضیحاتی برای این کارشناس ثبت نشده است. ایشان در مجموعه ' + (staff.organization?.name || 'ما') + ' مشغول به فعالیت هستند.' }}
+            {{ staff.description || getTranslation('noStaffDescription') }}
           </p>
         </mat-card>
 
         <mat-card class="content-card border-0 shadow-sm rounded-4 p-4">
-          <h2 class="h5 fw-bold text-dark mb-4 d-flex align-items-center gap-2">
+          <h2 class="h5 fw-bold mb-4 d-flex align-items-center gap-2">
             <mat-icon class="text-primary">schedule</mat-icon>
-            زمان‌بندی و نوبت‌های در دسترس
+            {{ getTranslation('scheduleTitle') }}
           </h2>
-          
-          <!-- This would ideally be a calendar or time-slot grid -->
-          <div class="schedule-placeholder text-center py-5 bg-light rounded-4 border border-dashed">
+          <div class="schedule-placeholder text-center py-5 rounded-4 border border-dashed">
             <mat-icon class="text-muted mb-3" style="font-size: 48px; width: 48px; height: 48px;">event_available</mat-icon>
-            <p class="text-muted mb-4">برای مشاهده زمان‌های خالی و رزرو نوبت، روی دکمه زیر کلیک کنید</p>
+            <p class="text-muted mb-4">{{ getTranslation('viewScheduleHint') }}</p>
             <button mat-stroked-button color="primary" class="rounded-pill px-4" (click)="goToAppointment()">
-              مشاهده تقویم نوبت‌دهی
+              {{ getTranslation('viewAppointmentCalendar') }}
             </button>
           </div>
         </mat-card>

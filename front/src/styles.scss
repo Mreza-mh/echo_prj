@@ -2,13 +2,10 @@
 @import 'bootstrap/dist/css/bootstrap.rtl.min.css';
 @import 'animate.css/animate.min.css';
 
-// Include theming for Angular Material with `mat.theme()`.
-// This Sass mixin will define CSS variables that are used for styling Angular Material
-// components according to the Material 3 design spec.
-// Learn more about theming and how to use it for your application's
-// custom components at https://material.angular.dev/guide/theming
-
+// Material Icons Theme
 html {
+  color-scheme: light;
+
   @include mat.theme(
     (
       color: (
@@ -21,63 +18,183 @@ html {
   );
 }
 
-
-@font-face {
-  font-family: 'Material Icons';
-  font-style: normal;
-  font-weight: 400;
-  src: url('../public/fonts/MaterialIcons-Regular.woff2') format('woff2'),
-       url('../public/fonts/MaterialIcons-Regular.woff') format('woff'),
-       url('../public/fonts/MaterialIcons-Regular.ttf') format('truetype');
-  font-display: block; 
-}
-
-.material-icons {
-  font-family: 'Material Icons';
-  font-weight: normal;
-  font-style: normal;
-  font-size: 24px;
-  line-height: 1;
-  letter-spacing: normal;
-  text-transform: none;
-  display: inline-block;
-  white-space: nowrap;
-  word-wrap: normal;
-  direction: ltr;
-  font-feature-settings: 'liga';
-  -webkit-font-smoothing: antialiased;
-}
-
 body {
-  color-scheme: light;
-  background-color: var(--mat-sys-surface);
-  color: var(--mat-sys-on-surface);
-  font: var(--mat-sys-body-medium);
-  margin: 0;
+  // ── CardioAI Palette — Light (Clinical Ocean) ──────────────────
+  // Neutrals: cool slate-blue · Accents: cyan + indigo + teal
 
-  // --- اختصاصی: تم روشن مدرن و حرفه‌ای (Trust & Clean) ---
-  --bg-primary: #ffffff;           // پس‌زمینه کارت‌ها و فرم‌ها
-  --bg-secondary: #f8fafc;         // پس‌زمینه بخش‌های ثانویه
-  --bg-sidebar: #ffffff;           // سایدبار یکدست سفید
-  --bg-page: #f1f5f9;              // رنگ ملایم برای کل صفحه که کارت‌ها روی آن برجسته شوند
-  --bg-table-header: #f8fafc;      // هدر جدول‌ها (کمی متمایز از بدنه جدول)
-  
-  --text-primary: #0f172a;         // مشکی متمایل به سورمه‌ای برای خوانایی بالا
-  --text-secondary: #64748b;       // خاکستری جذاب برای متون فرعی
-  --border-color: #e2e8f0;         // حاشیه‌های بسیار ملایم
-  
-  --hover-bg: rgba(37, 99, 235, 0.06); // هاور ملایم آبی
-  --active-bg: rgba(37, 99, 235, 0.12);
-  --shadow: rgba(15, 23, 42, 0.08);    // سایه مدرن و نرم
-  --loading-bg: rgba(255, 255, 255, 0.85);
-  
-  --accent-color: #2563eb;         // آبی رویال (Royal Blue) - رنگ اصلی اکشن‌ها
-  --success-color: #10b981;        // سبز زمردی (برای موفقیت و تایید)
-  --error-color: #ef4444;          // قرمز واضح (برای خطاها)
-  --warning-color: #f59e0b;        // نارنجی/کهربایی (برای هشدار)
+  --bg-void:     #f2f6fb;
+  --bg-deep:     #e6edf6;
+  --bg-surface:  #ffffff;
+  --bg-elevated: #f8fafd;
+  --bg-hover:    #eef3f9;
+
+  // Brand accents
+  --cyan:        #0b8fc7;
+  --cyan-dim:    rgba(11, 143, 199, 0.10);
+  --cyan-glow:   rgba(11, 143, 199, 0.22);
+
+  --purple:      #6366f1;
+  --purple-dim:  rgba(99, 102, 241, 0.10);
+
+  --mint:        #0d9488;
+  --mint-dim:    rgba(13, 148, 136, 0.10);
+
+  --orange:      #ea580c;
+  --orange-dim:  rgba(234, 88, 12, 0.10);
+
+  --red:         #e11d48;
+  --red-dim:     rgba(225, 29, 72, 0.10);
+
+  --yellow:      #ca8a04;
+
+  // Tech stack (brand-accurate)
+  --angular-color: #dd0031;
+  --laravel-color: #ff4433;
+  --python-color:  #3776ab;
+  --kong-color:    #00a0d1;
+  --mongo-color:   #13aa52;
+  --mysql-color:   #4479a1;
+  --qdrant-color:  #6366f1;
+  --rabbit-color:  #ea580c;
+
+  // Typography
+  --text-bright:  #0c1222;
+  --text-primary: #1a2332;
+  --text-muted:   #5b6b82;
+  --text-ghost:   #8b9bb5;
+
+  // Borders & elevation
+  --border:       rgba(12, 38, 66, 0.09);
+  --border-hover: rgba(11, 143, 199, 0.32);
+  --border-glow:  rgba(11, 143, 199, 0.48);
+  --card-shadow:  0 16px 40px rgba(12, 38, 66, 0.07);
+
+  // Glass & inputs
+  --glass-bg:     rgba(255, 255, 255, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.65);
+  --input-bg:     #f4f7fb;
+
+  // Semantic aliases (shared components)
+  --accent-color:    var(--cyan);
+  --success-color:   var(--mint);
+  --error-color:     var(--red);
+  --warning-color:   var(--yellow);
+  --bg-primary:      var(--bg-surface);
+  --bg-secondary:    var(--bg-elevated);
+  --bg-page:         var(--bg-void);
+  --border-color:    var(--border);
+  --text-secondary:  var(--text-muted);
+  --hover-bg:        var(--bg-hover);
+  --active-bg:       var(--cyan-dim);
+  --shadow:          rgba(12, 38, 66, 0.10);
+
+  // Landing page — semantic tokens
+  --landing-gradient: linear-gradient(180deg, var(--bg-void) 0%, var(--bg-surface) 50%, var(--bg-void) 100%);
+  --section-gradient: linear-gradient(180deg, var(--bg-void), var(--bg-surface), var(--bg-void));
+  --ambient-purple: color-mix(in srgb, var(--purple) 7%, transparent);
+  --ambient-cyan: color-mix(in srgb, var(--cyan) 7%, transparent);
+  --grid-line-color: color-mix(in srgb, var(--cyan) 3%, transparent);
+  --glass-shadow-sm: 0 4px 24px color-mix(in srgb, var(--text-bright) 4%, transparent);
+  --glass-shadow-md: 0 8px 32px color-mix(in srgb, var(--text-bright) 5%, transparent);
+  --glass-bg-bright: color-mix(in srgb, var(--bg-surface) 92%, transparent);
+  --stat-pill-bg: var(--glass-bg-bright);
+  --card-lift-shadow: color-mix(in srgb, var(--text-bright) 7%, transparent);
+  --hover-card-shadow: 0 12px 40px color-mix(in srgb, var(--text-bright) 10%, transparent);
+  --btn-on-primary: #ffffff;
+  --btn-shine: color-mix(in srgb, var(--bg-surface) 14%, transparent);
+  --surface-overlay: color-mix(in srgb, var(--bg-void) 50%, transparent);
+  --surface-overlay-strong: color-mix(in srgb, var(--bg-void) 68%, transparent);
+  --surface-muted: color-mix(in srgb, var(--bg-elevated) 88%, transparent);
+  --node-port-bg: color-mix(in srgb, var(--bg-surface) 55%, transparent);
+  --panel-feature-hover: color-mix(in srgb, var(--cyan) 5%, transparent);
+  --panel-icon-bg: color-mix(in srgb, var(--cyan) 6%, transparent);
+  --panel-grid: color-mix(in srgb, var(--text-primary) 2%, transparent);
+  --scan-line-gradient: linear-gradient(90deg, transparent, color-mix(in srgb, var(--cyan) 28%, transparent), transparent);
+  --glass-rim-gradient: linear-gradient(135deg, color-mix(in srgb, var(--cyan) 5%, transparent) 0%, transparent 50%, color-mix(in srgb, var(--purple) 4%, transparent) 100%);
+  --echo-box-shadow: 0 8px 32px color-mix(in srgb, var(--cyan) 7%, transparent);
+  --echo-icon-filter: drop-shadow(0 0 12px color-mix(in srgb, var(--red) 28%, transparent));
+  --glass-border-accent: color-mix(in srgb, var(--cyan) 11%, transparent);
+  --orb-opacity: 0.38;
 }
 /* You can add global styles to this file, and also import other style files */
+[data-theme='dark'] {
+  color-scheme: dark;
 
+  // ── CardioAI Palette — Dark (Deep Space Clinical) ──────────────
+  // Neutrals: navy slate · Accents: sky cyan + soft indigo + teal
+
+  --bg-void:     #050a12;
+  --bg-deep:     #081018;
+  --bg-surface:  #0e1724;
+  --bg-elevated: #152232;
+  --bg-hover:    #1c2d42;
+
+  --cyan:        #38bdf8;
+  --cyan-dim:    rgba(56, 189, 248, 0.12);
+  --cyan-glow:   rgba(56, 189, 248, 0.22);
+
+  --purple:      #818cf8;
+  --purple-dim:  rgba(129, 140, 248, 0.12);
+
+  --mint:        #2dd4bf;
+  --mint-dim:    rgba(45, 212, 191, 0.12);
+
+  --orange:      #fb923c;
+  --orange-dim:  rgba(251, 146, 60, 0.12);
+
+  --red:         #fb7185;
+  --red-dim:     rgba(251, 113, 133, 0.12);
+
+  --yellow:      #facc15;
+
+  --angular-color: #f43f5e;
+  --laravel-color: #fb7185;
+  --python-color:  #60a5fa;
+  --kong-color:    #22d3ee;
+  --mongo-color:   #34d399;
+  --mysql-color:   #60a5fa;
+  --qdrant-color:  #818cf8;
+  --rabbit-color:  #fb923c;
+
+  --text-bright:  #f1f5f9;
+  --text-primary: #c8d4e4;
+  --text-muted:   #7f94ad;
+  --text-ghost:   #4a5f78;
+
+  --border:       rgba(56, 189, 248, 0.10);
+  --border-hover: rgba(56, 189, 248, 0.28);
+  --border-glow:  rgba(56, 189, 248, 0.45);
+  --card-shadow:  0 20px 50px rgba(0, 0, 0, 0.42);
+
+  --glass-bg:     rgba(14, 23, 36, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.07);
+  --input-bg:     #0a121c;
+
+  --accent-color:    var(--cyan);
+  --success-color:   var(--mint);
+  --error-color:     var(--red);
+  --warning-color:   var(--yellow);
+  --bg-primary:      var(--bg-surface);
+  --bg-secondary:    var(--bg-elevated);
+  --bg-page:         var(--bg-void);
+  --border-color:    var(--border);
+  --text-secondary:  var(--text-muted);
+  --hover-bg:        var(--bg-hover);
+  --active-bg:       var(--cyan-dim);
+  --shadow:          rgba(0, 0, 0, 0.45);
+  --btn-on-primary:  #ffffff;
+
+  --orb-opacity: 0.26;
+  --btn-shine: color-mix(in srgb, var(--text-bright) 7%, transparent);
+  --hover-card-shadow: 0 12px 40px color-mix(in srgb, #000 38%, transparent);
+  --glass-bg-bright: color-mix(in srgb, var(--bg-elevated) 86%, transparent);
+  --stat-pill-bg: color-mix(in srgb, var(--bg-elevated) 82%, transparent);
+  --node-port-bg: color-mix(in srgb, var(--bg-elevated) 42%, transparent);
+  --panel-feature-hover: color-mix(in srgb, var(--cyan) 6%, transparent);
+  --panel-icon-bg: color-mix(in srgb, var(--cyan) 8%, transparent);
+  --ambient-purple: color-mix(in srgb, var(--purple) 9%, transparent);
+  --ambient-cyan: color-mix(in srgb, var(--cyan) 9%, transparent);
+}
 html,
 body {
   height: 100%;
@@ -153,42 +270,6 @@ body {
   opacity: 0.5 !important;
 }
 
-[data-theme='dark'] {
-  --mat-sys-surface: #1e293b;
-  --mat-sys-surface-variant: #0f172a;
-  --mat-sys-on-surface: #f8fafc;
-  --mat-sys-on-surface-variant: #94a3b8;
-  --mat-sys-primary: #3b82f6;
-  --mat-sys-primary-container: #1e3a8a;
-  --mat-sys-on-primary-container: #dbeafe;
-  --mat-sys-outline-variant: #334155;
-
-  // --- اختصاصی: تم تاریک مدرن ---
-  --bg-primary: #1e293b;           // پس‌زمینه کارت‌ها
-  --bg-secondary: #0f172a;         // پس‌زمینه ثانویه
-  --bg-sidebar: #1e293b;
-  --bg-page: #020617;              // پس‌زمینه اصلی صفحه (بسیار تیره)
-  --bg-table-header: #334155;
-  
-  --text-primary: #f8fafc;         // سفید ملایم
-  --text-secondary: #94a3b8;       // خاکستری روشن برای متون فرعی
-  --border-color: #334155;
-  
-  --hover-bg: rgba(59, 130, 246, 0.15);
-  --active-bg: rgba(59, 130, 246, 0.25);
-  --shadow: rgba(0, 0, 0, 0.4);
-  --loading-bg: rgba(2, 6, 23, 0.85);
-  
-  --accent-color: #60a5fa;         // آبی روشن‌تر برای دید بهتر در پس‌زمینه تاریک
-  
-  .text-muted { color: var(--text-secondary) !important; }
-  .text-dark { color: var(--text-primary) !important; }
-  .bg-white { background-color: var(--bg-primary) !important; }
-  .bg-light { background-color: var(--bg-secondary) !important; }
-}
-
-
-
 // Patient Form Dialog Styles
 .patient-form-dialog {
   .mat-mdc-dialog-container {
@@ -229,4 +310,265 @@ button {
     border-radius: 16px !important; // لبه‌های گردتر و مدرن‌تر
     box-shadow: 0 20px 25px -5px var(--shadow), 0 8px 10px -6px var(--shadow) !important;
   }
+}
+
+// ========================================
+// GLOBAL UI POLISH
+// ========================================
+
+
+* {
+  box-sizing:border-box;
+}
+
+
+
+body {
+  background: var(--bg-void);
+  color: var(--text-primary);
+  transition: background 0.35s ease, color 0.35s ease;
+}
+
+
+
+// Cards
+
+.mat-mdc-card,
+.card {
+
+
+background:
+var(--bg-surface);
+
+
+border:
+
+1px solid var(--border);
+
+
+box-shadow:
+var(--card-shadow);
+
+
+
+border-radius:
+20px;
+
+
+transition:
+transform .25s ease,
+border-color .25s ease,
+box-shadow .25s ease;
+
+
+
+&:hover {
+
+
+border-color:
+var(--border-hover);
+
+
+
+}
+
+}
+
+
+
+
+
+// Glass components
+
+
+.glass {
+
+
+background:
+var(--glass-bg);
+
+
+backdrop-filter:
+blur(18px);
+
+
+-webkit-backdrop-filter:
+blur(18px);
+
+
+
+border:
+
+1px solid var(--glass-border);
+
+
+
+}
+
+
+
+
+// Inputs
+
+
+input,
+textarea,
+.mat-mdc-form-field {
+
+
+background:
+var(--input-bg);
+
+
+color:
+var(--text-primary);
+
+
+
+}
+
+
+
+.mat-mdc-text-field-wrapper {
+
+
+background:
+var(--input-bg)!important;
+
+
+border-radius:
+14px!important;
+
+
+}
+
+
+
+
+// Buttons
+
+
+button,
+.mat-mdc-button,
+.mat-mdc-raised-button {
+
+
+transition:
+
+all .2s ease;
+
+
+
+}
+
+
+
+button:hover {
+
+
+transform:
+translateY(-1px);
+
+
+}
+
+
+
+
+// Dialog
+
+
+.mat-mdc-dialog-surface {
+
+
+background:
+var(--bg-surface)!important;
+
+
+border:
+
+1px solid var(--border);
+
+
+
+border-radius:
+20px!important;
+
+
+box-shadow:
+
+var(--card-shadow)!important;
+
+
+}
+
+
+
+
+
+// Menu
+
+
+.mat-mdc-menu-panel {
+
+
+background:
+var(--bg-elevated)!important;
+
+
+border:
+
+1px solid var(--border);
+
+
+
+border-radius:
+14px!important;
+
+
+}
+
+
+
+// Scrollbar
+
+
+::-webkit-scrollbar {
+
+width:8px;
+
+}
+
+
+
+::-webkit-scrollbar-track {
+
+background:
+var(--bg-void);
+
+}
+
+
+
+::-webkit-scrollbar-thumb {
+
+
+background:
+var(--text-ghost);
+
+
+border-radius:
+10px;
+
+
+}
+
+
+
+::-webkit-scrollbar-thumb:hover {
+
+
+background:
+var(--cyan);
+
 }

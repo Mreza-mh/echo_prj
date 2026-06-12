@@ -15,7 +15,7 @@
           <h1 class="org-title mb-2">{{ organization?.name || getTranslate('مطب دکتر احمدی') }}</h1>
           <p class="org-address mb-4">
             <mat-icon>location_on</mat-icon>
-              زنجان سعدی وسط  
+            {{ organization?.address || getTranslate('address') }}
           </p>
           
           <div class="org-stats d-flex gap-4">
@@ -35,7 +35,7 @@
         </div>
         
         <div class=" d-none d-lg-flex justify-content-end">
-          <div class="org-main-card shadow-lg p-4 rounded-4 bg-white text-dark">
+          <div class="org-main-card shadow-lg p-4 rounded-4">
             <h3 class="h5 fw-bold mb-3">{{ getTranslate('contactInfo') }}</h3>
             <div class="contact-item mb-2 d-flex align-items-center gap-2">
               <mat-icon class="text-primary">phone</mat-icon>

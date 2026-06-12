@@ -1,5 +1,5 @@
 <div class="appointment-page">
-  <div class="container py-4">
+  <div class="mx-4 py-4">
     <!-- Formal Organization Header -->
     <div class="org-profile-card mb-5 animate__animated animate__fadeIn" *ngIf="organizationDetails">
       <div class="profile-cover" [style.background-image]="organizationDetails.banner ? 'url(' + organizationDetails.banner + ')' : null">
@@ -18,11 +18,11 @@
               <h1 class="profile-name h4 fw-bold mb-0">{{ organizationDetails.name }}</h1>
               <span class="badge-verified">
                 <mat-icon>verified</mat-icon>
-                تایید شده
+                {{ getTranslation('verifiedBadge') }}
               </span>
             </div>
             <p class="profile-subtitle text-muted mb-0">
-              {{ organizationDetails.category?.title || 'مرکز ارائه خدمات تخصصی' }}
+              {{ organizationDetails.category?.title || getTranslation('specialtyCenter') }}
             </p>
           </div>
         </div>
@@ -31,14 +31,14 @@
           <div class="stat-item" *ngIf="organizationDetails.phone">
             <div class="stat-icon"><mat-icon>phone</mat-icon></div>
             <div class="stat-info">
-              <span class="stat-label">تماس با ما</span>
+              <span class="stat-label">{{ getTranslation('contactCenter') }}</span>
               <span class="stat-value ltr-text">{{ organizationDetails.phone }}</span>
             </div>
           </div>
           <div class="stat-item" *ngIf="organizationDetails.address">
             <div class="stat-icon"><mat-icon>location_on</mat-icon></div>
             <div class="stat-info">
-              <span class="stat-label">آدرس مرکز</span>
+              <span class="stat-label">{{ getTranslation('centerAddress') }}</span>
               <span class="stat-value">{{ organizationDetails.address }}</span>
             </div>
           </div>
@@ -46,19 +46,19 @@
       </div>
     </div>
 
-    <div class="row g-4">
-      <div class="col-lg-5 col-xl-4">
+    <div class="row g-4 w-100 mx-auto">
+      <div class="col-lg-5 col-xl-4 col-12">
         <div class="sticky-top-offset">
           <mat-card class="minimal-card mb-4">
             <mat-card-header class="pb-3 border-bottom">
-              <mat-card-title class="h6 fw-bold mb-0">تنظیمات نوبت</mat-card-title>
+              <mat-card-title class="h6 fw-bold mb-0">{{ getTranslation('appointmentSettings') }}</mat-card-title>
             </mat-card-header>
             <mat-card-content class="pt-4">
               <!-- Staff -->
               <div class="form-group mb-4">
                 <label class="form-label d-flex align-items-center">
                   <mat-icon class="me-2 fs-5">person</mat-icon>
-                  {{ hasStaffParam ? 'تغییر پرسنل' : 'انتخاب پرسنل' }}
+                  {{ hasStaffParam ? getTranslation('changeStaff') : getTranslation('selectStaff') }}
                 </label>
                 <mat-form-field appearance="outline" class="w-100 no-subscript">
                   <mat-select [(ngModel)]="staffId" (selectionChange)="onStaffChange()" placeholder="پرسنل مورد نظر">
@@ -78,7 +78,7 @@
               <div class="form-group mb-4">
                 <label class="form-label d-flex align-items-center">
                   <mat-icon class="me-2 fs-5">medical_services</mat-icon>
-                  {{ hasServiceParam ? 'تغییر خدمت' : 'انتخاب خدمت' }}
+                  {{ hasServiceParam ? getTranslation('changeService') : getTranslation('selectService') }}
                 </label>
                 <mat-form-field appearance="outline" class="w-100 no-subscript">
                   <mat-select [(ngModel)]="organizationServicesId" (selectionChange)="onServiceChange()" placeholder="نوع خدمت">
@@ -93,7 +93,7 @@
               <div class="form-group mb-4" *ngIf="!isUserMode">
                 <label class="form-label d-flex align-items-center">
                   <mat-icon class="me-2 fs-5">group</mat-icon>
-                  انتخاب مشتری
+                  {{ getTranslation('selectCustomer') }}
                 </label>
                 <mat-form-field appearance="outline" class="w-100 no-subscript">
                   <mat-select [(ngModel)]="selectedUserId" placeholder="جستجوی مشتری">
@@ -109,7 +109,7 @@
           <!-- Formal Calendar -->
           <mat-card class="minimal-card overflow-hidden">
             <div class="calendar-header-minimal">
-              <span class="fw-bold">انتخاب روز</span>
+              <span class="fw-bold">{{ getTranslation('selectDay') }}</span>
               <span class="text-primary-main" *ngIf="selectedDate">{{ selectedDate | date:'MMMM yyyy' }}</span>
             </div>
             <mat-calendar 
@@ -122,10 +122,10 @@
       </div>
 
       <!-- Right Column: Time Slots -->
-      <div class="col-lg-7 col-xl-8">
+      <div class="col-lg-7 col-xl-8 col-12">
         <mat-card class="minimal-card h-100">
           <mat-card-header class="pb-3 border-bottom d-flex justify-content-between align-items-center">
-            <mat-card-title class="h6 fw-bold mb-0">ساعت‌های در دسترس</mat-card-title>
+            <mat-card-title class="h6 fw-bold mb-0">{{ getTranslation('availableHours') }}</mat-card-title>
             <div class="selected-date-badge" *ngIf="selectedDate">
               <mat-icon class="me-1">event</mat-icon>
               {{ selectedDate | date:'EEEE d MMMM' }}
@@ -138,35 +138,35 @@
               <div class="empty-icon-box mx-auto mb-3 bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
                 <mat-icon class="text-secondary" style="font-size: 40px; width: 40px; height: 40px;">touch_app</mat-icon>
               </div>
-              <h4 class="h6 fw-bold text-dark">تکمیل اطلاعات نوبت</h4>
-              <p class="text-muted small mb-4">برای مشاهده زمان‌های خالی، لطفاً موارد زیر را مشخص کنید:</p>
+              <h4 class="h6 fw-bold">{{ getTranslation('completeAppointmentInfo') }}</h4>
+              <p class="text-muted small mb-4">{{ getTranslation('pleaseSelectTime') }}</p>
               
               <div class="d-flex justify-content-center flex-wrap gap-2">
                 <span class="badge rounded-pill px-3 py-2 d-flex align-items-center" 
                       [ngClass]="staffId ? 'bg-success text-white' : 'bg-light text-muted border'">
                   <mat-icon class="me-1 fs-6" style="width: 18px; height: 18px;">{{ staffId ? 'check_circle' : 'pending' }}</mat-icon>
-                  انتخاب پرسنل
+                  {{ getTranslation('selectStaff') }}
                 </span>
                 <span class="badge rounded-pill px-3 py-2 d-flex align-items-center" 
                       [ngClass]="organizationServicesId ? 'bg-success text-white' : 'bg-light text-muted border'">
                   <mat-icon class="me-1 fs-6" style="width: 18px; height: 18px;">{{ organizationServicesId ? 'check_circle' : 'pending' }}</mat-icon>
-                  انتخاب خدمت
+                  {{ getTranslation('selectService') }}
                 </span>
               </div>
             </div>
 
             <div *ngIf="isLoadingSlots && staffId && organizationServicesId" class="text-center py-5 animate__animated animate__fadeIn">
               <mat-progress-spinner mode="indeterminate" diameter="45" class="mx-auto mb-3 color-primary"></mat-progress-spinner>
-              <h4 class="h6 fw-bold">در حال بررسی تقویم...</h4>
-              <p class="text-muted small">لطفاً چند لحظه منتظر بمانید</p>
+              <h4 class="h6 fw-bold">{{ getTranslation('checkingCalendar') }}</h4>
+              <p class="text-muted small">{{ getTranslation('pleaseWait') }}</p>
             </div>
 
             <div *ngIf="!isLoadingSlots && staffId && organizationServicesId && availableSlots.length === 0" class="empty-state-minimal text-center py-5 animate__animated animate__fadeIn">
               <div class="empty-icon-box mx-auto mb-3 bg-danger bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
                 <mat-icon class="text-danger" style="font-size: 40px; width: 40px; height: 40px;">event_busy</mat-icon>
               </div>
-              <h4 class="h6 fw-bold">نوبتی یافت نشد</h4>
-              <p class="text-muted small">در این تاریخ برای خدمت و پرسنل انتخابی، زمان خالی وجود ندارد.<br>لطفاً روز دیگری را بررسی کنید.</p>
+              <h4 class="h6 fw-bold">{{ getTranslation('noSlotsFound') }}</h4>
+              <p class="text-muted small">{{ getTranslation('tryAnotherDay') }}</p>
             </div>
 
             <div *ngIf="!isLoadingSlots && availableSlots.length > 0" class="slots-grid-minimal animate__animated animate__fadeIn">
@@ -176,14 +176,14 @@
                 [class.active]="selectedSlot === slot"
                 class="minimal-slot-btn">
                 <span class="slot-time-text">{{ slot.start_time }}</span>
-                <span class="slot-status-text">آزاد</span>
+                <span class="slot-status-text">{{ getTranslation('slotAvailable') }}</span>
               </button>
             </div>
 
             <div class="mt-5 pt-4 border-top animate__animated animate__fadeInUp" *ngIf="resourceList.length > 0">
               <label class="form-label d-flex align-items-center mb-3">
                 <mat-icon class="me-2 fs-5 text-muted">inventory_2</mat-icon>
-                منابع جانبی مورد نیاز <small class="text-muted ms-2">(اختیاری)</small>
+                {{ getTranslation('optionalResources') }} <small class="text-muted">{{ getTranslation('optionalLabel') }}</small>
               </label>
               <div class="resource-chips">
                 <div 
@@ -202,24 +202,24 @@
           <mat-card-actions class="p-4 bg-light-soft border-top mt-auto">
             <div class="d-flex align-items-center justify-content-between w-100 flex-wrap gap-3">
               <div class="booking-preview" *ngIf="selectedSlot">
-                <span class="text-muted small d-block">نوبت انتخابی شما:</span>
+                <span class="text-muted small d-block">{{ getTranslation('selectedAppointment') }}</span>
                 <span class="fw-bold">
                   {{ selectedDate | date:'d MMMM' }} ساعت <span class="text-primary-main">{{ selectedSlot.start_time }}</span>
                 </span>
               </div>
               <div class="booking-preview" *ngIf="!selectedSlot">
-                <span class="text-muted small">لطفاً یک زمان را انتخاب کنید</span>
+                <span class="text-muted small">{{ getTranslation('pleaseSelectTime') }}</span>
               </div>
               
               <div class="d-flex gap-2">
-                <button mat-button *ngIf="isEditMode" routerLink="/panel/dashboard" class="rounded-pill px-4">انصراف</button>
+                <button mat-button *ngIf="isEditMode" routerLink="/panel/dashboard" class="rounded-pill px-4">{{ getTranslation('cancel') }}</button>
                 <button 
                   mat-flat-button 
                   color="primary" 
                   class="action-btn-main shadow-sm"
                   [disabled]="!selectedSlot || isBooking"
                   (click)="bookAppointment()">
-                  <span *ngIf="!isBooking">{{ isEditMode ? 'ویرایش و تایید' : 'تایید و رزرو نهایی' }}</span>
+                  <span *ngIf="!isBooking">{{ isEditMode ? getTranslation('confirmEdit') : getTranslation('confirmAndBook') }}</span>
                   <!-- <mat-spinner *ngIf="isBooking" diameter="20" class="me-2"></mat-spinner> -->
                 </button>
               </div>

@@ -29,13 +29,11 @@
                                 0 20px 60px rgba(0, 0, 0, 0.7),
                                 inset 0 1px 0 rgba(255,255,255,0.05);
   --hv-panel-shadow-mobile:    0 -4px 32px rgba(0, 0, 0, 0.55);
-  --hv-panel-accent:           #c4233f;
-
-  // Brand accent
-  --hv-accent:                 #c4233f;
-  --hv-accent-alt:             #ff3f5e;
-  --hv-accent-gradient:        linear-gradient(135deg, #c4233f 0%, #ff3f5e 100%);
-  --hv-accent-glow:            rgba(196, 35, 63, 0.45);
+  --hv-panel-accent:           var(--red);
+  --hv-accent:                 var(--red);
+  --hv-accent-alt:             var(--orange);
+  --hv-accent-gradient:        linear-gradient(135deg, var(--red) 0%, var(--orange) 100%);
+  --hv-accent-glow:            var(--red-dim);
 
   // Typography
   --hv-text-primary:           rgba(238, 240, 255, 0.95);
@@ -113,12 +111,11 @@
                                 0 20px 60px rgba(0, 0, 0, 0.14),
                                 inset 0 1px 0 rgba(255,255,255,0.95);
   --hv-panel-shadow-mobile:    0 -4px 32px rgba(0, 0, 0, 0.14);
-  --hv-panel-accent:           #a0162b;
-
-  --hv-accent:                 #a0162b;
-  --hv-accent-alt:             #cc2540;
-  --hv-accent-gradient:        linear-gradient(135deg, #a0162b 0%, #cc2540 100%);
-  --hv-accent-glow:            rgba(160, 22, 43, 0.22);
+  --hv-panel-accent:           var(--red);
+  --hv-accent:                 var(--red);
+  --hv-accent-alt:             var(--orange);
+  --hv-accent-gradient:        linear-gradient(135deg, var(--red) 0%, var(--orange) 100%);
+  --hv-accent-glow:            var(--red-dim);
 
   --hv-text-primary:           rgba(14, 14, 28, 0.9);
   --hv-text-secondary:         rgba(40, 44, 70, 0.58);

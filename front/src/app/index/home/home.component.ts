@@ -29,6 +29,69 @@ export class HomeComponent implements OnInit {
   private translationService = inject(TranslationService);
   userRole: string | null = null;
   userName: string | null = null;
+  
+  // For architecture diagram interaction
+  expandedDetail: string | null = null;
+
+  // Tech Stack Data
+  techStack = [
+    {
+      name: 'Angular 20',
+      icon: 'laptop_chromebook',
+      category: 'Frontend',
+      className: 'angular',
+      features: ['Material UI', 'PWA Support', '4 User Panels', 'Real-time Updates']
+    },
+    {
+      name: 'Laravel 11',
+      icon: 'settings_applications',
+      category: 'Backend API',
+      className: 'laravel',
+      features: ['REST API 50+', 'JWT Auth', 'RBAC', 'Payment Integration']
+    },
+    {
+      name: 'Python 3.11',
+      icon: 'psychology',
+      category: 'AI/ML Engine',
+      className: 'python',
+      features: ['TensorFlow', 'PyTorch U-Net++', 'OpenCV', 'Scikit-learn']
+    },
+    {
+      name: 'Kong Gateway',
+      icon: 'hub',
+      category: 'API Gateway',
+      className: 'kong',
+      features: ['Rate Limiting', 'JWT Validation', 'Load Balancing']
+    },
+    {
+      name: 'MongoDB',
+      icon: 'storage',
+      category: 'NoSQL DB',
+      className: 'mongodb',
+      features: ['Patient Documents', 'Visit Results', 'Dynamic Schema']
+    },
+    {
+      name: 'Qdrant',
+      icon: 'search',
+      category: 'Vector DB',
+      className: 'qdrant',
+      features: ['Sentence-BERT', 'Intent Detection', 'Semantic Search']
+    },
+    {
+      name: 'MySQL 8.0',
+      icon: 'database',
+      category: 'Relational DB',
+      className: 'mysql',
+      features: ['Users & Auth', 'Appointments', 'Services', 'Audit Logs']
+    },
+    {
+      name: 'RabbitMQ',
+      icon: 'rss_feed',
+      category: 'Message Queue',
+      className: 'rabbitmq',
+      features: ['Async Processing', 'Video Pipeline', 'Email/SMS Queue']
+    }
+  ];
 
   ngOnInit() {
     this.loadUserInfo();
@@ -55,5 +118,14 @@ export class HomeComponent implements OnInit {
 
   isRTL(): boolean {
     return this.translationService.getCurrentLang() === 'fa';
+  }
+
+  // Interactive architecture diagram methods
+  expandDetail(boxName: string): void {
+    this.expandedDetail = boxName;
+  }
+
+  collapseDetail(): void {
+    this.expandedDetail = null;
   }
 }
