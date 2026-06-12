@@ -24,7 +24,7 @@
       <!-- Language Switcher -->
       <button mat-icon-button (click)="toggleLanguage()" [matTooltip]="getTranslation('toggleLanguage')">
         <mat-icon>language</mat-icon>
-        <span class="lang-text d-none d-md-inline ms-1">{{ translationService.getCurrentLang() === 'fa' ? 'EN' : 'FA' }}</span>
+        <span class="lang-text d-none d-md-inline">{{ translationService.getCurrentLang() === 'fa' ? 'EN' : 'FA' }}</span>
       </button>
 
       <!-- Theme Toggle -->
@@ -47,7 +47,7 @@
           <!-- <div class="user-avatar-mini">
             <mat-icon>account_circle</mat-icon>
           </div> -->
-          <span class="user-name d-none d-md-inline ms-2">{{ user?.name || 'User!' }}</span>
+          <span class="user-name d-none d-md-inline">{{ user?.name || 'User!' }}</span>
           <mat-icon class="menu-arrow">expand_more</mat-icon>
         </button>
         

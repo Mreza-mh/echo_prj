@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
@@ -7,6 +7,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { IndexHttpService } from '../index-http.service';
 import { ToastService } from '../../@shared/services/toast/toast.service';
+import { TranslationService } from '../../@shared/services/translation.service';
 import { finalize } from 'rxjs/operators';
 
 @Component({
@@ -24,6 +25,12 @@ import { finalize } from 'rxjs/operators';
   styleUrls: ['./staff-details.component.scss']
 })
 export class StaffDetailsComponent implements OnInit {
+  private translationService = inject(TranslationService);
+
+  getTranslation(key: string): string {
+    return this.translationService.getTranslation(key);
+  }
+
   staffId: string | null = null;
   staff: any = null;
   isLoading = false;

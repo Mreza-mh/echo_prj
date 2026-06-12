@@ -1,90 +1,67 @@
-// ==========================================
-// Variables & Mixins (Assuming you have these defined)
-// ==========================================
 $transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 
-// ==========================================
-// Main Toolbar
-// ==========================================
 .header-toolbar {
   position: sticky;
   top: 0;
   z-index: 1000;
-  background: var(--bg-primary); // Make sure this color has slight transparency in your root like rgba(255,255,255,0.9)
+  background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   transition: $transition-smooth;
-  height: 76px; // Slightly taller for breathing room
-  border-bottom: 1px solid rgba(128, 128, 128, 0.08); // Ultra-subtle border
+  height: 76px;
+  border-bottom: 1px solid var(--border);
 
   &.scrolled {
     height: 64px;
     background: var(--bg-primary);
-    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05); // Pro, soft shadow instead of harsh ones
-    border-bottom-color: transparent;
+    box-shadow: var(--card-shadow);
   }
 }
 
-// ==========================================
-// Brand & Logo
-// ==========================================
 .brand-section {
   cursor: pointer;
   transition: transform 0.2s ease;
 
-  &:hover {
-    transform: translateY(-1px);
-  }
-  
+  &:hover { transform: translateY(-1px); }
+
   .logo-wrapper {
     width: 38px;
     height: 38px;
-    background: linear-gradient(135deg, var(--accent-color) 0%, var(--mat-sys-primary) 100%);
-    border-radius: 12px; // Modern squircle look
-    display: flex; 
+    background: linear-gradient(135deg, var(--cyan) 0%, var(--purple) 100%);
+    border-radius: 12px;
+    display: flex;
     align-items: center;
     justify-content: center;
-    margin-right: 14px;
-    box-shadow: 0 8px 16px -4px rgba(var(--accent-color-rgb, 0,0,0), 0.3); // Colored shadow
+    margin-inline-end: 14px;
 
     .logo-icon {
-      color: white;
+      color: var(--btn-on-primary, #fff);
       font-size: 22px;
       width: 22px;
       height: 22px;
     }
   }
 
-  .brand-text {
-    justify-content: center;
-  }
-
   .brand-name {
     font-size: 1.45rem;
-    font-weight: 900; // Extra bold to make it pop
-    letter-spacing: -0.03em; // Tighter kerning feels more modern
+    font-weight: 900;
+    letter-spacing: -0.03em;
     color: var(--text-primary);
     line-height: 1.1;
 
-    .accent {
-      color: var(--accent-color);
-    }
+    .accent { color: var(--accent-color); }
   }
 
   .brand-tagline {
     font-size: 0.75rem;
     color: var(--text-secondary);
     font-weight: 500;
-    letter-spacing: 0.02em;
-    opacity: 0.8;
+    opacity: 0.85;
   }
 }
 
-// ==========================================
-// Desktop Navigation
-// ==========================================
 .desktop-nav {
-  gap: 24px; // Use gap instead of margins
+  gap: 24px;
 
   .nav-link {
     position: relative;
@@ -95,18 +72,16 @@ $transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     transition: color 0.3s ease;
     font-size: 0.95rem;
 
-    // Custom modern underline animation (No more generic hover backgrounds)
     &::after {
       content: '';
       position: absolute;
       bottom: 0;
-      left: 0;
-      width: 100%;
+      inset-inline: 0;
       height: 2px;
       background: var(--accent-color);
       border-radius: 2px;
       transform: scaleX(0);
-      transform-origin: right;
+      transform-origin: inline-end;
       transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
@@ -114,51 +89,47 @@ $transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       color: var(--text-primary);
       &::after {
         transform: scaleX(1);
-        transform-origin: left;
+        transform-origin: inline-start;
       }
     }
 
     &.active {
       color: var(--accent-color);
       font-weight: 600;
-      
       &::after {
         transform: scaleX(1);
-        transform-origin: left;
+        transform-origin: inline-start;
       }
     }
   }
 }
 
-// ==========================================
-// Actions & User Section
-// ==========================================
 .actions-section {
   .lang-text {
     font-size: 0.85rem;
     font-weight: 700;
     letter-spacing: 0.5px;
+    margin-inline-start: 4px;
   }
 
-  // Refined user button
   .user-profile-btn {
-    padding: 4px 14px 4px 6px; // Asymmetric padding to wrap nicely around the text/arrow
+    padding: 4px 14px 4px 6px;
     border-radius: 12px;
     background: transparent;
-    border: 1px solid rgba(128, 128, 128, 0.15);
+    border: 1px solid var(--border);
     transition: $transition-smooth;
     height: 40px;
-    
+
     &:hover {
-      border-color: var(--accent-color);
-      background: rgba(128, 128, 128, 0.02);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02);
+      border-color: var(--border-hover);
+      background: var(--hover-bg);
     }
 
     .user-name {
       font-weight: 600;
       font-size: 0.9rem;
       color: var(--text-primary);
+      margin-inline-start: 8px;
     }
 
     .menu-arrow {
@@ -166,10 +137,9 @@ $transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
       width: 20px;
       height: 20px;
       color: var(--text-secondary);
-      transition: transform 0.3s ease;
+      transition: transform 0.3s ease, color 0.3s ease;
     }
-    
-    // Rotate arrow when menu is open
+
     &[aria-expanded="true"] .menu-arrow {
       transform: rotate(180deg);
       color: var(--accent-color);
@@ -179,88 +149,43 @@ $transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   .login-btn {
     font-weight: 600;
     color: var(--text-primary);
-    &:hover {
-      color: var(--accent-color);
-    }
+    &:hover { color: var(--accent-color); }
   }
 
-  .register-btn {
-    border-radius: 10px; // Standardize radius with logo
-    font-weight: 600;
-    padding: 0 24px;
-    box-shadow: 0 4px 12px -2px rgba(var(--accent-color-rgb, 0,0,0), 0.2);
-  }
+  .register-btn { border-radius: 10px; font-weight: 600; padding: 0 24px; }
 }
 
-// ==========================================
-// RTL Support
-// ==========================================
-[dir="rtl"] {
-  .brand-section .logo-wrapper {
-    margin-right: 0;
-    margin-left: 14px;
-  }
-
-  .actions-section .user-profile-btn {
-    padding: 4px 6px 4px 14px;
-    
-    .user-name {
-      margin-left: 0 !important;
-      margin-right: 8px !important;
-    }
-  }
-}
-
-// ==========================================
-// Mobile Drawer Restyling
-// ==========================================
 .mobile-drawer {
   position: fixed;
   top: 0;
-  right: -320px; // Slightly wider for better touch targets
+  inset-inline-end: -320px;
   width: 320px;
   height: 100vh;
   background: var(--bg-primary);
   z-index: 1100;
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); // Smoother physics
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
-  box-shadow: none;
 
   &.open {
     transform: translateX(-320px);
-    box-shadow: -10px 0 40px rgba(0, 0, 0, 0.08); // Softer edge shadow
+    box-shadow: var(--card-shadow);
   }
 
-  [dir="rtl"] & {
-    right: auto;
-    left: -320px;
-    
-    &.open {
-      transform: translateX(320px);
-      box-shadow: 10px 0 40px rgba(0, 0, 0, 0.08);
-    }
+  [dir='rtl'] & {
+    inset-inline-end: auto;
+    inset-inline-start: -320px;
+
+    &.open { transform: translateX(320px); }
   }
 }
 
 .drawer-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.3); // Lighter backdrop
+  inset: 0;
+  background: color-mix(in srgb, #000 35%, transparent);
   backdrop-filter: blur(4px);
   z-index: 1050;
-  opacity: 0;
-  visibility: hidden;
-  transition: all 0.3s ease;
-
-  // You will need to toggle an 'open' class on the overlay in your component if you want the fade effect
-  &.open, :host-context(.menu-open) & { // Adjust based on your Angular state
-    opacity: 1;
-    visibility: visible;
-  }
 }
 
 .mobile-nav {
@@ -274,7 +199,7 @@ $transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     font-weight: 500;
     border-radius: 12px;
     transition: $transition-smooth;
-    border-left: 3px solid transparent; // Left border indicator for active states
+    border-inline-start: 3px solid transparent;
 
     mat-icon {
       color: var(--text-secondary);
@@ -282,17 +207,16 @@ $transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     &:hover {
-      background: rgba(128, 128, 128, 0.04);
+      background: var(--hover-bg);
       color: var(--accent-color);
       mat-icon { color: var(--accent-color); }
     }
 
     &.active {
-      background: rgba(var(--accent-color-rgb, 100,100,100), 0.08);
+      background: var(--active-bg);
       color: var(--accent-color);
       font-weight: 600;
-      border-left-color: var(--accent-color);
-      
+      border-inline-start-color: var(--accent-color);
       mat-icon { color: var(--accent-color); }
     }
   }
@@ -301,7 +225,7 @@ $transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 .user-avatar {
   width: 52px;
   height: 52px;
-  background: rgba(var(--accent-color-rgb, 100,100,100), 0.1);
+  background: var(--cyan-dim);
   color: var(--accent-color);
   border-radius: 16px;
   display: flex;
@@ -310,85 +234,6 @@ $transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   mat-icon { font-size: 28px; width: 28px; height: 28px; }
 }
 
-// Clean Dropdown Menu
-.modern-menu {
-  border-radius: 16px !important;
-  padding: 8px !important;
-  box-shadow: 0 12px 36px -8px rgba(0,0,0,0.12) !important;
-  border: 1px solid rgba(128, 128, 128, 0.08);
-  
-  .mat-mdc-menu-item {
-    border-radius: 8px;
-    margin-bottom: 2px;
-    
-    &:hover { background: rgba(128, 128, 128, 0.04); }
-  }
-
-  .logout-item {
-    color: var(--mat-sys-error);
-    margin-top: 4px;
-    &:hover {
-      background: rgba(var(--mat-sys-error-rgb, 255,0,0), 0.05);
-    }
-  }
-}
-
-/* ============================================================
-   RESPONSIVE DESIGN (Mobile & Tablet Optimization)
-   ============================================================ */
-
-@media (max-width: 992px) {
-  /* تنظیمات برای تبلت */
-  .three-d-showcase .scene-3d {
-    height: 350px;
-    transform: scale(0.8); /* کوچک کردن صحنه سه‌بعدی برای جا شدن */
-  }
-}
-
-@media (max-width: 768px) {
-  /* تنظیمات برای موبایل */
-  
-  /* تنظیم سکشن‌های اصلی */
-  .section-title { font-size: 1.8rem !important; }
-  
-  /* تنظیم کارت‌های پنل */
-  .panels-ecosystem-section .ecosystem-card {
-    margin-bottom: 20px;
-    &.featured { transform: translateY(0); }
-  }
-
-  /* تنظیم صحنه سه‌بعدی */
-  .three-d-showcase {
-    .scene-3d {
-      height: 300px;
-      .isometric-container {
-        transform: rotateX(50deg) rotateZ(-45deg) scale(0.7);
-      }
-    }
-  }
-
-  /* تنظیمات چت‌بات */
-  .ai-support-section .ai-support-wrapper {
-    padding: 30px 15px;
-    .chat-mockup { margin-top: 30px; }
-  }
-
-  /* فوتر در موبایل */
-  .main-footer {
-    text-align: center;
-    .footer-title::after { margin: 10px auto; }
-    .social-links { justify-content: center; }
-    .footer-contact li { justify-content: center; }
-  }
-}
-
-@media (max-width: 576px) {
-  /* تنظیمات برای گوشی‌های کوچک */
-  .three-d-showcase .scene-3d .isometric-container {
-    transform: rotateX(45deg) rotateZ(-45deg) scale(0.6);
-  }
-  
-  .fuzzy-logic-section .metrics-grid {
-    grid-template-columns: 1fr; /* تبدیل دو ستونه به تک ستونه */
-  }
+.user-dropdown-menu .logout-item {
+  color: var(--error-color);
 }

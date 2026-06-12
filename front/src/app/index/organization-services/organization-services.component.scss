@@ -6,15 +6,6 @@
 // Component: org-details-container
 // ============================================================
 .org-details-container {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8f9fa;
-  --text-primary: #212529;
-  --text-secondary: #6c757d;
-  --border-color: #dee2e6;
-  --accent-color: #0d6efd;
-  --hover-bg: rgba(#0d6efd, 0.05);
-  --shadow: rgba(0,0,0,0.08);
-
   background-color: var(--bg-primary);
   color: var(--text-primary);
   min-height: 100vh;
@@ -50,7 +41,7 @@
   /* Second layer: the gradient (shown if image fails) */
   background-image:
     url(/images/avala.jpg),
-    linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    linear-gradient(135deg, var(--cyan) 0%, var(--purple) 100%);
 }
 
     .hero-overlay {
@@ -138,7 +129,7 @@
 
     // Contact card in hero (desktop only)
     .org-main-card {
-      background: white !important;
+      background: var(--bg-surface) !important;
       color: var(--text-primary) !important;
       padding: 1.5rem;
       min-width: 280px;
@@ -477,7 +468,7 @@
   }
 
   .contact-card-mobile {
-    background: white !important;
+    background: var(--bg-surface) !important;
     color: var(--text-primary) !important;
     border-radius: 1.25rem !important;
 
@@ -526,33 +517,11 @@
   }
 }
 
-// ============================================================
-// DARK MODE OVERRIDES
-// ============================================================
-[data-theme='dark'] .org-details-container {
-  --bg-primary: #1e1e2f;
-  --bg-secondary: #2a2a3c;
-  --text-primary: #e0e0e0;
-  --text-secondary: #adb5bd;
-  --border-color: #3e3e54;
-  --accent-color: #7c83ff;
-  --hover-bg: rgba(124,131,255,0.1);
-  --shadow: rgba(0,0,0,0.3);
-
-  .hero-bg {
-    filter: blur(3px) brightness(0.5);
-  }
-
-  .org-main-card,
-  .contact-card-mobile {
-    background: #2a2a3c !important;
-    color: #e0e0e0 !important;
-  }
+[data-theme='dark'] .org-details-container .hero-bg {
+  filter: blur(3px) brightness(0.55);
 }
 
-// ============================================================
-// RTL TWEAKS
-// ============================================================
+// RTL tweaks
 [dir='rtl'] .org-details-container {
   .hero-section {
     text-align: right;

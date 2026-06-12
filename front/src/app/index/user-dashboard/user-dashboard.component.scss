@@ -3,60 +3,43 @@
 // ══════════════════════════════════════════════════════════════
 
 :host {
-  // --- Modern Color Palette ---
-  --brand-primary:      #dc3246;
-  --brand-primary-soft: rgba(220, 50, 70, 0.08);
-  --brand-primary-hover:rgba(220, 50, 70, 0.15);
-  
-  --semantic-blue:      #3b82f6;
-  --semantic-blue-bg:   rgba(59, 130, 246, 0.1);
-  --semantic-green:     #10b981;
-  --semantic-green-bg:  rgba(16, 185, 129, 0.1);
-  --semantic-amber:     #f59e0b;
-  --semantic-amber-bg:  rgba(245, 158, 11, 0.1);
-  --semantic-violet:    #6366f1;
-  --semantic-violet-bg: rgba(99, 102, 241, 0.1);
+  --brand-primary:      var(--cyan);
+  --brand-primary-soft: var(--cyan-dim);
+  --brand-primary-hover: var(--active-bg);
 
-  // --- Surfaces & Backgrounds ---
-  --bg-main:            #f8fafc;
-  --bg-card:            #ffffff;
-  --bg-surface:         #f1f5f9;
-  
-  // --- Typography ---
-  --text-main:          #0f172a;
-  --text-muted:         #64748b;
-  --text-light:         #94a3b8;
-  
-  // --- Borders & Shadows ---
-  --border-color:       #e2e8f0;
-  --border-light:       #f1f5f9;
-  
-  --shadow-sm:          0 1px 2px rgba(0, 0, 0, 0.04);
-  --shadow-md:          0 4px 12px rgba(0, 0, 0, 0.03), 0 2px 4px rgba(0, 0, 0, 0.02);
-  --shadow-lg:          0 12px 32px rgba(0, 0, 0, 0.06);
-  
-  // --- Radii ---
+  --semantic-blue:      var(--cyan);
+  --semantic-blue-bg:   var(--cyan-dim);
+  --semantic-green:     var(--mint);
+  --semantic-green-bg:  var(--mint-dim);
+  --semantic-amber:     var(--yellow);
+  --semantic-amber-bg:  color-mix(in srgb, var(--yellow) 12%, transparent);
+  --semantic-violet:    var(--purple);
+  --semantic-violet-bg: var(--purple-dim);
+
+  --bg-main:            var(--bg-void);
+  --bg-card:            var(--bg-surface);
+  --bg-surface:         var(--bg-elevated);
+
+  --text-main:          var(--text-bright);
+  --text-muted:         var(--text-muted);
+  --text-light:         var(--text-ghost);
+
+  --border-color:       var(--border);
+  --border-light:       var(--border);
+
+  --shadow-sm:          var(--card-shadow);
+  --shadow-md:          var(--card-shadow);
+  --shadow-lg:          var(--card-shadow);
+
   --radius-sm:          8px;
   --radius-md:          14px;
   --radius-lg:          20px;
   --radius-pill:        100px;
-  
+
   --transition-smooth:  all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* -------------------------------------------------------------
-   Dark Mode Adjustments
-------------------------------------------------------------- */
-:host-context([data-theme='dark']) {
-  --bg-main:            #0f172a;
-  --bg-card:            #1e293b;
-  --bg-surface:         #334155;
-  --text-main:          #f8fafc;
-  --text-muted:         #94a3b8;
-  --border-color:       #334155;
-  --border-light:       #1e293b;
-  --shadow-md:          0 4px 12px rgba(0, 0, 0, 0.2);
-}
+/* Dark/light handled by global CSS variables on body */
 
 /* -------------------------------------------------------------
    Base Layout & Animations

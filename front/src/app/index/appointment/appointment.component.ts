@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatDatepickerModule } from '@angular/material/datepicker';
@@ -15,6 +15,7 @@ import { PanelHttpService } from '../../panel/panel-http.service';
 import { AuthHTTPService } from '../../auth/auth-http.service';
 import { CredentialsService } from '../../auth/credentials.service';
 import { ToastService } from '../../@shared/services/toast/toast.service';
+import { TranslationService } from '../../@shared/services/translation.service';
 
 @Component({
   selector: 'app-appointment',
@@ -37,6 +38,12 @@ import { ToastService } from '../../@shared/services/toast/toast.service';
   styleUrls: ['./appointment.component.scss'],
 })
 export class AppointmentComponent implements OnInit {
+  private translationService = inject(TranslationService);
+
+  getTranslation(key: string): string {
+    return this.translationService.getTranslation(key);
+  }
+
   selectedDate: Date | null = new Date();
   availableSlots: any[] = [];
   selectedSlot: any = null;
