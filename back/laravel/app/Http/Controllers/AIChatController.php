@@ -13,18 +13,24 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Services\AppointmentService;
+use App\Services\ChatQueueService;
 use Illuminate\Support\Facades\Auth;
 
 
 class AIChatController extends Controller
 {
-    private $pythonServiceUrl = 'http://127.0.0.1:9000';
+    private $pythonServiceUrl;
 
     protected $appointmentService;
+    protected ChatQueueService $chatQueueService;
 
-    public function __construct(AppointmentService $appointmentService)
-    {
+    public function __construct(
+        AppointmentService $appointmentService,
+        ChatQueueService $chatQueueService
+    ) {
         $this->appointmentService = $appointmentService;
+        $this->chatQueueService = $chatQueueService;
+        $this->pythonServiceUrl = rtrim(env('FAISS_API_URL', 'http://127.0.0.1:9090'), '/');
     }
 
     /**
@@ -201,6 +207,18 @@ class AIChatController extends Controller
     }
 
     try {
+        try {
+            $this->chatQueueService->dispatch(
+                $messages,
+                $previousState,
+                Auth::id()
+            );
+        } catch (\Throwable $queueException) {
+            Log::warning('Queue dispatch failed, continuing without it', [
+                'error' => $queueException->getMessage(),
+            ]);
+        }
+
         // --- بخش اصلاح شده (Logic Logic) ---
 
         // بررسی اینکه آیا کاربر در حال طی کردن مراحل رزرو است؟
@@ -213,26 +231,54 @@ class AIChatController extends Controller
         }
 
         // اگر کاربر تازه مکالمه را شروع کرده یا هیچ اسلاتی پر نشده، حالا مسیریابی کن
-        $routeResponse = Http::timeout(20)->post("{$this->pythonServiceUrl}/route", [
-            'sentence' => $lastUserMessage
-        ]);
+        try {
+            $routeResponse = Http::timeout(5)
+                ->connectTimeout(3)
+                ->post("{$this->pythonServiceUrl}/route", [
+                    'sentence' => $lastUserMessage,
+                ]);
 
-        $routeData = $routeResponse->json();
-        $intent = $routeData['intent'] ?? 'appointment';
-        $score = $routeData['score'] ?? 0;
+            if (! $routeResponse->successful()) {
+                throw new \RuntimeException('FAISS route returned HTTP '.$routeResponse->status());
+            }
+
+            $routeData = $routeResponse->json();
+            $intent = $routeData['intent'] ?? 'appointment';
+            $score = $routeData['score'] ?? 0;
+        } catch (\Throwable $e) {
+            Log::warning('FAISS route unavailable, using keyword fallback', [
+                'url' => "{$this->pythonServiceUrl}/route",
+                'error' => $e->getMessage(),
+            ]);
+
+            return $this->routeByKeywords($messages, $lastUserMessage, $previousState);
+        }
 
         // سخت‌گیری بیشتر: اگر امتیاز پشتیبانی کم بود، باز هم ببرش سمت نوبت‌دهی
-        if ($intent === 'support' && $score > 0.8) {
+        if ($intent === 'support' && $score > 0.5) {
             return $this->handleSupportIntent($messages, $lastUserMessage);
         }
 
         return $this->handleAppointmentIntent($messages, $lastUserMessage, $previousState);
 
     } catch (\Exception $e) {
-        Log::error('Routing Error: ' . $e->getMessage());
+        Log::error('Chat Error: '.$e->getMessage());
         return response()->json(['error' => ['message' => 'خطا در پردازش درخواست شما.']], 500);
     }
 }
+
+    private function routeByKeywords($messages, $lastUserMessage, $previousState)
+    {
+        $supportKeywords = ['آدرس', 'ادرس', 'کجا', 'لوکیشن', 'تلفن', 'شماره', 'بیمه', 'ساعت کاری', 'هزینه'];
+
+        foreach ($supportKeywords as $keyword) {
+            if (str_contains($lastUserMessage, $keyword)) {
+                return $this->handleSupportIntent($messages, $lastUserMessage);
+            }
+        }
+
+        return $this->handleAppointmentIntent($messages, $lastUserMessage, $previousState);
+    }
 
     /**
      * مدیریت سناریوی پشتیبانی و سوالات عمومی (کاملاً بدون ابزار و سبک)
@@ -553,7 +599,25 @@ class AIChatController extends Controller
      */
     private function callLLMRaw($messages, $systemPrompt)
     {
-        $provider = config('services.ai.provider');
+        $provider = config('services.ai.provider', 'openrouter');
+
+        try {
+            return $this->requestLLM($provider, $messages, $systemPrompt);
+        } catch (\Throwable $e) {
+            if ($provider === 'arvan' && config('services.ai.openrouter.key')) {
+                Log::warning('Arvan AI failed, falling back to OpenRouter', [
+                    'error' => $e->getMessage(),
+                ]);
+
+                return $this->requestLLM('openrouter', $messages, $systemPrompt);
+            }
+
+            throw $e;
+        }
+    }
+
+    private function requestLLM(string $provider, $messages, $systemPrompt): array
+    {
         $model = $provider === 'arvan'
             ? config('services.ai.arvan.model')
             : head(config('services.ai.openrouter.models'));
@@ -566,6 +630,18 @@ class AIChatController extends Controller
             ? config('services.ai.arvan.key')
             : config('services.ai.openrouter.key');
 
+        if (empty($baseUrl) || empty($apiKey)) {
+            throw new \Exception('تنظیمات AI (base_url یا api key) در .env کامل نیست.');
+        }
+
+        $timeout = $provider === 'arvan'
+            ? config('services.ai.arvan.timeout', 90)
+            : config('services.ai.timeout', 60);
+
+        $connectTimeout = $provider === 'arvan'
+            ? config('services.ai.arvan.connect_timeout', 15)
+            : config('services.ai.connect_timeout', 10);
+
         $payload = [
             'model' => $model,
             'messages' => array_merge(
@@ -573,19 +649,46 @@ class AIChatController extends Controller
                 $messages
             ),
             'temperature' => 0.2,
-            'max_tokens' => 400, // کاهش تعداد توکن خروجی برای بهینه‌سازی سرعت
+            'max_tokens' => 400,
         ];
 
-        $response = Http::timeout(20)->connectTimeout(10)->withHeaders([
-            'Authorization' => 'Bearer ' . $apiKey,
-            'Content-Type' => 'application/json',
-        ])->post($baseUrl, $payload);
+        Log::info('LLM request started', [
+            'provider' => $provider,
+            'model' => $model,
+            'timeout' => $timeout,
+        ]);
+
+        $startedAt = microtime(true);
+
+        try {
+            $response = Http::timeout($timeout)
+                ->connectTimeout($connectTimeout)
+                ->withHeaders([
+                    'Authorization' => 'Bearer '.$apiKey,
+                    'Content-Type' => 'application/json',
+                ])
+                ->post($baseUrl, $payload);
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            Log::error('LLM connection failed', [
+                'provider' => $provider,
+                'elapsed' => round(microtime(true) - $startedAt, 2),
+                'error' => $e->getMessage(),
+            ]);
+
+            throw new \Exception('اتصال به سرویس AI برقرار نشد.');
+        }
+
+        Log::info('LLM request finished', [
+            'provider' => $provider,
+            'status' => $response->status(),
+            'elapsed' => round(microtime(true) - $startedAt, 2),
+        ]);
 
         if ($response->successful()) {
             return $response->json();
         }
 
-        throw new \Exception('خطا در برقراری ارتباط با LLM: ' . $response->body());
+        throw new \Exception('خطا در برقراری ارتباط با LLM: '.$response->body());
     }
 
     private function generateConversationFallback($messages)
