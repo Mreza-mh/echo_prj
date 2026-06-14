@@ -13,12 +13,13 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 use App\Services\AppointmentService;
+use App\Services\VideoProcessingService;
 use Illuminate\Support\Facades\Auth;
 
 
 class AIChatController extends Controller
 {
-    private $pythonServiceUrl = 'http://127.0.0.1:9000';
+    private $pythonServiceUrl = 'http://127.0.0.1:9090';
 
     protected $appointmentService;
 
@@ -222,7 +223,7 @@ class AIChatController extends Controller
         $score = $routeData['score'] ?? 0;
 
         // سخت‌گیری بیشتر: اگر امتیاز پشتیبانی کم بود، باز هم ببرش سمت نوبت‌دهی
-        if ($intent === 'support' && $score > 0.8) {
+        if ($intent === 'support' && $score > 0.5) {
             return $this->handleSupportIntent($messages, $lastUserMessage);
         }
 
