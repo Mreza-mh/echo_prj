@@ -46,7 +46,7 @@ return [
             'key' => env('OPENROUTER_API_KEY'),
             'base_url' => 'https://openrouter.ai/api/v1/chat/completions',
             'models' => [
-                'google/gemma-3-12b-it:free',
+                'google/gemma-3-27b-it:free',
                 'qwen/qwen-2.5-7b-instruct:free',
                 'google/gemini-2.0-flash-lite-preview-02-05:free',
             ],
@@ -54,14 +54,9 @@ return [
 
         'arvan' => [
             'key' => env('ARVAN_AI_KEY'),
-            'base_url' => env('ARVAN_AI_BASE_URL'),
-            'model' => env('ARVAN_AI_MODEL', 'Gemma-4-31B-IT-h7ojx'),
-            'timeout' => (int) env('ARVAN_AI_TIMEOUT', 90),
-            'connect_timeout' => (int) env('ARVAN_AI_CONNECT_TIMEOUT', 15),
+            'base_url' => 'https://arvancloudai.ir/gateway/models/Gemma-4-31B-IT/g6T_fBj_XKgBXq_lSFElXCsc8IRpgk7wiPj_rmIXJJcI3-z5IL075ZR0i7GZWY8_0Egd3j18vOEncIn8WXVaSYNpDH-t5JtVuGCdVMSXGc_nXxRe-Ne_Mrn4QxARZmA8VT8I9qrGUWerBIF_MIQ-pS9YAKJjDwVF7LE_mn97t2fDhlnlGB33chkUkTU7AJ8L4TuIz40Zy88DEf9H20p8SR8Ag6mrrF6MhhGXPWgF2IqV36Qp2ZdMM7BdzUKrm8TEKlc/v1/chat/completions',
+            'model' => 'Gemma-4-31B-IT-h7ojx',
         ],
-
-        'timeout' => (int) env('AI_HTTP_TIMEOUT', 60),
-        'connect_timeout' => (int) env('AI_HTTP_CONNECT_TIMEOUT', 10),
 
     ],
 

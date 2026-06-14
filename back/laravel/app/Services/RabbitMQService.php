@@ -2,135 +2,84 @@
 
 namespace App\Services;
 
-use PhpAmqpLib\Channel\AMQPChannel;
-use PhpAmqpLib\Connection\AMQPStreamConnection;
-use PhpAmqpLib\Message\AMQPMessage;
-
 class RabbitMQService
 {
-    private ?AMQPStreamConnection $connection = null;
+    private $host;
+    private $port;
+    private $user;
+    private $password;
+    private $vhost;
 
-    private ?AMQPChannel $channel = null;
-
-    public function publish(string $queue, mixed $message, bool $durable = true): void
+    public function __construct()
     {
-        $channel = $this->channel();
-        $this->declareQueue($channel, $queue, $durable);
-
-        $body = is_string($message) ? $message : json_encode($message, JSON_UNESCAPED_UNICODE);
-
-        $channel->basic_publish(
-            new AMQPMessage($body, [
-                'delivery_mode' => AMQPMessage::DELIVERY_MODE_PERSISTENT,
-                'content_type' => 'application/json',
-            ]),
-            '',
-            $queue
-        );
+        $this->host = env('RABBITMQ_HOST', 'localhost');
+        $this->port = env('RABBITMQ_PORT', 5672);
+        $this->user = env('RABBITMQ_USER', 'guest');
+        $this->password = env('RABBITMQ_PASSWORD', 'guest');
+        $this->vhost = urlencode(env('RABBITMQ_VHOST', '/'));
     }
 
-    /**
-     * @param  callable(string $body, AMQPMessage $message): void  $callback
-     */
-    public function consume(string $queue, callable $callback, bool $durable = true): void
+    private function connect()
     {
-        $channel = $this->channel();
-        $this->declareQueue($channel, $queue, $durable);
+        $url = "http://{$this->host}:15672/api";
 
-        $channel->basic_qos(0, 1, false);
-
-        $channel->basic_consume(
-            $queue,
-            '',
-            false,
-            false,
-            false,
-            false,
-            function (AMQPMessage $message) use ($callback): void {
-                try {
-                    $callback($message->getBody(), $message);
-                    $message->ack();
-                } catch (\Throwable $e) {
-                    $message->nack(false, true);
-                    throw $e;
-                }
-            }
-        );
-
-        while ($channel->is_consuming()) {
-            $channel->wait();
-        }
+        return [$url, $this->user, $this->password];
     }
 
-    public function pull(string $queue, bool $durable = true): ?array
+    public function publish($queue, $message)
     {
-        $channel = $this->channel();
-        $this->declareQueue($channel, $queue, $durable);
+        [$url, $user, $pass] = $this->connect();
 
-        $message = $channel->basic_get($queue);
-
-        if ($message === null) {
-            return null;
-        }
-
-        $payload = $message->getBody();
-        $message->ack();
-
-        $decoded = json_decode($payload, true);
-
-        return [
-            'payload' => is_array($decoded) ? json_encode($decoded, JSON_UNESCAPED_UNICODE) : $payload,
-            'data' => $decoded ?? $payload,
+        $payload = [
+            'properties' => [],
+            'routing_key' => $queue,
+            'payload' => is_string($message) ? $message : json_encode($message),
+            'payload_encoding' => 'string'
         ];
-    }
 
-    public function disconnect(): void
-    {
-        if ($this->channel !== null) {
-            $this->channel->close();
-            $this->channel = null;
+        $ch = curl_init("$url/exchanges/%2F/amq.default/publish");
+        curl_setopt($ch, CURLOPT_USERPWD, "$user:$pass");
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        $result = curl_exec($ch);
+        $err = curl_error($ch);
+
+        curl_close($ch);
+
+        if ($err) {
+            throw new \Exception("RabbitMQ publish error: $err");
         }
 
-        if ($this->connection !== null) {
-            $this->connection->close();
-            $this->connection = null;
+        return json_decode($result, true);
+    }
+
+    public function consume($queue)
+    {
+        [$url, $user, $pass] = $this->connect();
+
+        $ch = curl_init("$url/queues/%2F/$queue/get");
+        curl_setopt($ch, CURLOPT_USERPWD, "$user:$pass");
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
+            'count' => 1,
+            'requeue' => false,
+            'encoding' => 'auto'
+        ]));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+        $result = curl_exec($ch);
+        $err = curl_error($ch);
+
+        curl_close($ch);
+
+        if ($err) {
+            throw new \Exception("RabbitMQ consume error: $err");
         }
-    }
 
-    public function __destruct()
-    {
-        $this->disconnect();
-    }
-
-    private function channel(): AMQPChannel
-    {
-        if ($this->channel !== null && $this->channel->is_open()) {
-            return $this->channel;
-        }
-
-        $config = config('rabbitmq');
-
-        $this->connection = new AMQPStreamConnection(
-            $config['host'],
-            $config['port'],
-            $config['user'],
-            $config['password'],
-            $config['vhost']
-        );
-
-        $this->channel = $this->connection->channel();
-
-        return $this->channel;
-    }
-
-    private function declareQueue(AMQPChannel $channel, string $queue, bool $durable): void
-    {
-        $channel->queue_declare(
-            $queue,
-            false,
-            $durable,
-            false,
-            false
-        );
+        return json_decode($result, true);
     }
 }
