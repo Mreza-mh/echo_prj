@@ -258,6 +258,11 @@ export class PatientFormComponent implements OnInit {
     });
   }
 
+  toggleField(field: string, form: FormGroup): void {
+    const current = form.get(field)?.value;
+    form.get(field)?.setValue(current == 1 ? 0 : 1);
+  }
+
   onCancel(): void {
     if (this.dialogRef) {
       this.dialogRef.close();

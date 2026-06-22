@@ -146,7 +146,9 @@ export class PanelHttpService {
 
   // Appointment & Dashboard APIs
   getCalendarDashboard(data: {
-    date: string;
+    date?: string;
+    start_date?: string;
+    end_date?: string;
     staff_ids?: number[];
     resource_ids?: number[];
   }): Observable<any> {

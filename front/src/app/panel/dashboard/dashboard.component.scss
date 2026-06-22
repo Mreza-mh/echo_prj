@@ -1,316 +1,772 @@
-.dashboard-page {
-  --primary-main: var(--accent-color);
-  --primary-soft: var(--active-bg);
-  --bg-page: var(--bg-primary);
-  --bg-card: var(--bg-primary);
-  --border-color: var(--border-color);
-  --text-main: var(--text-primary);
-  --text-muted: var(--text-secondary);
-  --status-pending: #f59e0b;
-  --status-confirmed: #10b981;
-  --status-cancelled: #ef4444;
-  --status-completed: #6366f1;
+.dash {
+  --c-confirmed: #059669;
+  --c-pending: #d97706;
+  --c-cancelled: #dc2626;
+  --c-completed: #7c3aed;
+  --c-bg: var(--bg-primary);
+  --c-card: var(--bg-secondary);
+  --c-border: var(--border-color);
+  --c-text: var(--text-primary);
+  --c-muted: var(--text-secondary);
+  --c-accent: var(--accent-color);
 
-  background-color: var(--bg-page);
+  padding: 28px 32px;
+  background: var(--c-bg);
   min-height: 100vh;
-  padding: 24px;
-  color: var(--text-main);
+  color: var(--c-text);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 
-  // Header Styles
-  .dashboard-header {
-    .header-main {
-      h1 { font-size: 1.5rem; color: var(--text-main); }
-    }
-
-    .add-btn {
-      border-radius: 12px;
-      height: 48px;
-      padding: 0 24px;
-      font-weight: 700;
-      box-shadow: 0 4px 12px var(--shadow);
-    }
-
-    .refresh-btn-round {
-      background: var(--bg-secondary);
-      border: 1px solid var(--border-color);
-      color: var(--text-muted);
-      &:hover { color: var(--primary-main); border-color: var(--primary-main); }
-    }
+  @media (max-width: 991px) {
+    padding: 16px;
+    gap: 14px;
   }
 
-  // Summary Cards
-  .summary-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  // ─── Command Header ───────────────────────────────────────────────
+  .cmd-header {
+    display: flex;
+    align-items: center;
     gap: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--c-border);
 
-    .stat-card {
-      background: var(--bg-secondary);
-      padding: 20px;
-      border-radius: 20px;
-      border: 1px solid var(--border-color);
+    @media (max-width: 991px) {
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+
+    .cmd-title {
       display: flex;
       align-items: center;
-      gap: 16px;
-      transition: all 0.3s ease;
+      gap: 10px;
+      min-width: max-content;
 
-      &:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 10px 15px -3px var(--shadow);
+      .live-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--c-confirmed);
+        box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.2);
+        animation: pulse-dot 2.4s ease-in-out infinite;
+        flex-shrink: 0;
       }
 
-      .stat-icon {
-        width: 48px;
-        height: 48px;
-        border-radius: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: var(--primary-soft);
-        color: var(--primary-main);
-        
-        mat-icon { font-size: 24px; width: 24px; height: 24px; }
+      h1 {
+        font-size: 1.05rem;
+        font-weight: 800;
+        margin: 0;
+        letter-spacing: -0.025em;
+      }
+      p {
+        font-size: 0.72rem;
+        color: var(--c-muted);
+        margin: 0;
+      }
+    }
+
+    .kpi-strip {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      padding: 0 8px;
+      gap: 0;
+
+      @media (max-width: 600px) {
+        flex: none;
+        width: 100%;
+        justify-content: space-around;
+        padding: 10px 0;
+        border: 1px solid var(--c-border);
+        border-radius: 12px;
+        order: 3;
       }
 
-      &.confirmed .stat-icon { background: var(--hover-bg); color: var(--status-confirmed); }
-      &.pending .stat-icon { background: var(--hover-bg); color: var(--status-pending); }
-      &.resources .stat-icon { background: var(--bg-secondary); color: var(--text-secondary); }
-
-      .stat-content {
+      .kpi-item {
         display: flex;
         flex-direction: column;
-        .stat-label { font-size: 0.8rem; color: var(--text-muted); }
-        .stat-value { font-size: 1.25rem; font-weight: 800; color: var(--text-main); }
+        align-items: center;
+        padding: 0 20px;
+
+        .kpi-num {
+          font-size: 1.65rem;
+          font-weight: 900;
+          line-height: 1;
+          letter-spacing: -0.04em;
+          color: var(--c-text);
+        }
+        .kpi-lbl {
+          font-size: 0.67rem;
+          color: var(--c-muted);
+          margin-top: 3px;
+          white-space: nowrap;
+        }
+
+        &.confirmed .kpi-num { color: var(--c-confirmed); }
+        &.pending .kpi-num { color: var(--c-pending); }
+      }
+
+      .kpi-sep {
+        width: 1px;
+        height: 30px;
+        background: var(--c-border);
+        flex-shrink: 0;
+      }
+    }
+
+    .cmd-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: max-content;
+
+      .add-btn {
+        background: var(--c-accent) !important;
+        color: #fff !important;
+        border-radius: 10px !important;
+        height: 40px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        padding: 0 18px;
+        letter-spacing: -0.01em;
+      }
+
+      .refresh-btn {
+        color: var(--c-muted);
+        &:hover { color: var(--c-accent); }
       }
     }
   }
 
-  // Filters Bar
-  .filters-bar {
-    background: var(--bg-secondary) !important;
-    border: 1px solid var(--border-color) !important;
-    .mini-avatar {
-      width: 24px;
-      height: 24px;
-      background: var(--primary-soft);
-      color: var(--primary-main);
-      border-radius: 6px;
-      display: flex;
+  // ─── Filter Rail ──────────────────────────────────────────────────
+  .filter-rail {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+
+    @media (max-width: 767px) {
+      flex-direction: column;
+    }
+
+    .filter-field {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .mini-dot {
+      display: inline-flex;
+      width: 20px;
+      height: 20px;
+      background: var(--active-bg);
+      color: var(--c-accent);
+      border-radius: 5px;
       align-items: center;
       justify-content: center;
-      font-size: 0.7rem;
-      font-weight: 700;
+      font-size: 0.65rem;
+      font-weight: 800;
+      margin-left: 6px;
     }
 
     ::ng-deep {
-      .mat-mdc-form-field-flex {
-        background-color: var(--bg-primary) !important;
+      .mat-mdc-form-field-flex { background-color: var(--c-card) !important; }
+      .mat-mdc-form-field-input-control { color: var(--c-text) !important; }
+      .mat-mdc-floating-label { color: var(--c-muted) !important; }
+    }
+  }
+
+  // ─── Panel Base ───────────────────────────────────────────────────
+  .panel {
+    background: var(--c-card);
+    border: 1px solid var(--c-border);
+    border-radius: 16px;
+    overflow: hidden;
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 13px 20px;
+      border-bottom: 1px solid var(--c-border);
+
+      .panel-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: var(--c-text);
+
+        .accent-bar {
+          display: block;
+          width: 3px;
+          height: 16px;
+          background: var(--c-accent);
+          border-radius: 2px;
+        }
       }
-      .mat-mdc-form-field-input-control {
-        color: var(--text-primary) !important;
+
+      .drag-hint {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.7rem;
+        color: var(--c-muted);
+        mat-icon { font-size: 14px; width: 14px; height: 14px; }
       }
-      .mat-mdc-floating-label {
-        color: var(--text-secondary) !important;
+
+      .count-badge {
+        font-size: 0.75rem;
+        font-weight: 700;
+        background: var(--active-bg);
+        color: var(--c-accent);
+        border-radius: 20px;
+        padding: 3px 12px;
+        border: 1px solid var(--c-border);
       }
     }
   }
 
-  // Calendar/Timeline Styles
-  .timeline-section {
-    background: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    .calendar-wrapper {
-      min-height: 400px;
+  // ─── Calendar Panel ───────────────────────────────────────────────
+  .cal-panel {
+    .cal-body {
+      min-height: 430px;
     }
     .loading-overlay {
       position: absolute;
       inset: 0;
-      background: var(--loading-bg);
+      background: rgba(0, 0, 0, 0.06);
+      backdrop-filter: blur(3px);
       z-index: 10;
       display: flex;
       align-items: center;
       justify-content: center;
-      backdrop-filter: blur(2px);
     }
-    .section-title {
-      border-bottom-color: var(--border-color) !important;
-      h2 { color: var(--text-primary); }
+
+    // ── List filter bar (inside calendar panel) ──────────────────
+    .cal-list-filter {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 18px;
+      border-bottom: 1px solid var(--c-border);
+      background: var(--c-bg);
+      flex-wrap: wrap;
+
+      .clf-title {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--c-muted);
+        white-space: nowrap;
+        mat-icon { font-size: 14px; width: 14px; height: 14px; }
+      }
+
+      // ── Custom date boxes ─────────────────────────────────────
+      .clf-range {
+        display: flex;
+        align-items: stretch;
+        gap: 6px;
+      }
+
+      .clf-date-box {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        padding: 8px 12px;
+        border: 1.5px solid var(--c-border);
+        border-radius: 10px;
+        background: var(--c-card);
+        cursor: pointer;
+        transition: border-color 0.15s, box-shadow 0.15s;
+        min-width: 148px;
+
+        &:hover {
+          border-color: var(--c-accent);
+          box-shadow: 0 0 0 3px color-mix(in srgb, var(--c-accent) 10%, transparent);
+        }
+
+        &.filled {
+          border-color: color-mix(in srgb, var(--c-accent) 50%, transparent);
+          background: color-mix(in srgb, var(--c-accent) 5%, var(--c-card));
+        }
+
+        .clf-box-header {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+
+          .clf-box-icon {
+            font-size: 13px;
+            width: 13px;
+            height: 13px;
+            flex-shrink: 0;
+            &.from-icon { color: var(--c-confirmed); }
+            &.to-icon   { color: var(--c-cancelled); }
+          }
+
+          .clf-box-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--c-muted);
+            letter-spacing: 0.02em;
+          }
+        }
+
+        .clf-date-val {
+          font-size: 0.82rem;
+          color: var(--c-muted);
+          font-weight: 500;
+          white-space: nowrap;
+          padding-right: 17px; // align under label (icon width)
+        }
+
+        &.filled .clf-date-val {
+          color: var(--c-text);
+          font-weight: 700;
+        }
+
+        // Hidden native input — just there for the datepicker
+        .clf-hidden-input {
+          position: absolute;
+          opacity: 0;
+          width: 0;
+          height: 0;
+          pointer-events: none;
+        }
+      }
+
+      .clf-arrow {
+        display: flex;
+        align-items: center;
+        color: var(--c-muted);
+        mat-icon { font-size: 16px; width: 16px; height: 16px; }
+      }
+
+      // ── Actions ───────────────────────────────────────────────
+      .clf-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        .clf-apply-btn {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          padding: 6px 14px;
+          background: var(--c-accent);
+          color: #fff;
+          border: none;
+          border-radius: 8px;
+          font-size: 0.78rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: opacity 0.15s;
+          mat-icon { font-size: 15px; width: 15px; height: 15px; }
+
+          &:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+          }
+          &:not(:disabled):hover { opacity: 0.88; }
+        }
+
+        .clf-reset-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 30px;
+          height: 30px;
+          background: transparent;
+          border: 1px solid var(--c-border);
+          border-radius: 8px;
+          color: var(--c-muted);
+          cursor: pointer;
+          transition: border-color 0.15s, color 0.15s;
+          mat-icon { font-size: 15px; width: 15px; height: 15px; }
+
+          &:hover { border-color: var(--c-cancelled); color: var(--c-cancelled); }
+        }
+      }
+
+      .clf-result-badge {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: var(--c-confirmed);
+        background: rgba(5, 150, 105, 0.1);
+        border-radius: 20px;
+        padding: 3px 10px;
+        margin-right: auto;
+        mat-icon { font-size: 13px; width: 13px; height: 13px; }
+      }
+
+      // Hide mat-form-field chrome — we use custom boxes above
+      ::ng-deep .mat-mdc-form-field {
+        display: none !important;
+      }
     }
   }
 
-  // List Section
-  .list-section {
-    background: var(--bg-secondary);
-    border-radius: 20px;
-    border: 1px solid var(--border-color);
-    overflow: hidden;
+  // ─── Bottom Grid ──────────────────────────────────────────────────
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 18px;
+    align-items: start; // KEY: each panel only as tall as its content
 
-    .section-title {
-      border-bottom-color: var(--border-color) !important;
-      h2 { color: var(--text-primary); }
-    }
+    @media (max-width: 1100px) { grid-template-columns: 1fr; }
+  }
 
-    .table-responsive {
-      margin: 0;
-      scrollbar-width: thin;
-    }
+  // ─── Appointments ─────────────────────────────────────────────────
+  .appt-panel {
 
-    .table {
-      margin-bottom: 0;
-      background: transparent;
-      
-      th {
-        background: var(--bg-secondary);
-        font-size: 0.8rem;
-        font-weight: 700;
-        color: var(--text-muted);
-        padding: 16px 20px;
-        border-bottom: 1px solid var(--border-color);
-        white-space: nowrap;
-      }
-
-      td {
-        padding: 16px 20px;
-        vertical-align: middle;
-        border-bottom: 1px solid var(--border-color);
-        color: var(--text-main);
-        font-size: 0.9rem;
-      }
-
-      tr:hover td {
-        background-color: var(--hover-bg);
-      }
-
-      tr:last-child td { border-bottom: none; }
-    }
-
-    .status-chip {
-      padding: 6px 14px;
-      border-radius: 100px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      display: inline-flex;
-      align-items: center;
+    // ── Status tabs ────────────────────────────────────────────
+    .status-tabs {
+      display: flex;
       gap: 6px;
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--c-border);
+      overflow-x: auto;
+      scrollbar-width: none;
+      &::-webkit-scrollbar { display: none; }
 
-      &::before {
-        content: '';
+      .stab {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        border: 1px solid var(--c-border);
+        background: transparent;
+        color: var(--c-muted);
+        font-size: 0.75rem;
+        font-weight: 600;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.15s;
+
+        .stab-num {
+          font-size: 0.68rem;
+          background: var(--c-border);
+          color: var(--c-muted);
+          border-radius: 10px;
+          padding: 0 6px;
+          line-height: 16px;
+          transition: all 0.15s;
+        }
+
+        &:hover { border-color: var(--c-accent); color: var(--c-accent); }
+
+        &.active {
+          background: var(--c-accent);
+          border-color: var(--c-accent);
+          color: #fff;
+          .stab-num { background: rgba(255,255,255,0.25); color: #fff; }
+        }
+
+        &.confirmed.active { background: var(--c-confirmed); border-color: var(--c-confirmed); }
+        &.pending.active   { background: var(--c-pending);   border-color: var(--c-pending);   }
+        &.cancelled.active { background: var(--c-cancelled); border-color: var(--c-cancelled); }
+      }
+    }
+
+    // ── Scrollable list ────────────────────────────────────────
+    .appt-scroll {
+      max-height: 560px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: var(--c-border) transparent;
+      &::-webkit-scrollbar { width: 4px; }
+      &::-webkit-scrollbar-track { background: transparent; }
+      &::-webkit-scrollbar-thumb { background: var(--c-border); border-radius: 2px; }
+    }
+
+    // ── Date group header ──────────────────────────────────────
+    .date-group-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 20px;
+      background: var(--c-bg);
+      border-bottom: 1px solid var(--c-border);
+      position: sticky;
+      top: 0;
+      z-index: 2;
+
+      .dgh-dot {
         width: 6px;
         height: 6px;
         border-radius: 50%;
-        background: currentColor;
+        background: var(--c-accent);
+        flex-shrink: 0;
       }
-      
-      &.pending { background: var(--hover-bg); color: var(--status-pending); }
-      &.confirmed { background: var(--hover-bg); color: var(--status-confirmed); }
-      &.cancelled { background: var(--hover-bg); color: var(--status-cancelled); }
-      &.completed { background: var(--hover-bg); color: var(--status-completed); }
-    }
-  }
-
-  .resource-usage-item {
-    background-color: var(--bg-primary) !important;
-    border-color: var(--border-color) !important;
-    .fw-bold { color: var(--text-primary); }
-  }
-
-  // Mobile Tweaks
-  @media (max-width: 991.98px) {
-    padding: 16px;
-    
-    .dashboard-header {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 16px;
-      
-      .header-main h1 { font-size: 1.25rem; }
-      .header-actions { justify-content: space-between; }
+      .dgh-date {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: var(--c-text);
+        flex: 1;
+      }
+      .dgh-count {
+        font-size: 0.68rem;
+        color: var(--c-muted);
+        background: var(--c-card);
+        border: 1px solid var(--c-border);
+        border-radius: 10px;
+        padding: 1px 8px;
+      }
     }
 
-    .summary-grid {
-      grid-template-columns: 1fr;
+    // ── Appointment rows ───────────────────────────────────────
+    .appt-row {
+      display: flex;
+      align-items: center;
       gap: 12px;
-    }
+      padding: 10px 20px 10px 14px;
+      border-bottom: 1px solid var(--c-border);
+      position: relative;
+      cursor: pointer;
+      transition: background 0.12s;
 
-    .timeline-section {
-      .minimal-card {
-        border-radius: 16px;
-        mat-card-header { padding: 16px; }
+      &:last-child { border-bottom: none; }
+      &:hover { background: var(--hover-bg); }
+
+      .appt-side-bar {
+        position: absolute;
+        right: 0;
+        top: 8px;
+        bottom: 8px;
+        width: 3px;
+        border-radius: 0 2px 2px 0;
+        background: var(--c-muted);
+        opacity: 0.25;
+      }
+
+      &.appt-confirmed .appt-side-bar { background: var(--c-confirmed); opacity: 1; }
+      &.appt-pending   .appt-side-bar { background: var(--c-pending);   opacity: 1; }
+      &.appt-cancelled .appt-side-bar { background: var(--c-cancelled); opacity: 1; }
+      &.appt-completed .appt-side-bar { background: var(--c-completed); opacity: 1; }
+
+      .appt-time {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 48px;
+        flex-shrink: 0;
+        .t-start { font-size: 0.82rem; font-weight: 700; }
+        .t-div   { font-size: 0.5rem; color: var(--c-muted); line-height: 1; }
+        .t-end   { font-size: 0.7rem; color: var(--c-muted); }
+      }
+
+      .appt-avatar {
+        width: 34px;
+        height: 34px;
+        border-radius: 9px;
+        background: var(--active-bg);
+        color: var(--c-accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 0.88rem;
+        flex-shrink: 0;
+      }
+
+      .appt-info {
+        flex: 1;
+        min-width: 0;
+        .appt-customer {
+          display: block;
+          font-size: 0.85rem;
+          font-weight: 700;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .appt-sub {
+          display: block;
+          font-size: 0.68rem;
+          color: var(--c-muted);
+          margin-top: 1px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+
+      .status-tag {
+        font-size: 0.68rem;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 6px;
+        white-space: nowrap;
+        flex-shrink: 0;
+
+        &.pending   { background: rgba(217,119,6,.1);  color: var(--c-pending);   }
+        &.confirmed { background: rgba(5,150,105,.1);  color: var(--c-confirmed); }
+        &.cancelled { background: rgba(220,38,38,.1);  color: var(--c-cancelled); }
+        &.completed { background: rgba(124,58,237,.1); color: var(--c-completed); }
+      }
+
+      .row-chevron {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: var(--c-muted);
+        flex-shrink: 0;
+        transition: color 0.12s, transform 0.12s;
+      }
+
+      &:hover .row-chevron {
+        color: var(--c-accent);
+        transform: translateX(-3px);
       }
     }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 52px 20px;
+      color: var(--c-muted);
+      gap: 10px;
+      mat-icon { font-size: 38px; width: 38px; height: 38px; opacity: 0.22; }
+      span { font-size: 0.85rem; }
+    }
+  }
+
+  // ─── Resources ────────────────────────────────────────────────────
+  .res-panel {
+    .res-list {
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+
+      .res-item {
+        background: var(--c-bg);
+        border: 1px solid var(--c-border);
+        border-radius: 10px;
+        padding: 12px 14px;
+
+        .res-top {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          margin-bottom: 6px;
+
+          .res-name {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 700;
+          }
+          .res-type {
+            display: block;
+            font-size: 0.68rem;
+            color: var(--c-muted);
+            margin-top: 1px;
+          }
+
+          .res-badge {
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 5px;
+            background: rgba(5, 150, 105, 0.1);
+            color: var(--c-confirmed);
+            white-space: nowrap;
+
+            &.busy {
+              background: rgba(220, 38, 38, 0.1);
+              color: var(--c-cancelled);
+            }
+          }
+        }
+
+        .res-usage-row {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 0.72rem;
+          color: var(--c-muted);
+          margin-top: 5px;
+
+          mat-icon { font-size: 12px; width: 12px; height: 12px; flex-shrink: 0; }
+
+          .res-staff {
+            margin-right: auto;
+            color: var(--c-text);
+            font-weight: 600;
+          }
+        }
+      }
+    }
+  }
+
+  // ─── Loading ──────────────────────────────────────────────────────
+  .dash-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 60vh;
+    gap: 16px;
+    color: var(--c-muted);
+    p { font-size: 0.9rem; margin: 0; }
   }
 }
 
-// FullCalendar Styling Overrides
+// ─── Animations ───────────────────────────────────────────────────
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.85); }
+}
+.spinning { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.no-subscript ::ng-deep .mat-mdc-form-field-subscript-wrapper { display: none; }
+
+// ─── FullCalendar Overrides ───────────────────────────────────────
 ::ng-deep {
   .fc {
     background: var(--bg-secondary) !important;
-    border-radius: 16px;
-    border: 1px solid var(--border-color) !important;
-    overflow: hidden;
+    border: none !important;
     font-family: inherit;
 
-    // Weekly & Monthly View Enhancements
-    .fc-timegrid-slot, .fc-daygrid-day {
-      background-color: transparent !important;
-    }
-
-    .fc-timegrid-col.fc-day-today {
-      background-color: var(--active-bg) !important;
-    }
-
-    .fc-v-event {
-      border-radius: 8px;
-      padding: 4px;
-      border: none;
-      box-shadow: 0 2px 4px var(--shadow);
-      
-      .fc-event-main {
-        padding: 2px 4px;
-      }
-
-      .fc-event-title {
-        font-weight: 600;
-        font-size: 0.85rem;
-      }
-    }
-
-    .fc-h-event {
-      border-radius: 6px;
-      border: none;
-      padding: 2px 6px;
-    }
-
-    // Toolbar
+    // ── Toolbar ──────────────────────────────────────────────────
     .fc-toolbar {
-      padding: 20px;
+      padding: 12px 18px;
       margin-bottom: 0 !important;
       background: var(--bg-secondary) !important;
       border-bottom: 1px solid var(--border-color) !important;
 
-      @media (max-width: 767.98px) {
-        padding: 12px;
+      @media (max-width: 767px) {
+        padding: 10px 12px;
         flex-direction: column;
-        gap: 12px;
+        gap: 8px;
       }
 
       .fc-toolbar-title {
-        font-size: 1.25rem;
+        font-size: 0.95rem;
         font-weight: 700;
         color: var(--text-primary) !important;
-
-        @media (max-width: 767.98px) {
-          font-size: 1.1rem;
-        }
+        letter-spacing: -0.01em;
       }
 
-      .fc-toolbar-chunk {
-        @media (max-width: 767.98px) {
-          display: flex;
-          justify-content: center;
-          width: 100%;
-          gap: 4px;
-          flex-wrap: wrap;
+      .fc-button-group {
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid var(--border-color);
+
+        .fc-button {
+          border-radius: 0 !important;
+          border: none !important;
+          border-right: 1px solid var(--border-color) !important;
+          &:last-child { border-right: none !important; }
         }
       }
 
@@ -319,109 +775,345 @@
         border: 1px solid var(--border-color) !important;
         color: var(--text-primary) !important;
         font-weight: 500;
+        font-size: 0.8rem;
         text-transform: none;
-        padding: 8px 16px;
-        border-radius: 8px;
-        transition: all 0.2s;
+        padding: 5px 13px;
+        border-radius: 8px !important;
+        transition: background 0.15s;
+        box-shadow: none !important;
 
-        @media (max-width: 767.98px) {
-          padding: 6px 12px;
-          font-size: 0.85rem;
-        }
-
-        &:hover {
-          background: var(--hover-bg) !important;
-        }
+        &:hover   { background: var(--hover-bg) !important; }
+        &:focus   { box-shadow: none !important; outline: none; }
 
         &.fc-button-active {
           background: var(--accent-color) !important;
           border-color: var(--accent-color) !important;
-          color: white !important;
+          color: #fff !important;
+          font-weight: 700;
         }
+      }
 
-        &:focus {
-          box-shadow: none;
+      // Standalone prev/next/today
+      .fc-prev-button,
+      .fc-next-button,
+      .fc-today-button {
+        border-radius: 8px !important;
+        border: 1px solid var(--border-color) !important;
+      }
+    }
+
+    // ── Timeline header row (hour labels) ────────────────────────
+    .fc-timeline-header {
+      background: var(--bg-secondary) !important;
+
+      .fc-timeline-header-row {
+        .fc-timeline-slot-label {
+          background: var(--bg-secondary) !important;
+          border-color: var(--border-color) !important;
+        }
+        .fc-timeline-slot-label-cushion {
+          font-size: 0.72rem;
+          font-weight: 600;
+          color: var(--text-secondary) !important;
+          padding: 6px 8px;
+        }
+      }
+
+      // Resource area header ("پرسنل و منابع")
+      .fc-datagrid-header {
+        background: var(--bg-secondary) !important;
+        .fc-datagrid-header-cell {
+          background: var(--bg-secondary) !important;
+          border-color: var(--border-color) !important;
+        }
+        .fc-datagrid-header-cell-label {
+          font-size: 0.72rem;
+          font-weight: 700;
+          color: var(--text-secondary) !important;
+          text-transform: uppercase;
+          letter-spacing: 0.05em;
         }
       }
     }
 
-    .fc-timeline-event {
-      border-radius: 6px !important;
-      padding: 4px 8px !important;
-      font-size: 0.8rem !important;
-      font-weight: 600 !important;
-      border: none !important;
-      box-shadow: 0 2px 4px var(--shadow) !important;
+    // ── Resource rows (body) ─────────────────────────────────────
+    .fc-datagrid-body {
+      .fc-datagrid-cell {
+        background: var(--bg-secondary) !important;
+        border-color: var(--border-color) !important;
+      }
+      .fc-datagrid-cell-cushion {
+        padding: 0 !important;
+      }
     }
 
-    // Background events (Working Hours)
+    // Custom resource label
+    .res-label-inner {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 8px 12px;
+
+      .res-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 9px;
+        background: var(--active-bg);
+        color: var(--accent-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.85rem;
+        font-weight: 800;
+        flex-shrink: 0;
+      }
+
+      .res-label-text {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+
+        .res-label-name {
+          font-size: 0.8rem;
+          font-weight: 700;
+          color: var(--text-primary);
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .res-label-sub {
+          font-size: 0.65rem;
+          color: var(--text-secondary);
+          margin-top: 1px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+    }
+
+    // ── Timeline header slot labels ──────────────────────────────
+    .fc-timeline-header-row {
+      // Major = هر ساعت: label + خط ضخیم
+      .fc-timeline-slot-major {
+        border-right: 2px solid var(--border-color) !important;
+
+        .fc-timeline-slot-label-cushion {
+          font-size: 0.78rem !important;
+          font-weight: 700 !important;
+          color: var(--text-primary) !important;
+          padding: 8px 6px !important;
+          white-space: nowrap;
+        }
+      }
+      // Minor = هر ۱۵ دقیقه: بدون label
+      .fc-timeline-slot-minor {
+        border-right: 1px solid var(--border-color) !important;
+        opacity: 0.35;
+      }
+    }
+
+    // ── Timeline body (time slots) ───────────────────────────────
+    .fc-timeline-body {
+      .fc-timeline-lane {
+        border-color: var(--border-color) !important;
+        background: var(--bg-primary) !important;
+        min-height: 52px;
+
+        &:nth-child(even) { background: var(--bg-secondary) !important; }
+      }
+
+      // Major = ساعت — خط پررنگ، و ستون کمی کم‌رنگ‌تر
+      .fc-timeline-slot-major {
+        border-right: 2px solid var(--border-color) !important;
+        background: transparent !important;
+      }
+
+      // Minor = هر ۱۵ دقیقه
+      // هر سومی (۳۰ دقیقه) کمی پررنگ‌تر از بقیه
+      .fc-timeline-slot-minor {
+        border-right: 1px solid var(--border-color) !important;
+        background: transparent !important;
+        opacity: 0.4;
+
+        &:nth-child(3n) {
+          opacity: 0.75;
+          border-right-width: 1px !important;
+          border-right-style: dashed !important;
+        }
+      }
+    }
+
+    // ── Background events (working hours) ────────────────────────
     .fc-bg-event {
       opacity: 1 !important;
       z-index: 1 !important;
+      border-radius: 0 !important;
     }
 
-    // Timeline Specific
-    .fc-timeline-header {
-      background: var(--bg-secondary) !important;
-      .fc-datagrid-header-cell-label {
+    // ── Timeline events ──────────────────────────────────────────
+    .fc-timeline-event-harness {
+      margin-top: 3px;
+      margin-bottom: 3px;
+    }
+
+    .fc-timeline-event {
+      border: none !important;
+      border-radius: 8px !important;
+      padding: 0 !important;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.18) !important;
+      cursor: grab !important;
+      overflow: hidden;
+      transition: transform 0.12s, box-shadow 0.12s;
+
+      &:hover {
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.22) !important;
+      }
+      &:active { cursor: grabbing !important; }
+
+      .fc-event-main { padding: 0 !important; }
+    }
+
+    // ── Vertical (timegrid) events ───────────────────────────────
+    .fc-v-event {
+      border: none !important;
+      border-radius: 8px !important;
+      padding: 0 !important;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+      cursor: grab;
+      overflow: hidden;
+      &:active { cursor: grabbing; }
+      .fc-event-main { padding: 0 !important; }
+    }
+
+    // ── Custom event inner HTML ───────────────────────────────────
+    .fce-inner {
+      display: flex;
+      flex-direction: column;
+      padding: 5px 8px;
+      gap: 1px;
+      height: 100%;
+      overflow: hidden;
+
+      .fce-time {
+        font-size: 0.62rem;
+        font-weight: 600;
+        opacity: 0.82;
+        white-space: nowrap;
+        overflow: hidden;
+        line-height: 1.2;
+      }
+      .fce-name {
+        font-size: 0.78rem;
         font-weight: 700;
-        color: var(--text-primary) !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.2;
+      }
+      .fce-service {
+        font-size: 0.65rem;
+        opacity: 0.78;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.2;
       }
     }
 
-    .fc-timeline-slot-label {
-      font-weight: 500;
-      color: var(--text-secondary) !important;
-      font-size: 0.8rem;
+    // ── Status colors ─────────────────────────────────────────────
+    .event-status-pending {
+      background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+      color: #fff !important;
+    }
+    .event-status-confirmed {
+      background: linear-gradient(135deg, #10b981, #059669) !important;
+      color: #fff !important;
+    }
+    .event-status-cancelled {
+      background: linear-gradient(135deg, #f87171, #dc2626) !important;
+      color: #fff !important;
+    }
+    .event-status-completed {
+      background: linear-gradient(135deg, #a78bfa, #7c3aed) !important;
+      color: #fff !important;
     }
 
-    // Header cells in week view
+    // ── Now indicator ─────────────────────────────────────────────
+    .fc-now-indicator-line {
+      border-color: #ef4444 !important;
+      border-top-width: 2px !important;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: -4px;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #ef4444;
+      }
+    }
+    .fc-now-indicator-arrow {
+      border-top-color: #ef4444 !important;
+    }
+
+    // ── Column/row headers (week/month views) ────────────────────
     .fc-col-header-cell {
-      padding: 12px 0;
       background: var(--bg-secondary) !important;
+      border-color: var(--border-color) !important;
+      padding: 8px 0;
       .fc-col-header-cell-cushion {
         color: var(--text-primary) !important;
+        font-size: 0.8rem;
         font-weight: 600;
         text-decoration: none;
       }
     }
 
-    // Status Colors for Events
-    .event-status-pending { background-color: var(--status-pending) !important; color: white !important; }
-    .event-status-confirmed { background-color: var(--status-confirmed) !important; color: white !important; }
-    .event-status-cancelled { background-color: var(--status-cancelled) !important; color: white !important; }
-    .event-status-completed { background-color: var(--status-completed) !important; color: white !important; }
+    .fc-timegrid-slot,
+    .fc-daygrid-day { background-color: transparent !important; }
 
-    .fc-datagrid-cell-main {
-      padding: 8px !important;
-      display: flex !important;
-      flex-direction: column !important;
-      justify-content: center !important;
-      color: var(--text-primary) !important;
+    .fc-timegrid-col.fc-day-today { background-color: var(--active-bg) !important; }
+
+    .fc-timegrid-slot-label-cushion {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--text-secondary) !important;
     }
 
-    .fc-datagrid-cell-cushion {
-      color: var(--text-primary) !important;
-    }
-
+    // ── List view ─────────────────────────────────────────────────
     .fc-list-day-cushion {
       background-color: var(--bg-secondary) !important;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-primary) !important;
     }
-    
-    .resource-expertise-sub { margin-top: 2px; color: var(--text-secondary); }
+    .fc-list-event { border-color: var(--border-color) !important; }
+    .fc-list-event-title a { color: var(--text-primary) !important; }
+
+    // ── General borders ───────────────────────────────────────────
+    .fc-scrollgrid,
+    .fc-scrollgrid td,
+    .fc-scrollgrid th {
+      border-color: var(--border-color) !important;
+    }
   }
 
-  // Horizontal scroll for mobile timeline
-  @media (max-width: 767.98px) {
+  // Scrollbar for calendar
+  .fc-scroller {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+    &::-webkit-scrollbar { width: 5px; height: 5px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+  }
+
+  @media (max-width: 767px) {
     .fc-view-harness {
       overflow-x: auto;
       .fc-view { min-width: 800px; }
     }
   }
 }
-
-// Utility
-.x-small { font-size: 0.7rem; }
-.spinning { animation: spin 1s linear infinite; }
-@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-.no-subscript ::ng-deep .mat-mdc-form-field-subscript-wrapper { display: none; }
