@@ -1,67 +1,152 @@
-<div class="staff-container mx-4 py-4">
-  <div class="header">
-    <h1>{{ getTranslation('staff') }}</h1>
-    <button mat-raised-button color="primary" (click)="openAddDialog()">
+<div class="staff-wrap">
+
+  <!-- ── Header ─────────────────────────────────────────────────── -->
+  <div class="staff-header">
+    <div class="header-left">
+      <span class="accent-bar"></span>
+      <div>
+        <h1 class="header-title">{{ getTranslation('staff') }}</h1>
+        <p class="header-sub">{{ dataSource.data.length }} {{ getTranslation('staff') }}</p>
+      </div>
+    </div>
+    <button mat-flat-button class="add-btn" (click)="openAddDialog()">
       <mat-icon>add</mat-icon>
       {{ getTranslation('addStaff') }}
     </button>
   </div>
 
-  <mat-card class="table-card">
-    <div class="table-container">
-      <table mat-table [dataSource]="dataSource">
-        <!-- ID Column -->
-        <ng-container matColumnDef="id">
-          <th mat-header-cell *matHeaderCellDef>ID</th>
-          <td mat-cell *matCellDef="let staff">{{ staff.id }}</td>
-        </ng-container>
+  <!-- ── Table panel (md+) ──────────────────────────────────────── -->
+  <div class="panel table-panel">
+    <div class="table-scroll">
+      <table mat-table [dataSource]="dataSource" class="staff-table">
 
-        <!-- Name Column -->
-        <ng-container matColumnDef="name">
-          <th mat-header-cell *matHeaderCellDef>{{ getTranslation('name') }}</th>
-          <td mat-cell *matCellDef="let staff">
-            {{ staff.user?.name || staff.name || (getTranslation('user') + ' ' + staff.user_id) }}
+        <!-- ID -->
+        <ng-container matColumnDef="id">
+          <th mat-header-cell *matHeaderCellDef>#</th>
+          <td mat-cell *matCellDef="let s">
+            <span class="id-badge">{{ s.id }}</span>
           </td>
         </ng-container>
 
-        <!-- Role Column -->
+        <!-- Name -->
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>{{ getTranslation('name') }}</th>
+          <td mat-cell *matCellDef="let s">
+            <div class="staff-identity">
+              <div class="avatar">
+                {{ (s.user?.name || s.name || '?')[0]?.toUpperCase() }}
+              </div>
+              <span class="staff-name">
+                {{ s.user?.name || s.name || (getTranslation('user') + ' ' + s.user_id) }}
+              </span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Role -->
         <ng-container matColumnDef="role">
           <th mat-header-cell *matHeaderCellDef>{{ getTranslation('role') }}</th>
-          <td mat-cell *matCellDef="let staff">{{ staff.role }}</td>
+          <td mat-cell *matCellDef="let s">
+            <span class="role-chip">{{ s.role }}</span>
+          </td>
         </ng-container>
 
-        <!-- Expertise Column -->
+        <!-- Expertise -->
         <ng-container matColumnDef="expertise">
           <th mat-header-cell *matHeaderCellDef>{{ getTranslation('expertise') }}</th>
-          <td mat-cell *matCellDef="let staff">{{ staff.expertise?.title || '-' }}</td>
+          <td mat-cell *matCellDef="let s">
+            <span *ngIf="s.expertise?.title" class="expertise-tag">
+              <svg class="tag-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="7" width="20" height="14" rx="2"/>
+                <path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/>
+                <line x1="12" y1="12" x2="12" y2="12.01"/>
+              </svg>
+              {{ s.expertise.title }}
+            </span>
+            <span *ngIf="!s.expertise?.title" class="no-data">—</span>
+          </td>
         </ng-container>
 
-        <!-- Actions Column -->
+        <!-- Actions -->
         <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef>{{ getTranslation('actions') }}</th>
-          <td mat-cell *matCellDef="let staff">
-            <button mat-icon-button color="accent" (click)="goToAppointment(staff)" [matTooltip]="getTranslation('appointments')">
+          <th mat-header-cell *matHeaderCellDef class="actions-col-head">{{ getTranslation('actions') }}</th>
+          <td mat-cell *matCellDef="let s" class="actions-col">
+            <button mat-icon-button class="action-btn appt-btn"
+                    (click)="goToAppointment(s)"
+                    [matTooltip]="getTranslation('appointments')">
               <mat-icon>event_available</mat-icon>
             </button>
-            <button mat-icon-button color="primary" (click)="openEditDialog(staff)">
+            <button mat-icon-button class="action-btn edit-btn"
+                    (click)="openEditDialog(s)"
+                    [matTooltip]="getTranslation('edit')">
               <mat-icon>edit</mat-icon>
             </button>
-            <button mat-icon-button color="warn" (click)="deleteStaff(staff)">
-              <mat-icon>delete</mat-icon>
+            <button mat-icon-button class="action-btn del-btn"
+                    (click)="deleteStaff(s)"
+                    [matTooltip]="getTranslation('delete')">
+              <mat-icon>delete_outline</mat-icon>
             </button>
           </td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row"></tr>
 
-        <!-- Row shown when there is no matching data. -->
         <tr class="mat-row" *matNoDataRow>
           <td class="mat-cell" colspan="5">
-            {{ getTranslation('noStaffFound') }}
+            <div class="empty-state">
+              <mat-icon>people_outline</mat-icon>
+              <span>{{ getTranslation('noStaffFound') }}</span>
+            </div>
           </td>
         </tr>
       </table>
     </div>
-  </mat-card>
+  </div>
+
+  <!-- ── Card list (mobile) ─────────────────────────────────────── -->
+  <div class="mobile-list">
+    <ng-container *ngIf="dataSource.data.length > 0; else mobileEmpty">
+      <div class="staff-card" *ngFor="let s of dataSource.data">
+        <div class="card-top">
+          <div class="staff-identity">
+            <div class="avatar">
+              {{ (s.user?.name || s.name || '?')[0]?.toUpperCase() }}
+            </div>
+            <div class="card-info">
+              <span class="staff-name">
+                {{ s.user?.name || s.name || (getTranslation('user') + ' ' + s.user_id) }}
+              </span>
+              <span class="role-chip">{{ s.role }}</span>
+            </div>
+          </div>
+          <span class="id-badge">#{{ s.id }}</span>
+        </div>
+        <div class="card-expertise" *ngIf="s.expertise?.title">
+          <mat-icon class="tag-icon">work_outline</mat-icon>
+          {{ s.expertise.title }}
+        </div>
+        <div class="card-actions">
+          <button mat-stroked-button class="card-action-btn appt-btn"
+                  (click)="goToAppointment(s)">
+            <mat-icon>event_available</mat-icon>
+            {{ getTranslation('appointments') }}
+          </button>
+          <button mat-icon-button class="action-btn edit-btn" (click)="openEditDialog(s)">
+            <mat-icon>edit</mat-icon>
+          </button>
+          <button mat-icon-button class="action-btn del-btn" (click)="deleteStaff(s)">
+            <mat-icon>delete_outline</mat-icon>
+          </button>
+        </div>
+      </div>
+    </ng-container>
+    <ng-template #mobileEmpty>
+      <div class="empty-state">
+        <mat-icon>people_outline</mat-icon>
+        <span>{{ getTranslation('noStaffFound') }}</span>
+      </div>
+    </ng-template>
+  </div>
+
 </div>

@@ -42,9 +42,7 @@ export class ProfileComponent implements OnInit {
   ) {
     this.profileForm = this.fb.group({
       name: ['', Validators.required],
-      birthday: ['', Validators.required],
-      phone: [{ value: '', disabled: true }],
-      role: [{ value: '', disabled: true }]
+      birthday: [''],
     });
   }
 
@@ -65,8 +63,6 @@ export class ProfileComponent implements OnInit {
           this.profileForm.patchValue({
             name: this.userData.name,
             birthday: this.userData.birthday,
-            phone: this.userData.mobile,
-            role: this.getUserRoleLabel(this.userData.role)
           });
         }
         this.isLoading = false;
@@ -83,6 +79,16 @@ export class ProfileComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  formatDate(dateStr: string): string {
+    if (!dateStr) return '—';
+    try {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('fa-IR', { year: 'numeric', month: 'long' });
+    } catch {
+      return dateStr.slice(0, 10);
+    }
   }
 
   getUserRoleLabel(role: string): string {

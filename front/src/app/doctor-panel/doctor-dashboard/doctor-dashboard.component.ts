@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -50,7 +50,7 @@ import { RouterLink } from '@angular/router';
   templateUrl: './doctor-dashboard.component.html',
   styleUrls: ['./doctor-dashboard.component.scss'],
 })
-export class DoctorDashboardComponent implements OnInit {
+export class DoctorDashboardComponent implements OnInit, OnDestroy {
   @ViewChild('calendar') calendarComponent!: FullCalendarComponent;
 
   private doctorHttp = inject(DoctorHttpService);
@@ -63,6 +63,9 @@ export class DoctorDashboardComponent implements OnInit {
   allAppointments: any[] = [];
   isLoading = false;
 
+  calendarTitle = '';
+  currentViewType = 'resourceTimelineDay';
+
   // Doctor-specific data
   currentAppointment: any = null;
   currentPatientDetails: any = null;
@@ -72,10 +75,11 @@ export class DoctorDashboardComponent implements OnInit {
   calendarOptions: CalendarOptions = {
     plugins: [resourceTimelinePlugin, interactionPlugin, dayGridPlugin, timeGridPlugin, listPlugin],
     initialView: 'resourceTimelineDay',
-    headerToolbar: {
-      left: 'prev,next today',
-      center: 'title',
-      right: 'resourceTimelineDay,timeGridWeek,dayGridMonth,listWeek',
+    headerToolbar: false,
+    datesSet: (info) => {
+      this.currentViewType = info.view.type;
+      this.calendarTitle   = info.view.title;
+      this.cdr.detectChanges();
     },
     resourceAreaHeaderContent: 'پرسنل و منابع',
     resourceAreaWidth: '200px',
@@ -130,7 +134,7 @@ export class DoctorDashboardComponent implements OnInit {
     this.isLoading = true;
     const dateStr = format(this.selectedDate, 'yyyy-MM-dd');
 
-    this.doctorHttp.getCalendarDashboard({ date: dateStr, user_ids: [this.staffId] }).subscribe({
+    this.doctorHttp.getCalendarDashboard({ date: dateStr, user_id: [this.staffId] }).subscribe({
       next: (res: any) => {
         if (res.success && res.data) {
           this.dashboardData = res.data;
@@ -324,6 +328,32 @@ export class DoctorDashboardComponent implements OnInit {
   getTranslation(key: string): string {
     return this.translationService.getTranslation(key);
   }
+
+  calendarPrev() {
+    const api = this.calendarComponent?.getApi();
+    if (api) { api.prev(); this.calendarTitle = api.view.title; }
+  }
+
+  calendarNext() {
+    const api = this.calendarComponent?.getApi();
+    if (api) { api.next(); this.calendarTitle = api.view.title; }
+  }
+
+  calendarToday() {
+    const api = this.calendarComponent?.getApi();
+    if (api) { api.today(); this.calendarTitle = api.view.title; }
+  }
+
+  setCalendarView(view: string) {
+    const api = this.calendarComponent?.getApi();
+    if (api) {
+      api.changeView(view);
+      this.currentViewType = view;
+      this.calendarTitle   = api.view.title;
+    }
+  }
+
+  ngOnDestroy() {}
 
   onAppointmentClick(app: any): void {
     window.open(`/appointment?edit_id=${app.id}`, '_blank');

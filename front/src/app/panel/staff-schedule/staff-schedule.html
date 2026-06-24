@@ -1,67 +1,136 @@
-<div class="schedule-container mx-4 py-4">
-  <div class="header">
-    <h1>{{ getTranslation('staffSchedule') }}</h1>
-    <button mat-raised-button color="primary" (click)="openAddDialog()">
+<div class="page-wrap">
+
+  <div class="page-header">
+    <div class="header-left">
+      <span class="accent-bar"></span>
+      <div>
+        <h1 class="header-title">{{ getTranslation('staffSchedule') }}</h1>
+        <p class="header-sub">{{ dataSource.data.length }} {{ getTranslation('staffSchedule') }}</p>
+      </div>
+    </div>
+    <button mat-flat-button class="add-btn" (click)="openAddDialog()">
       <mat-icon>add</mat-icon>
       {{ getTranslation('addSchedule') }}
     </button>
   </div>
 
-  <mat-card class="table-card">
-    <div class="table-container">
-      <table mat-table [dataSource]="dataSource">
-        <!-- Staff Name Column -->
+  <!-- Desktop table -->
+  <div class="panel table-panel">
+    <div class="table-scroll">
+      <table mat-table [dataSource]="dataSource" class="data-table">
+
         <ng-container matColumnDef="staff_name">
           <th mat-header-cell *matHeaderCellDef>{{ getTranslation('staff') }}</th>
-          <td mat-cell *matCellDef="let data">
-            <div class="staff-info">
-              <span class="staff-name">{{ data.name  || '-' }}</span>
-              <!-- <span class="staff-expertise" *ngIf="dataSource.staff?.expertise">
-                ({{ dataSource.staff.expertise.title }})
-              </span> -->
+          <td mat-cell *matCellDef="let row">
+            <div class="cell-identity">
+              <div class="avatar">{{ (row.name || '?')[0]?.toUpperCase() }}</div>
+              <span class="cell-name">{{ row.name || '-' }}</span>
             </div>
           </td>
         </ng-container>
 
-        <!-- Day Column -->
         <ng-container matColumnDef="day">
           <th mat-header-cell *matHeaderCellDef>{{ getTranslation('day') }}</th>
-          <td mat-cell *matCellDef="let schedule">{{ getDayName(schedule.day) }}</td>
+          <td mat-cell *matCellDef="let row">
+            <span class="day-chip">{{ getDayName(row.day) }}</span>
+          </td>
         </ng-container>
 
-<ng-container matColumnDef="start_time">
-  <th mat-header-cell *matHeaderCellDef>{{ getTranslation('startTime') }}</th>
-  <td mat-cell *matCellDef="let schedule">{{ schedule.start_time }}</td>
-</ng-container>
+        <ng-container matColumnDef="start_time">
+          <th mat-header-cell *matHeaderCellDef>{{ getTranslation('startTime') }}</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="time-val">{{ row.start_time }}</span>
+          </td>
+        </ng-container>
 
-<!-- End Time Column -->
-<ng-container matColumnDef="end_time">
-  <th mat-header-cell *matHeaderCellDef>{{ getTranslation('endTime') }}</th>
-  <td mat-cell *matCellDef="let schedule">{{ schedule.end_time }}</td>
-</ng-container>
+        <ng-container matColumnDef="end_time">
+          <th mat-header-cell *matHeaderCellDef>{{ getTranslation('endTime') }}</th>
+          <td mat-cell *matCellDef="let row">
+            <span class="time-val">{{ row.end_time }}</span>
+          </td>
+        </ng-container>
 
-        <!-- Actions Column -->
         <ng-container matColumnDef="actions">
-          <th mat-header-cell *matHeaderCellDef>{{ getTranslation('actions') }}</th>
-          <td mat-cell *matCellDef="let schedule">
-            <button mat-icon-button color="primary" (click)="openEditDialog(schedule)">
-              <mat-icon>edit</mat-icon>
+          <th mat-header-cell *matHeaderCellDef class="col-actions-head">{{ getTranslation('actions') }}</th>
+          <td mat-cell *matCellDef="let row" class="col-actions">
+            <button class="action-btn edit-btn" (click)="openEditDialog(row)" [title]="getTranslation('edit')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+              </svg>
             </button>
-            <button mat-icon-button color="warn" (click)="deleteSchedule(schedule)">
-              <mat-icon>delete</mat-icon>
+            <button class="action-btn del-btn" (click)="deleteSchedule(row)" [title]="getTranslation('delete')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+                <path d="M10 11v6"/><path d="M14 11v6"/>
+                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+              </svg>
             </button>
           </td>
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="data-row"></tr>
 
         <tr class="mat-row" *matNoDataRow>
           <td class="mat-cell" colspan="5">
-            {{ getTranslation('noSchedulesFound') }}
+            <div class="empty-state">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+              <span>{{ getTranslation('noSchedulesFound') }}</span>
+            </div>
           </td>
         </tr>
       </table>
     </div>
-  </mat-card>
+  </div>
+
+  <!-- Mobile cards -->
+  <div class="mobile-list">
+    <ng-container *ngIf="dataSource.data.length > 0; else mobileEmpty">
+      <div class="item-card" *ngFor="let row of dataSource.data">
+        <div class="card-top">
+          <div class="cell-identity">
+            <div class="avatar">{{ (row.name || '?')[0]?.toUpperCase() }}</div>
+            <span class="cell-name">{{ row.name || '-' }}</span>
+          </div>
+          <span class="day-chip">{{ getDayName(row.day) }}</span>
+        </div>
+        <div class="card-times">
+          <span class="time-label">{{ getTranslation('startTime') }}:</span>
+          <span class="time-val">{{ row.start_time }}</span>
+          <span class="time-sep">—</span>
+          <span class="time-label">{{ getTranslation('endTime') }}:</span>
+          <span class="time-val">{{ row.end_time }}</span>
+        </div>
+        <div class="card-actions">
+          <button class="action-btn edit-btn" (click)="openEditDialog(row)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+          </button>
+          <button class="action-btn del-btn" (click)="deleteSchedule(row)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              <path d="M10 11v6"/><path d="M14 11v6"/>
+              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </ng-container>
+    <ng-template #mobileEmpty>
+      <div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+        <span>{{ getTranslation('noSchedulesFound') }}</span>
+      </div>
+    </ng-template>
+  </div>
+
 </div>

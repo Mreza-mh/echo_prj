@@ -1,232 +1,280 @@
-<div class="appointment-page">
-  <div class="mx-4 py-4">
-    <!-- Formal Organization Header -->
-    <div class="org-profile-card mb-5 animate__animated animate__fadeIn" *ngIf="organizationDetails">
-      <div class="profile-cover" [style.background-image]="organizationDetails.banner ? 'url(' + organizationDetails.banner + ')' : null">
-        <div class="cover-overlay"></div>
-      </div>
-      <div class="profile-body">
-        <div class="profile-main-info">
-          <div class="profile-logo-wrapper">
-            <img *ngIf="organizationDetails.logo" [src]="organizationDetails.logo" [alt]="organizationDetails.name" class="profile-logo shadow-sm">
-            <div *ngIf="!organizationDetails.logo" class="profile-logo-placeholder">
-              {{ organizationDetails.name?.charAt(0) }}
-            </div>
-          </div>
-          <div class="profile-text-content">
-            <div class="d-flex align-items-center flex-wrap gap-2 mb-2">
-              <h1 class="profile-name h4 fw-bold mb-0">{{ organizationDetails.name }}</h1>
-              <span class="badge-verified">
-                <mat-icon>verified</mat-icon>
-                {{ getTranslation('verifiedBadge') }}
-              </span>
-            </div>
-            <p class="profile-subtitle text-muted mb-0">
-              {{ organizationDetails.category?.title || getTranslation('specialtyCenter') }}
-            </p>
-          </div>
+<div class="appt-wrap" dir="rtl">
+
+  <!-- Org Header -->
+  <div class="org-card" *ngIf="organizationDetails">
+    <div class="org-cover"
+         [style.background-image]="organizationDetails.banner ? 'url(' + organizationDetails.banner + ')' : null">
+      <div class="org-cover-overlay"></div>
+    </div>
+    <div class="org-body">
+      <div class="org-logo-wrap">
+        <img *ngIf="organizationDetails.logo" [src]="organizationDetails.logo" [alt]="organizationDetails.name" class="org-logo">
+        <div *ngIf="!organizationDetails.logo" class="org-logo-placeholder">
+          {{ organizationDetails.name?.charAt(0) }}
         </div>
-        
-        <div class="profile-stats-contact">
-          <div class="stat-item" *ngIf="organizationDetails.phone">
-            <div class="stat-icon"><mat-icon>phone</mat-icon></div>
-            <div class="stat-info">
-              <span class="stat-label">{{ getTranslation('contactCenter') }}</span>
-              <span class="stat-value ltr-text">{{ organizationDetails.phone }}</span>
-            </div>
-          </div>
-          <div class="stat-item" *ngIf="organizationDetails.address">
-            <div class="stat-icon"><mat-icon>location_on</mat-icon></div>
-            <div class="stat-info">
-              <span class="stat-label">{{ getTranslation('centerAddress') }}</span>
-              <span class="stat-value">{{ organizationDetails.address }}</span>
-            </div>
-          </div>
+      </div>
+      <div class="org-info">
+        <div class="org-name-row">
+          <h1 class="org-name">{{ organizationDetails.name }}</h1>
+          <span class="org-verified">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            تایید شده
+          </span>
+        </div>
+        <p class="org-category">{{ organizationDetails.category?.title || 'مرکز تخصصی' }}</p>
+      </div>
+      <div class="org-meta">
+        <div class="org-meta-item" *ngIf="organizationDetails.phone">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+          </svg>
+          <span>{{ organizationDetails.phone }}</span>
+        </div>
+        <div class="org-meta-item" *ngIf="organizationDetails.address">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+          </svg>
+          <span>{{ organizationDetails.address }}</span>
         </div>
       </div>
     </div>
+  </div>
 
-    <div class="row g-4 w-100 mx-auto">
-      <div class="col-lg-5 col-xl-4 col-12">
-        <div class="sticky-top-offset">
-          <mat-card class="minimal-card mb-4">
-            <mat-card-header class="pb-3 border-bottom">
-              <mat-card-title class="h6 fw-bold mb-0">{{ getTranslation('appointmentSettings') }}</mat-card-title>
-            </mat-card-header>
-            <mat-card-content class="pt-4">
-              <!-- Staff -->
-              <div class="form-group mb-4">
-                <label class="form-label d-flex align-items-center">
-                  <mat-icon class="me-2 fs-5">person</mat-icon>
-                  {{ hasStaffParam ? getTranslation('changeStaff') : getTranslation('selectStaff') }}
-                </label>
-                <mat-form-field appearance="outline" class="w-100 no-subscript">
-                  <mat-select [(ngModel)]="staffId" (selectionChange)="onStaffChange()" placeholder="پرسنل مورد نظر">
-                    <mat-option *ngFor="let staff of staffList" [value]="staff.organization_staff_id || staff.id">
-                      <div class="d-flex align-items-center py-2">
-                        <div class="avatar-sm me-3" [style.background-image]="staff.user?.image ? 'url(' + staff.user.image + ')' : null">
-                          <span *ngIf="!staff.user?.image">{{ (staff.user?.name || staff.name || 'P').charAt(0) }}</span>
-                        </div>
-                        <span class="fw-medium">{{ staff.user?.name || staff.name || staff.role}}</span>
-                      </div>
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
+  <!-- Main grid -->
+  <div class="appt-grid">
 
-              <!-- Service -->
-              <div class="form-group mb-4">
-                <label class="form-label d-flex align-items-center">
-                  <mat-icon class="me-2 fs-5">medical_services</mat-icon>
-                  {{ hasServiceParam ? getTranslation('changeService') : getTranslation('selectService') }}
-                </label>
-                <mat-form-field appearance="outline" class="w-100 no-subscript">
-                  <mat-select [(ngModel)]="organizationServicesId" (selectionChange)="onServiceChange()" placeholder="نوع خدمت">
-                    <mat-option *ngFor="let service of serviceList" [value]="service.organization_service_id|| service.id">
-                      {{ service?.title || service.name }}
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
+    <!-- ── Left sidebar ── -->
+    <div class="appt-sidebar">
 
-              <!-- Customer (Admin Only) -->
-              <div class="form-group mb-4" *ngIf="!isUserMode">
-                <label class="form-label d-flex align-items-center">
-                  <mat-icon class="me-2 fs-5">group</mat-icon>
-                  {{ getTranslation('selectCustomer') }}
-                </label>
-                <mat-form-field appearance="outline" class="w-100 no-subscript">
-                  <mat-select [(ngModel)]="selectedUserId" placeholder="جستجوی مشتری">
-                    <mat-option *ngFor="let user of userList" [value]="user.id">
-                      {{ user.name }} <small class="text-muted">({{ user.phone }})</small>
-                    </mat-option>
-                  </mat-select>
-                </mat-form-field>
-              </div>
-            </mat-card-content>
-          </mat-card>
+      <!-- Settings card -->
+      <div class="appt-card settings-card">
+        <div class="card-head">
+          <span class="accent-bar"></span>
+          <div class="">
+            <h3 class="card-title">تنظیمات نوبت</h3>
+            <p class="card-sub">پرسنل، خدمت و روز را انتخاب کنید</p>
+          </div>
+        </div>
+        <div class="card-body">
 
-          <!-- Formal Calendar -->
-          <mat-card class="minimal-card overflow-hidden">
-            <div class="calendar-header-minimal">
-              <span class="fw-bold">{{ getTranslation('selectDay') }}</span>
-              <span class="text-primary-main" *ngIf="selectedDate">{{ selectedDate | date:'MMMM yyyy' }}</span>
-            </div>
-            <mat-calendar 
-              [selected]="selectedDate" 
-              (selectedChange)="onDateChange($event)"
-              class="minimal-calendar">
-            </mat-calendar>
-          </mat-card>
+          <!-- Staff -->
+          <div class="field-group">
+            <label class="field-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+              </svg>
+              {{ hasStaffParam ? 'تغییر پرسنل' : 'انتخاب پرسنل' }}
+            </label>
+            <mat-form-field appearance="outline" class="appt-mat-field">
+              <mat-select [(ngModel)]="staffId" (selectionChange)="onStaffChange()" placeholder="پرسنل مورد نظر را انتخاب کنید">
+                <mat-option *ngFor="let staff of staffList" [value]="staff.organization_staff_id || staff.id">
+                  <div class="staff-option">
+                    <div class="staff-avatar">{{ (staff.user?.name || staff.name || 'P').charAt(0) }}</div>
+                    <span>{{ staff.user?.name || staff.name || staff.role }}</span>
+                  </div>
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <!-- Service -->
+          <div class="field-group">
+            <label class="field-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+              </svg>
+              {{ hasServiceParam ? 'تغییر خدمت' : 'انتخاب خدمت' }}
+            </label>
+            <mat-form-field appearance="outline" class="appt-mat-field">
+              <mat-select [(ngModel)]="organizationServicesId" (selectionChange)="onServiceChange()" placeholder="نوع خدمت را انتخاب کنید">
+                <mat-option *ngFor="let service of serviceList" [value]="service.organization_service_id || service.id">
+                  {{ service?.title || service.name }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <!-- Customer (admin only) -->
+          <div class="field-group" *ngIf="!isUserMode">
+            <label class="field-label">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              انتخاب مشتری
+            </label>
+            <mat-form-field appearance="outline" class="appt-mat-field">
+              <mat-select [(ngModel)]="selectedUserId" placeholder="مشتری را انتخاب کنید">
+                <mat-option *ngFor="let user of userList" [value]="user.id">
+                  {{ user.name }}
+                  <span class="user-phone" *ngIf="user.phone"> — {{ user.phone }}</span>
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
         </div>
       </div>
 
-      <!-- Right Column: Time Slots -->
-      <div class="col-lg-7 col-xl-8 col-12">
-        <mat-card class="minimal-card h-100">
-          <mat-card-header class="pb-3 border-bottom d-flex justify-content-between align-items-center">
-            <mat-card-title class="h6 fw-bold mb-0">{{ getTranslation('availableHours') }}</mat-card-title>
-            <div class="selected-date-badge" *ngIf="selectedDate">
-              <mat-icon class="me-1">event</mat-icon>
-              {{ selectedDate | date:'EEEE d MMMM' }}
-            </div>
-          </mat-card-header>
-
-<mat-card-content class="pt-4">
-            
-            <div *ngIf="!staffId || !organizationServicesId" class="empty-state-minimal text-center py-5 animate__animated animate__fadeIn">
-              <div class="empty-icon-box mx-auto mb-3 bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                <mat-icon class="text-secondary" style="font-size: 40px; width: 40px; height: 40px;">touch_app</mat-icon>
-              </div>
-              <h4 class="h6 fw-bold">{{ getTranslation('completeAppointmentInfo') }}</h4>
-              <p class="text-muted small mb-4">{{ getTranslation('pleaseSelectTime') }}</p>
-              
-              <div class="d-flex justify-content-center flex-wrap gap-2">
-                <span class="badge rounded-pill px-3 py-2 d-flex align-items-center" 
-                      [ngClass]="staffId ? 'bg-success text-white' : 'bg-light text-muted border'">
-                  <mat-icon class="me-1 fs-6" style="width: 18px; height: 18px;">{{ staffId ? 'check_circle' : 'pending' }}</mat-icon>
-                  {{ getTranslation('selectStaff') }}
-                </span>
-                <span class="badge rounded-pill px-3 py-2 d-flex align-items-center" 
-                      [ngClass]="organizationServicesId ? 'bg-success text-white' : 'bg-light text-muted border'">
-                  <mat-icon class="me-1 fs-6" style="width: 18px; height: 18px;">{{ organizationServicesId ? 'check_circle' : 'pending' }}</mat-icon>
-                  {{ getTranslation('selectService') }}
-                </span>
-              </div>
-            </div>
-
-            <div *ngIf="isLoadingSlots && staffId && organizationServicesId" class="text-center py-5 animate__animated animate__fadeIn">
-              <mat-progress-spinner mode="indeterminate" diameter="45" class="mx-auto mb-3 color-primary"></mat-progress-spinner>
-              <h4 class="h6 fw-bold">{{ getTranslation('checkingCalendar') }}</h4>
-              <p class="text-muted small">{{ getTranslation('pleaseWait') }}</p>
-            </div>
-
-            <div *ngIf="!isLoadingSlots && staffId && organizationServicesId && availableSlots.length === 0" class="empty-state-minimal text-center py-5 animate__animated animate__fadeIn">
-              <div class="empty-icon-box mx-auto mb-3 bg-danger bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
-                <mat-icon class="text-danger" style="font-size: 40px; width: 40px; height: 40px;">event_busy</mat-icon>
-              </div>
-              <h4 class="h6 fw-bold">{{ getTranslation('noSlotsFound') }}</h4>
-              <p class="text-muted small">{{ getTranslation('tryAnotherDay') }}</p>
-            </div>
-
-            <div *ngIf="!isLoadingSlots && availableSlots.length > 0" class="slots-grid-minimal animate__animated animate__fadeIn">
-              <button 
-                *ngFor="let slot of availableSlots" 
-                (click)="selectSlot(slot)"
-                [class.active]="selectedSlot === slot"
-                class="minimal-slot-btn">
-                <span class="slot-time-text">{{ slot.start_time }}</span>
-                <span class="slot-status-text">{{ getTranslation('slotAvailable') }}</span>
-              </button>
-            </div>
-
-            <div class="mt-5 pt-4 border-top animate__animated animate__fadeInUp" *ngIf="resourceList.length > 0">
-              <label class="form-label d-flex align-items-center mb-3">
-                <mat-icon class="me-2 fs-5 text-muted">inventory_2</mat-icon>
-                {{ getTranslation('optionalResources') }} <small class="text-muted">{{ getTranslation('optionalLabel') }}</small>
-              </label>
-              <div class="resource-chips">
-                <div 
-                  *ngFor="let res of resourceList" 
-                  class="resource-chip"
-                  [class.active]="selectedResourceIds.includes(res.id)"
-                  (click)="toggleResource(res.id)">
-                  <mat-icon>{{ selectedResourceIds.includes(res.id) ? 'check_circle' : 'add_circle_outline' }}</mat-icon>
-                  {{ res.resource_name }}
-                </div>
-              </div>
-            </div>
-          </mat-card-content>
-
-          <!-- Fixed Action Footer -->
-          <mat-card-actions class="p-4 bg-light-soft border-top mt-auto">
-            <div class="d-flex align-items-center justify-content-between w-100 flex-wrap gap-3">
-              <div class="booking-preview" *ngIf="selectedSlot">
-                <span class="text-muted small d-block">{{ getTranslation('selectedAppointment') }}</span>
-                <span class="fw-bold">
-                  {{ selectedDate | date:'d MMMM' }} ساعت <span class="text-primary-main">{{ selectedSlot.start_time }}</span>
-                </span>
-              </div>
-              <div class="booking-preview" *ngIf="!selectedSlot">
-                <span class="text-muted small">{{ getTranslation('pleaseSelectTime') }}</span>
-              </div>
-              
-              <div class="d-flex gap-2">
-                <button mat-button *ngIf="isEditMode" routerLink="/panel/dashboard" class="rounded-pill px-4">{{ getTranslation('cancel') }}</button>
-                <button 
-                  mat-flat-button 
-                  color="primary" 
-                  class="action-btn-main shadow-sm"
-                  [disabled]="!selectedSlot || isBooking"
-                  (click)="bookAppointment()">
-                  <span *ngIf="!isBooking">{{ isEditMode ? getTranslation('confirmEdit') : getTranslation('confirmAndBook') }}</span>
-                  <!-- <mat-spinner *ngIf="isBooking" diameter="20" class="me-2"></mat-spinner> -->
-                </button>
-              </div>
-            </div>
-          </mat-card-actions>
-        </mat-card>
+      <!-- Calendar card -->
+      <div class="appt-card calendar-card">
+        <div class="cal-head">
+          <span class="cal-label">انتخاب روز</span>
+          <span class="cal-date-badge" *ngIf="selectedDate">{{ selectedDate | date:'MMMM yyyy' }}</span>
+        </div>
+        <mat-calendar
+          [selected]="selectedDate"
+          (selectedChange)="onDateChange($event)"
+          class="appt-calendar">
+        </mat-calendar>
       </div>
+
+    </div>
+
+    <!-- ── Right: slots panel ── -->
+    <div class="appt-card slots-panel">
+
+      <div class="card-head">
+        <span class="accent-bar"></span>
+        <div>
+          <h3 class="card-title">زمان‌های خالی</h3>
+          <p class="card-sub">یک بازه زمانی انتخاب کنید</p>
+        </div>
+        <div class="date-badge" *ngIf="selectedDate">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+          </svg>
+          {{ selectedDate | date:'EEEE، d MMMM' }}
+        </div>
+      </div>
+
+      <div class="slots-body">
+
+        <!-- Hint: incomplete selection -->
+        <div class="empty-state" *ngIf="!staffId || !organizationServicesId">
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>
+            </svg>
+          </div>
+          <h4 class="empty-title">ابتدا اطلاعات را تکمیل کنید</h4>
+          <p class="empty-sub">پرسنل و خدمت مورد نظر را از ستون کناری انتخاب کنید</p>
+          <div class="checklist">
+            <span class="check-item" [class.done]="!!staffId">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline *ngIf="staffId" points="20 6 9 17 4 12"/>
+                <circle *ngIf="!staffId" cx="12" cy="12" r="4"/>
+              </svg>
+              انتخاب پرسنل
+            </span>
+            <span class="check-item" [class.done]="!!organizationServicesId">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polyline *ngIf="organizationServicesId" points="20 6 9 17 4 12"/>
+                <circle *ngIf="!organizationServicesId" cx="12" cy="12" r="4"/>
+              </svg>
+              انتخاب خدمت
+            </span>
+          </div>
+        </div>
+
+        <!-- Loading -->
+        <div class="loading-state" *ngIf="isLoadingSlots && staffId && organizationServicesId">
+          <mat-spinner diameter="36" strokeWidth="3"></mat-spinner>
+          <span>در حال بررسی تقویم...</span>
+        </div>
+
+        <!-- No slots -->
+        <div class="empty-state" *ngIf="!isLoadingSlots && staffId && organizationServicesId && availableSlots.length === 0">
+          <div class="empty-icon danger">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+              <line x1="9" y1="15" x2="15" y2="15"/>
+            </svg>
+          </div>
+          <h4 class="empty-title">نوبت خالی وجود ندارد</h4>
+          <p class="empty-sub">روز دیگری را امتحان کنید</p>
+        </div>
+
+        <!-- Slots grid -->
+        <div class="slots-grid" *ngIf="!isLoadingSlots && availableSlots.length > 0">
+          <button
+            *ngFor="let slot of availableSlots"
+            (click)="selectSlot(slot)"
+            [class.active]="selectedSlot === slot"
+            class="slot-btn">
+            <span class="slot-time">{{ slot.start_time }}</span>
+            <span class="slot-label">خالی</span>
+          </button>
+        </div>
+
+        <!-- Resources -->
+        <div class="resources-section" *ngIf="resourceList.length > 0">
+          <div class="resources-head">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+            </svg>
+            منابع
+            <span class="optional-tag">اختیاری</span>
+          </div>
+          <div class="resource-chips">
+            <div
+              *ngFor="let res of resourceList"
+              class="resource-chip"
+              [class.active]="selectedResourceIds.includes(res.id)"
+              (click)="toggleResource(res.id)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline *ngIf="selectedResourceIds.includes(res.id)" points="20 6 9 17 4 12"/>
+                <line *ngIf="!selectedResourceIds.includes(res.id)" x1="12" y1="5" x2="12" y2="19"/>
+                <line *ngIf="!selectedResourceIds.includes(res.id)" x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              {{ res.resource_name }}
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer action bar -->
+      <div class="slots-footer">
+        <div class="booking-preview" *ngIf="selectedSlot">
+          <div class="preview-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+            </svg>
+          </div>
+          <div class="preview-text">
+            <span class="preview-label">نوبت انتخابی</span>
+            <span class="preview-val">
+              {{ selectedDate | date:'d MMMM' }} — ساعت <strong>{{ selectedSlot.start_time }}</strong>
+            </span>
+          </div>
+        </div>
+        <div class="booking-preview muted" *ngIf="!selectedSlot">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>
+          </svg>
+          یک زمان از بالا انتخاب کنید
+        </div>
+
+        <div class="footer-actions">
+          <a class="footer-btn footer-btn-cancel" routerLink="/panel/dashboard" *ngIf="isEditMode">
+            انصراف
+          </a>
+          <button
+            class="footer-btn footer-btn-save"
+            [disabled]="!selectedSlot || isBooking"
+            (click)="bookAppointment()">
+            <mat-spinner *ngIf="isBooking" diameter="18" strokeWidth="2.5"></mat-spinner>
+            <svg *ngIf="!isBooking" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            {{ isBooking ? 'در حال ثبت...' : (isEditMode ? 'تایید ویرایش' : 'تایید و ثبت نوبت') }}
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
