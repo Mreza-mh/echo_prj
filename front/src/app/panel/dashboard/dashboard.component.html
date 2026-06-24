@@ -44,63 +44,172 @@
       </div>
     </div>
 
-    <!-- Filter Rail -->
-    <div class="filter-rail">
-      <mat-form-field appearance="outline" class="filter-field no-subscript">
-        <mat-label>تاریخ</mat-label>
-        <input matInput [matDatepicker]="picker" [(ngModel)]="selectedDate" (dateChange)="onDatePickerChange()">
-        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
-        <mat-datepicker #picker></mat-datepicker>
-      </mat-form-field>
 
-      <mat-form-field appearance="outline" class="filter-field no-subscript">
-        <mat-label>فیلتر پرسنل</mat-label>
-        <mat-select [(ngModel)]="filterStaffIds" multiple (selectionChange)="loadData()">
-          @for (staff of staffs; track staff.id) {
-            <mat-option [value]="staff.id">
-              <span class="mini-dot">{{ staff.user?.name?.charAt(0) }}</span>
-              {{ staff.user?.name }}
-            </mat-option>
+    <!-- Filter Rail (sticky) -->
+    <div class="filter-rail" [class.rail-scrolled]="isRailScrolled">
+
+      <!-- Desktop: filters inline -->
+      <div class="rail-filters">
+        <mat-form-field appearance="outline" class="filter-field no-subscript">
+          <mat-label>فیلتر پرسنل</mat-label>
+          <mat-select [(ngModel)]="filterStaffIds" multiple (selectionChange)="loadData()">
+            @for (staff of staffs; track staff.id) {
+              <mat-option [value]="staff.id">
+                <span class="mini-dot">{{ staff.user?.name?.charAt(0) }}</span>
+                {{ staff.user?.name }}
+              </mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="filter-field no-subscript">
+          <mat-label>فیلتر منابع</mat-label>
+          <mat-select [(ngModel)]="filterResourceIds" multiple (selectionChange)="loadData()">
+            @for (res of resources; track res.id) {
+              <mat-option [value]="res.id">{{ res.resource_name }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- Active filter chips -->
+      @if (filterStaffIds.length || filterResourceIds.length) {
+        <div class="active-chips">
+          @for (id of filterStaffIds; track id) {
+            <span class="chip">
+              {{ staffById(id) }}
+              <button (click)="removeStaff(id)"><mat-icon>close</mat-icon></button>
+            </span>
           }
-        </mat-select>
-      </mat-form-field>
-
-      <mat-form-field appearance="outline" class="filter-field no-subscript">
-        <mat-label>فیلتر منابع</mat-label>
-        <mat-select [(ngModel)]="filterResourceIds" multiple (selectionChange)="loadData()">
-          @for (res of resources; track res.id) {
-            <mat-option [value]="res.id">{{ res.resource_name }}</mat-option>
+          @for (id of filterResourceIds; track id) {
+            <span class="chip res">
+              {{ resourceById(id) }}
+              <button (click)="removeResource(id)"><mat-icon>close</mat-icon></button>
+            </span>
           }
-        </mat-select>
-      </mat-form-field>
-    </div>
-
-    <!-- Timeline Panel -->
-    <div class="panel cal-panel">
-      <div class="panel-head">
-        <div class="panel-label">
-          <span class="accent-bar"></span>
-          <span>نمای زمان‌بندی پرسنل</span>
         </div>
-        <div class="drag-hint">
-          <mat-icon>drag_indicator</mat-icon>
-          برای جابجایی نوبت بکشید
+      }
+
+      <!-- Calendar Toolbar -->
+      <div class="cal-toolbar">
+        <div class="cal-nav">
+          <button class="cal-nav-btn" (click)="calendarNext()">
+            <mat-icon>chevron_left</mat-icon>
+          </button>
+          <span class="cal-title">{{ calendarTitle }}</span>
+          <button class="cal-nav-btn" (click)="calendarPrev()">
+            <mat-icon>chevron_right</mat-icon>
+          </button>
+        </div>
+        <button class="cal-today-btn" (click)="calendarToday()">امروز</button>
+        <div class="cal-view-switch">
+          <button class="cvs-btn" [class.active]="currentViewType==='resourceTimelineDay'" (click)="setCalendarView('resourceTimelineDay')">روز</button>
+          <button class="cvs-btn" [class.active]="currentViewType==='timeGridWeek'" (click)="setCalendarView('timeGridWeek')">هفته</button>
+          <button class="cvs-btn" [class.active]="currentViewType==='dayGridMonth'" (click)="setCalendarView('dayGridMonth')">ماه</button>
         </div>
       </div>
 
-      <div class="cal-body position-relative" (wheel)="onCalendarWheel($event)">
-        <div class="loading-overlay" *ngIf="isLoading">
-          <mat-spinner diameter="36"></mat-spinner>
-        </div>
-        <full-calendar #calendar [options]="calendarOptions"></full-calendar>
-      </div>
+      <!-- Mobile: filter FAB -->
+      <button class="filter-fab" (click)="filterDrawerOpen = true">
+        <mat-icon>tune</mat-icon>
+        @if (filterStaffIds.length || filterResourceIds.length) {
+          <span class="fab-badge">{{ filterStaffIds.length + filterResourceIds.length }}</span>
+        }
+      </button>
     </div>
+
+    <!-- Mobile Filter Drawer -->
+    @if (filterDrawerOpen) {
+      <div class="drawer-backdrop" (click)="filterDrawerOpen = false"></div>
+      <div class="filter-drawer" [class.open]="filterDrawerOpen">
+        <div class="drawer-handle"></div>
+        <div class="drawer-header">
+          <span class="drawer-title">فیلترها</span>
+          <button class="drawer-close" (click)="filterDrawerOpen = false">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="drawer-body">
+          <mat-form-field appearance="outline" class="filter-field no-subscript drawer-field">
+            <mat-label>فیلتر پرسنل</mat-label>
+            <mat-select [(ngModel)]="filterStaffIds" multiple (selectionChange)="loadData()">
+              @for (staff of staffs; track staff.id) {
+                <mat-option [value]="staff.id">
+                  <span class="mini-dot">{{ staff.user?.name?.charAt(0) }}</span>
+                  {{ staff.user?.name }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="filter-field no-subscript drawer-field">
+            <mat-label>فیلتر منابع</mat-label>
+            <mat-select [(ngModel)]="filterResourceIds" multiple (selectionChange)="loadData()">
+              @for (res of resources; track res.id) {
+                <mat-option [value]="res.id">{{ res.resource_name }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          <div class="drawer-cal-nav">
+            <span class="drawer-section-label">ناوبری تقویم</span>
+            <div class="dcn-row">
+              <button class="cal-nav-btn" (click)="calendarNext()"><mat-icon>chevron_left</mat-icon></button>
+              <span class="cal-title">{{ calendarTitle }}</span>
+              <button class="cal-nav-btn" (click)="calendarPrev()"><mat-icon>chevron_right</mat-icon></button>
+            </div>
+            <div class="dcn-views">
+              <button class="cvs-btn" [class.active]="currentViewType==='resourceTimelineDay'" (click)="setCalendarView('resourceTimelineDay'); filterDrawerOpen=false">روز</button>
+              <button class="cvs-btn" [class.active]="currentViewType==='timeGridWeek'" (click)="setCalendarView('timeGridWeek'); filterDrawerOpen=false">هفته</button>
+              <button class="cvs-btn" [class.active]="currentViewType==='dayGridMonth'" (click)="setCalendarView('dayGridMonth'); filterDrawerOpen=false">ماه</button>
+            </div>
+          </div>
+        </div>
+        <div class="drawer-footer">
+          <button class="drawer-apply" (click)="filterDrawerOpen = false">اعمال</button>
+          <button class="drawer-reset" (click)="clearFilters()">پاک کردن</button>
+        </div>
+      </div>
+    }
+
+    
+
 
     <!-- Bottom Grid -->
     <div class="bottom-grid">
 
+            <!-- Resources Panel -->
+      <div class="panel res-panel">
+        <div class="panel-head">
+          <div class="panel-label">
+            <span class="accent-bar"></span>
+            <span>وضعیت منابع</span>
+          </div>
+        </div>
+        <div class="res-list">
+          @for (res of dashboardData?.resource_usage; track res.resource_id) {
+            <div class="res-item">
+              <div class="res-top">
+                <div>
+                  <span class="res-name">{{ res.resource_name }}</span>
+                  <span class="res-type">{{ res.resource_type }}</span>
+                </div>
+                <span class="res-badge" [class.busy]="res.usage?.length">
+                  {{ res.usage?.length ? 'مشغول' : 'آزاد' }}
+                </span>
+              </div>
+              @for (usage of res.usage; track $index) {
+                <div class="res-usage-row">
+                  <mat-icon>schedule</mat-icon>
+                  <span>{{ usage.start }} – {{ usage.end }}</span>
+                  <span class="res-staff">{{ usage.staff }}</span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+      
       <!-- Appointments Panel -->
-      <div class="panel appt-panel">
+      <div class="panel appt-panel ">
         <div class="panel-head">
           <div class="panel-label">
             <span class="accent-bar"></span>
@@ -160,41 +269,34 @@
         </div>
       </div>
 
-      <!-- Resources Panel -->
-      <div class="panel res-panel">
-        <div class="panel-head">
-          <div class="panel-label">
-            <span class="accent-bar"></span>
-            <span>وضعیت منابع</span>
-          </div>
-        </div>
-        <div class="res-list">
-          @for (res of dashboardData?.resource_usage; track res.resource_id) {
-            <div class="res-item">
-              <div class="res-top">
-                <div>
-                  <span class="res-name">{{ res.resource_name }}</span>
-                  <span class="res-type">{{ res.resource_type }}</span>
-                </div>
-                <span class="res-badge" [class.busy]="res.usage?.length">
-                  {{ res.usage?.length ? 'مشغول' : 'آزاد' }}
-                </span>
-              </div>
-              @for (usage of res.usage; track $index) {
-                <div class="res-usage-row">
-                  <mat-icon>schedule</mat-icon>
-                  <span>{{ usage.start }} – {{ usage.end }}</span>
-                  <span class="res-staff">{{ usage.staff }}</span>
-                </div>
-              }
-            </div>
-          }
-        </div>
-      </div>
+
 
     </div>
 
-  @} @else {
+
+
+    <!-- Timeline Panel -->
+    <div class="panel cal-panel">
+      <div class="panel-head">
+        <div class="panel-label">
+          <span class="accent-bar"></span>
+          <span>نمای زمان‌بندی پرسنل</span>
+        </div>
+        <div class="drag-hint">
+          <mat-icon>drag_indicator</mat-icon>
+          برای جابجایی نوبت بکشید
+        </div>
+      </div>
+
+      <div class="cal-body position-relative" (wheel)="onCalendarWheel($event)">
+        <div class="loading-overlay" *ngIf="isLoading">
+          <mat-spinner diameter="36"></mat-spinner>
+        </div>
+        <full-calendar #calendar [options]="calendarOptions"></full-calendar>
+      </div>
+    </div>
+
+  } @else {
     <div class="dash-loading">
       <mat-spinner diameter="44"></mat-spinner>
       <p>در حال بارگذاری...</p>

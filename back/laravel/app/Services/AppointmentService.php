@@ -369,11 +369,15 @@ class AppointmentService
     ---------------------------------------------------------------------------*/
     public function getCalendarDashboard(Request $request)
     {
-        $date = Carbon::parse($request->date)->format('Y-m-d');
-        $staff_ids = $request->staff_ids ?? [];
-        $resource_ids = $request->resource_ids ?? [];
-        $user_ids = $request->user_ids ?? [];
+        // Support both single date and date range (for weekly/monthly views)
+        $startDate = Carbon::parse($request->start_date ?? $request->date)->format('Y-m-d');
+        $endDate   = Carbon::parse($request->end_date   ?? $request->start_date ?? $request->date)->format('Y-m-d');
 
+        $staff_ids    = $request->staff_ids    ?? [];
+        $resource_ids = $request->resource_ids ?? [];
+        $user_ids     = $request->user_ids     ?? [];
+
+        $isRange = $startDate !== $endDate;
 
         $staff_query = Staff::with(['user', 'expertise']);
         if (!empty($staff_ids)) {
@@ -384,42 +388,44 @@ class AppointmentService
         $resources = Resource::when(!empty($resource_ids), fn($q) => $q->whereIn('id', $resource_ids))->get();
 
         $appointments = Appointment::with(['user', 'staff.user', 'service', 'status', 'resources'])
-            ->when(!empty($staff_ids), fn($q) => $q->whereIn('staff_id', $staff_ids))
+            ->when(!empty($staff_ids),    fn($q) => $q->whereIn('staff_id', $staff_ids))
             ->when(!empty($resource_ids), fn($q) =>
-            $q->whereHas('resources', fn($rq) => $rq->whereIn('resource_id', $resource_ids))
+                $q->whereHas('resources', fn($rq) => $rq->whereIn('resource_id', $resource_ids))
             )
             ->when(!empty($user_ids), fn($q) => $q->whereIn('user_id', $user_ids))
-            ->whereDate('date_of_turn', $date)
+            ->whereBetween('date_of_turn', [$startDate, $endDate])
             ->get();
 
-        $timeline = $staffs->map(function ($staff) use ($appointments, $date) {
+        $timeline = $staffs->map(function ($staff) use ($appointments, $startDate, $isRange) {
 
             $staff_apps = $appointments->where('staff_id', $staff->id);
 
-            $working_periods = $this->getStaffWorkingPeriods($staff->id, $date);
+            // Working hours only make sense for single-day view
+            $working_periods = $isRange ? [] : $this->getStaffWorkingPeriods($staff->id, $startDate);
 
             return [
-                'staff_id' => $staff->id,
-                'staff_name' => $staff->user->name ?? 'نامشخص',
-                'expertise' => $staff->expertise->title ?? 'بدون تخصص',
-                'working_periods' => empty($working_periods) ? [] : $working_periods,
-                'appointments' => $staff_apps->map(function ($app) {
+                'staff_id'        => $staff->id,
+                'staff_name'      => $staff->user->name ?? 'نامشخص',
+                'expertise'       => $staff->expertise->title ?? 'بدون تخصص',
+                'working_periods' => $working_periods,
+                'appointments'    => $staff_apps->map(function ($app) {
                     return [
-                        'id' => $app->id,
-                        'customer_name' => $app->user->name ?? 'مشتری گذری',
+                        'id'               => $app->id,
+                        'date'             => Carbon::parse($app->date_of_turn)->format('Y-m-d'),
+                        'customer_name'    => $app->user->name ?? 'مشتری گذری',
                         'customer_user_id' => $app->user_id,
-                        'customer_info' => [
-                            'id' => $app->user->id ?? null,
-                            'name' => $app->user->name ?? 'مشتری گذری',
+                        'customer_info'    => [
+                            'id'    => $app->user->id    ?? null,
+                            'name'  => $app->user->name  ?? 'مشتری گذری',
                             'phone' => $app->user->phone ?? null,
                             'email' => $app->user->email ?? null,
                         ],
                         'service_name' => $app->service->title ?? 'خدمت نامشخص',
-                        'start' => $app->start_time,
-                        'end'   => $app->end_time,
-                        'status' => $app->status->label ?? 'نامشخص',
+                        'start'        => $app->start_time,
+                        'end'          => $app->end_time,
+                        'status'       => $app->status->label ?? 'نامشخص',
                         'status_title' => $app->status->title ?? '',
-                        'resources' => $app->resources->pluck('resource_name'),
+                        'resources'    => $app->resources->pluck('resource_name'),
                     ];
                 })->values(),
             ];
@@ -430,29 +436,32 @@ class AppointmentService
             $use = $appointments->filter(fn($app) => $app->resources->contains('id', $resource->id));
 
             return [
-                'resource_id' => $resource->id,
+                'resource_id'   => $resource->id,
                 'resource_name' => $resource->resource_name,
                 'resource_type' => $resource->resource_type,
-                'usage' => $use->map(function ($app) {
+                'usage'         => $use->map(function ($app) {
                     return [
-                        'start' => $app->start_time,
-                        'end' => $app->end_time,
-                        'staff' => $app->staff->user->name ?? 'نامشخص',
+                        'date'             => Carbon::parse($app->date_of_turn)->format('Y-m-d'),
+                        'start'            => $app->start_time,
+                        'end'              => $app->end_time,
+                        'staff'            => $app->staff->user->name ?? 'نامشخص',
                         'customer_user_id' => $app->user_id,
-                        'customer_name' => $app->user->name ?? 'مشتری گذری',
+                        'customer_name'    => $app->user->name ?? 'مشتری گذری',
                     ];
                 })->values(),
             ];
         });
 
         return [
-            'date' => $date,
-            'timeline' => $timeline,
+            'date'           => $startDate,
+            'start_date'     => $startDate,
+            'end_date'       => $endDate,
+            'timeline'       => $timeline,
             'resource_usage' => $resource_usage,
-            'summary' => [
+            'summary'        => [
                 'total_appointments' => $appointments->count(),
-                'confirmed_count' => $appointments->where('status.title', 'confirmed')->count(),
-                'pending_count' => $appointments->where('status.title', 'pending')->count(),
+                'confirmed_count'    => $appointments->where('status.title', 'confirmed')->count(),
+                'pending_count'      => $appointments->where('status.title', 'pending')->count(),
             ],
         ];
     }

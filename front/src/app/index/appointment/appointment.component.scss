@@ -158,7 +158,7 @@
 
   .card-head {
     display: flex;
-    align-items: center;
+    // align-items: center;
     gap: 12px;
     padding: 16px 20px;
     border-bottom: 1px solid var(--c-border);
@@ -174,7 +174,8 @@
       font-size: 0.95rem;
       font-weight: 700;
       margin: 0;
-    }
+      display: flex;
+      }
     .card-sub {
       font-size: 0.72rem;
       color: var(--c-muted);

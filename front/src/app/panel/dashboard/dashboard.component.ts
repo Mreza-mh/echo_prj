@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ViewChild, ChangeDetectorRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -44,7 +44,7 @@ import { PanelService } from '../panel.service';
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   @ViewChild('calendar') calendarComponent!: FullCalendarComponent;
 
   private panelHttp = inject(PanelHttpService);
@@ -55,6 +55,9 @@ export class DashboardComponent implements OnInit {
   selectedDate: Date = new Date();
   filterStaffIds: number[] = [];
   filterResourceIds: number[] = [];
+
+  filterDrawerOpen = false;
+  isRailScrolled = false;
 
   private viewStart: Date = new Date();
   private viewEnd: Date = new Date();
@@ -98,11 +101,7 @@ export class DashboardComponent implements OnInit {
   calendarOptions: CalendarOptions = {
     plugins: [resourceTimelinePlugin, interactionPlugin, dayGridPlugin, timeGridPlugin],
     initialView: 'resourceTimelineDay',
-    headerToolbar: {
-      left: 'prev,next today',
-      center: 'title',
-      right: 'resourceTimelineDay,timeGridWeek,dayGridMonth',
-    },
+    headerToolbar: false,
     resourceAreaHeaderContent: 'پرسنل و منابع',
     resourceAreaWidth: '190px',
     slotMinTime: '07:00:00',
@@ -144,6 +143,7 @@ export class DashboardComponent implements OnInit {
       this.viewEnd         = inclusiveEnd;
       this.selectedDate    = info.start;
       this.currentViewType = info.view.type;
+      this.calendarTitle   = info.view.title;
       this.cdr.detectChanges();
       this.loadData();
     },
@@ -424,6 +424,63 @@ export class DashboardComponent implements OnInit {
       this.loadData();
     }
   }
+
+  calendarTitle = '';
+
+  setCalendarView(view: string) {
+    const api = this.calendarComponent?.getApi();
+    if (api) {
+      api.changeView(view);
+      this.currentViewType = view;
+      this.calendarTitle = api.view.title;
+    }
+  }
+
+  calendarPrev() {
+    const api = this.calendarComponent?.getApi();
+    if (api) { api.prev(); this.calendarTitle = api.view.title; }
+  }
+
+  calendarNext() {
+    const api = this.calendarComponent?.getApi();
+    if (api) { api.next(); this.calendarTitle = api.view.title; }
+  }
+
+  calendarToday() {
+    const api = this.calendarComponent?.getApi();
+    if (api) { api.today(); this.calendarTitle = api.view.title; }
+  }
+
+  staffById(id: number): string {
+    return this.staffs.find(s => s.id === id)?.user?.name ?? String(id);
+  }
+
+  resourceById(id: number): string {
+    return this.resources.find(r => r.id === id)?.resource_name ?? String(id);
+  }
+
+  removeStaff(id: number) {
+    this.filterStaffIds = this.filterStaffIds.filter(x => x !== id);
+    this.loadData();
+  }
+
+  removeResource(id: number) {
+    this.filterResourceIds = this.filterResourceIds.filter(x => x !== id);
+    this.loadData();
+  }
+
+  clearFilters() {
+    this.filterStaffIds = [];
+    this.filterResourceIds = [];
+    this.loadData();
+  }
+
+  @HostListener('window:scroll')
+  onWindowScroll() {
+    this.isRailScrolled = window.scrollY > 60;
+  }
+
+  ngOnDestroy() {}
 
   onCalendarWheel(e: WheelEvent) {
     if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
