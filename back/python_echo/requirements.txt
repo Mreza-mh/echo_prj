@@ -8,3 +8,6 @@ torch
 torchvision
 requests
 python-dotenv
+scikit-learn
+catboost
+joblib

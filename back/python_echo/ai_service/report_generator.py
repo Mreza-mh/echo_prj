@@ -259,7 +259,7 @@ def build_final_report(
             "generated_at":   now.isoformat(),
             "visit_date":     visit_date,
             "report_version": "2.0",
-            "pipeline":       "CardioAI (ML + Fuzzy + Echo)",
+            "pipeline":       "(ML + Fuzzy + Echo)",
         },
         "patient": {
             "id":        pid,
