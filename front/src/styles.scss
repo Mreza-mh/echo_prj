@@ -270,6 +270,38 @@ body {
   opacity: 0.5 !important;
 }
 
+// Gallery Dialog — dark borderless
+.gallery-dialog-panel {
+  .mat-mdc-dialog-container {
+    padding: 0;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #0f1117;
+  }
+  .mat-mdc-dialog-surface {
+    border-radius: 16px;
+    background: #0f1117;
+    padding: 0;
+  }
+}
+
+// Gallery Dialog — fullscreen on mobile
+.gallery-dialog-mobile {
+  .mat-mdc-dialog-container {
+    border-radius: 0 !important;
+    max-width: 100vw !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    margin: 0 !important;
+  }
+  .mat-mdc-dialog-surface {
+    border-radius: 0 !important;
+    height: 100% !important;
+    display: flex;
+    flex-direction: column;
+  }
+}
+
 // Patient Form Dialog Styles
 .patient-form-dialog {
   .mat-mdc-dialog-container {

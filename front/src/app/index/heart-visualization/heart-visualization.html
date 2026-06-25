@@ -1,6 +1,6 @@
 <div class="heart-visualization-container">
 
-  <!-- Canvas Wrapper: contains canvas + all overlays (loading, labels) -->
+  <!-- Canvas Wrapper -->
   <div class="canvas-wrapper">
 
     <canvas #heartCanvas class="heart-canvas"></canvas>
@@ -19,7 +19,7 @@
       </div>
     }
 
-    <!-- Measurement Labels Overlay -->
+    <!-- Measurement Labels Overlay (desktop only) -->
     <div #overlayEl class="labels-overlay">
       @for (label of measurementLabels; track label.id) {
         @if (label.visible) {
@@ -42,10 +42,39 @@
       }
     </div>
 
-  </div>
-  <!-- /canvas-wrapper -->
+    <!-- Mobile Key Metrics Overlay -->
+    @if (patientData) {
+      <div class="mobile-badges">
+        @if (ef !== null) {
+          <div class="mobile-badge" [class.mb-normal]="ef >= 55" [class.mb-warn]="ef >= 40 && ef < 55" [class.mb-danger]="ef < 40">
+            <span class="mb-label">EF</span>
+            <span class="mb-value">{{ ef | number:'1.0-0' }}%</span>
+          </div>
+        }
+        @if (patientData.lvid_d) {
+          <div class="mobile-badge" [class.mb-normal]="patientData.lvid_d <= 5.2" [class.mb-warn]="patientData.lvid_d > 5.2">
+            <span class="mb-label">LVIDd</span>
+            <span class="mb-value">{{ patientData.lvid_d | number:'1.1-1' }}</span>
+          </div>
+        }
+        @if (patientData.ivs) {
+          <div class="mobile-badge" [class.mb-normal]="patientData.ivs <= 12" [class.mb-warn]="patientData.ivs > 12">
+            <span class="mb-label">IVS</span>
+            <span class="mb-value">{{ patientData.ivs | number:'1.0-0' }}</span>
+          </div>
+        }
+        @if (patientData.la_volume) {
+          <div class="mobile-badge" [class.mb-normal]="patientData.la_volume <= 28" [class.mb-warn]="patientData.la_volume > 28 && patientData.la_volume <= 34" [class.mb-danger]="patientData.la_volume > 34">
+            <span class="mb-label">LA</span>
+            <span class="mb-value">{{ patientData.la_volume | number:'1.0-0' }}</span>
+          </div>
+        }
+      </div>
+    }
 
-  <!-- Controls Panel: sibling of canvas-wrapper, floats on desktop, stacks on mobile -->
+  </div>
+
+  <!-- Controls Panel -->
   <div class="controls-panel">
 
     <!-- ECG Decorative Header -->
@@ -66,15 +95,22 @@
         class="tab-btn"
         [class.active]="activeTab === 'echo'"
         (click)="setTab('echo')">
-        <i class="icon">📊</i>
+        <svg class="icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <rect x="1" y="9" width="3" height="6" rx="1" fill="currentColor"/>
+          <rect x="6" y="5" width="3" height="10" rx="1" fill="currentColor"/>
+          <rect x="11" y="1" width="3" height="14" rx="1" fill="currentColor"/>
+        </svg>
         Echo Data
       </button>
       <button
         class="tab-btn"
         [class.active]="activeTab === 'patient'"
         (click)="setTab('patient')">
-        <i class="icon">👤</i>
-        Patient Info
+        <svg class="icon" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+          <circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M2 14c0-3.314 2.686-5 6-5s6 1.686 6 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+        Patient
       </button>
     </div>
 
@@ -203,32 +239,40 @@
       @if (activeTab === 'patient' && patientData) {
         <div class="info-grid">
 
-          <div class="info-item">
-            <span class="info-label">Patient ID</span>
-            <span class="info-value">{{ patientData.patient_info.id }}</span>
-          </div>
+          @if (patientData.patient_info.id) {
+            <div class="info-item">
+              <span class="info-label">Patient ID</span>
+              <span class="info-value">{{ patientData.patient_info.id }}</span>
+            </div>
+          }
 
-          <div class="info-item">
-            <span class="info-label">Gender</span>
-            <span class="info-value">{{ patientData.patient_info.gender }}</span>
-          </div>
+          @if (patientData.patient_info.gender) {
+            <div class="info-item">
+              <span class="info-label">Gender</span>
+              <span class="info-value">{{ patientData.patient_info.gender }}</span>
+            </div>
+          }
 
           @if (patientData.patient_info.age) {
             <div class="info-item">
               <span class="info-label">Age</span>
-              <span class="info-value">{{ patientData.patient_info.age }} years</span>
+              <span class="info-value">{{ patientData.patient_info.age }} yrs</span>
             </div>
           }
 
-          <div class="info-item">
-            <span class="info-label">Weight</span>
-            <span class="info-value">{{ patientData.patient_info.weight }} kg</span>
-          </div>
+          @if (patientData.patient_info.weight) {
+            <div class="info-item">
+              <span class="info-label">Weight</span>
+              <span class="info-value">{{ patientData.patient_info.weight }} kg</span>
+            </div>
+          }
 
-          <div class="info-item">
-            <span class="info-label">Height</span>
-            <span class="info-value">{{ patientData.patient_info.height }} cm</span>
-          </div>
+          @if (patientData.patient_info.height) {
+            <div class="info-item">
+              <span class="info-label">Height</span>
+              <span class="info-value">{{ patientData.patient_info.height }} cm</span>
+            </div>
+          }
 
           @if (bmi !== null) {
             <div class="info-item">
@@ -243,10 +287,12 @@
             </div>
           }
 
-          <div class="info-item">
-            <span class="info-label">Est. BPM</span>
-            <span class="info-value">{{ estimatedBPM }}</span>
-          </div>
+          @if (estimatedBPM) {
+            <div class="info-item">
+              <span class="info-label">Est. BPM</span>
+              <span class="info-value">{{ estimatedBPM }}</span>
+            </div>
+          }
 
         </div>
       }
@@ -256,14 +302,13 @@
     <!-- Action Buttons -->
     <div class="action-buttons">
       <button class="action-btn" (click)="togglePause()" [title]="paused ? 'Resume' : 'Pause'">
-        {{ paused ? '▶️' : '⏸️' }}
+        {{ paused ? '▶' : '⏸' }}
       </button>
       <button class="action-btn" (click)="resetCamera()" title="Reset Camera">
-        🔄
+        ↺
       </button>
     </div>
 
   </div>
-  <!-- /controls-panel -->
 
 </div>

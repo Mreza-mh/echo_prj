@@ -15,10 +15,10 @@ import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 
 export interface PatientEchoData {
   patient_info: {
-    id: string;
-    gender: string;
-    weight: number;
-    height: number;
+    id?: string;
+    gender?: string;
+    weight?: number;
+    height?: number;
     age?: number;
     smoker?: boolean;
     diabetic?: boolean;
@@ -78,7 +78,7 @@ export class HeartVisualizationComponent
   // Public state for template
   bmi: number | null = null;
   ef: number | null = null;
-  estimatedBPM = 72;
+  estimatedBPM: number | null = null;
   paused = false;
   modelLoaded = false;
   loadProgress = 0;
@@ -165,14 +165,20 @@ export class HeartVisualizationComponent
       this.ef = ((edv - esv) / edv) * 100;
     }
 
-    // BPM estimate
-    let bpm = 72;
-    if (p.smoker) bpm += 8;
-    if (p.hypertensive) bpm += 5;
-    if (p.diabetic) bpm += 3;
-    if (this.ef !== null && this.ef < 40) bpm += 10;
-    if (this.bmi && this.bmi > 30) bpm += 5;
-    this.estimatedBPM = Math.round(bpm);
+    // BPM estimate — only show if at least one clinical factor is known
+    const hasFactors = p.smoker != null || p.hypertensive != null || p.diabetic != null
+                       || this.ef !== null || this.bmi !== null;
+    if (hasFactors) {
+      let bpm = 72;
+      if (p.smoker)      bpm += 8;
+      if (p.hypertensive) bpm += 5;
+      if (p.diabetic)    bpm += 3;
+      if (this.ef !== null && this.ef < 40) bpm += 10;
+      if (this.bmi && this.bmi > 30) bpm += 5;
+      this.estimatedBPM = Math.round(bpm);
+    } else {
+      this.estimatedBPM = null;
+    }
 
     this.buildMeasurementLabels();
     this.cdr.markForCheck();
@@ -184,147 +190,116 @@ export class HeartVisualizationComponent
 
   private buildMeasurementLabels() {
     if (!this.patientData) return;
-    
+
     const pd = this.patientData;
     this.measurementLabels = [];
 
-    // LV - Left Ventricle (بطن چپ) - positioned on left ventricle body
+    // ── Anatomy reference (model scaled to 6 units, anterior view) ──
+    // Y+  = superior (top),  Y- = inferior (bottom/apex)
+    // X-  = patient's right (viewer's left = LV side)
+    // X+  = patient's left  (viewer's right = RV side)
+    // Z+  = anterior (front face of heart)
+
+    // LVIDd — body of left ventricle, mid-anterior, pushed left
     if (pd.lvid_d) {
-      const normal = pd.lvid_d <= 5.2;
       this.measurementLabels.push({
         id: 'lvid_d',
         text: 'LVIDd',
         value: pd.lvid_d.toFixed(2),
         unit: 'cm',
-        status: normal ? 'normal' : 'warn',
-        anchorPos: new THREE.Vector3(-1.5, -0.6, 0.8),
-        screenX: 0,
-        screenY: 0,
-        visible: true,
+        status: pd.lvid_d <= 5.2 ? 'normal' : 'warn',
+        anchorPos: new THREE.Vector3(-1.8, -0.5, 1.2),
+        screenX: 0, screenY: 0, visible: true,
       });
     }
 
-    // LV Systole
+    // LVIDs — same chamber, slightly lower (systole = smaller)
     if (pd.lvid_s) {
-      const normal = pd.lvid_s <= 3.8;
       this.measurementLabels.push({
         id: 'lvid_s',
         text: 'LVIDs',
         value: pd.lvid_s.toFixed(2),
         unit: 'cm',
-        status: normal ? 'normal' : 'warn',
-        anchorPos: new THREE.Vector3(-1.3, -1.8, 0.5),
-        screenX: 0,
-        screenY: 0,
-        visible: true,
+        status: pd.lvid_s <= 3.8 ? 'normal' : 'warn',
+        anchorPos: new THREE.Vector3(-2.0, -1.6, 0.8),
+        screenX: 0, screenY: 0, visible: true,
       });
     }
 
-    // IVS (Interventricular Septum) - between LV and RV
+    // IVS — interventricular septum, anterior midline, slightly right of center
     if (pd.ivs) {
-      const hypertrophy = pd.ivs > 12;
       this.measurementLabels.push({
         id: 'ivs',
         text: 'IVS',
         value: pd.ivs.toFixed(1),
         unit: 'mm',
-        status: hypertrophy ? 'warn' : 'normal',
-        anchorPos: new THREE.Vector3(0.0, -0.3, 1.2),
-        screenX: 0,
-        screenY: 0,
-        visible: true,
+        status: pd.ivs > 12 ? 'warn' : 'normal',
+        anchorPos: new THREE.Vector3(0.3, -0.2, 1.8),
+        screenX: 0, screenY: 0, visible: true,
       });
     }
 
-    // PW (Posterior Wall) - back wall of LV
+    // PW — posterior wall of LV, behind and left, negative Z
     if (pd.pw) {
-      const abnormal = pd.pw > 12 || pd.pw < 6;
       this.measurementLabels.push({
         id: 'pw',
         text: 'PW',
         value: pd.pw.toFixed(1),
         unit: 'mm',
-        status: abnormal ? 'warn' : 'normal',
-        anchorPos: new THREE.Vector3(-1.6, -0.8, -0.6),
-        screenX: 0,
-        screenY: 0,
-        visible: true,
+        status: (pd.pw < 6 || pd.pw > 12) ? 'warn' : 'normal',
+        anchorPos: new THREE.Vector3(-2.0, -0.5, -1.0),
+        screenX: 0, screenY: 0, visible: true,
       });
     }
 
-    // LA - Left Atrium (دهلیز چپ) - positioned on left atrium
+    // LA Vol — left atrium, superior-left-posterior
     if (pd.la_volume) {
-      const status = pd.la_volume > 34 ? 'danger' : pd.la_volume > 28 ? 'warn' : 'normal';
       this.measurementLabels.push({
         id: 'la_volume',
         text: 'LA Vol',
         value: pd.la_volume.toFixed(1),
         unit: 'mL',
-        status,
-        anchorPos: new THREE.Vector3(-1.2, 1.8, 0.3),
-        screenX: 0,
-        screenY: 0,
-        visible: true,
+        status: pd.la_volume > 34 ? 'danger' : pd.la_volume > 28 ? 'warn' : 'normal',
+        anchorPos: new THREE.Vector3(-1.4, 2.0, -0.4),
+        screenX: 0, screenY: 0, visible: true,
       });
     }
 
-    // RA - Right Atrium (دهلیز راست) - positioned on right atrium
+    // RA Vol — right atrium, superior-right-posterior
     if (pd.ra_volume) {
-      const status = pd.ra_volume > 45 ? 'warn' : 'normal';
       this.measurementLabels.push({
         id: 'ra_volume',
         text: 'RA Vol',
         value: pd.ra_volume.toFixed(1),
         unit: 'mL',
-        status,
-        anchorPos: new THREE.Vector3(1.2, 1.6, 0.2),
-        screenX: 0,
-        screenY: 0,
-        visible: true,
+        status: pd.ra_volume > 45 ? 'warn' : 'normal',
+        anchorPos: new THREE.Vector3(1.6, 2.0, -0.2),
+        screenX: 0, screenY: 0, visible: true,
       });
     }
 
-    // RV - Right Ventricle (بطن راست) - if we have RV data
-    if (pd.lv_edv) {
-      this.measurementLabels.push({
-        id: 'rv',
-        text: 'RV',
-        value: (pd.lv_edv * 0.6).toFixed(1),
-        unit: 'mL',
-        status: 'info',
-        anchorPos: new THREE.Vector3(1.4, -0.4, 0.7),
-        screenX: 0,
-        screenY: 0,
-        visible: true,
-      });
-    }
-
-    // Aortic Root (ریشه آئورت)
+    // Aortic Root — superior-anterior, just above LV outflow
     if (pd.aortic_root) {
-      const dilated = pd.aortic_root > 3.8;
       this.measurementLabels.push({
         id: 'aortic_root',
         text: 'Ao Root',
         value: pd.aortic_root.toFixed(2),
         unit: 'cm',
-        status: dilated ? 'warn' : 'normal',
-        anchorPos: new THREE.Vector3(-0.4, 2.4, 0.6),
-        screenX: 0,
-        screenY: 0,
-        visible: true,
+        status: pd.aortic_root > 3.8 ? 'warn' : 'normal',
+        anchorPos: new THREE.Vector3(-0.3, 2.6, 0.8),
+        screenX: 0, screenY: 0, visible: true,
       });
     }
 
-    // EF (Ejection Fraction) - overall heart function
+    // EF — apex/inferior-anterior (summary of whole LV function)
     if (this.ef !== null) {
-      const efStatus = this.ef >= 55 ? 'normal' : this.ef >= 40 ? 'warn' : 'danger';
       this.measurementLabels.push({
         id: 'ef',
         text: 'EF',
         value: this.ef.toFixed(0),
         unit: '%',
-        status: efStatus,
-        anchorPos: new THREE.Vector3(0.6, -1.4, 1.0),
+        status: this.ef >= 55 ? 'normal' : this.ef >= 40 ? 'warn' : 'danger',
+        anchorPos: new THREE.Vector3(0.0, -2.4, 1.2),
         screenX: 0,
         screenY: 0,
         visible: true,
@@ -624,8 +599,10 @@ export class HeartVisualizationComponent
     const w = canvas.clientWidth;
     const h = canvas.clientHeight;
     
-    // Check if on mobile
-    const isMobile = w < 480;
+    const isMobile = w < 768;
+
+    // Hide all 3D measurement objects on mobile (lines, spheres)
+    this.measurementGroup.visible = !isMobile;
 
     this.measurementLabels.forEach(label => {
       // Project 3D position to screen

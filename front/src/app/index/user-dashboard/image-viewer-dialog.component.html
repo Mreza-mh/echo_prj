@@ -1,15 +1,61 @@
-<div class="image-viewer-dialog">
-  <h2 mat-dialog-title>
-    <mat-icon>image</mat-icon>
-    {{ getTranslation('imageViewer') }}
-  </h2>
-  <div mat-dialog-content class="dialog-content">
-    <img [src]="data.imageUrl" alt="Echo Image" />
+<div class="gallery-dialog">
+
+  <!-- Header -->
+  <div class="gallery-header">
+    <div class="gallery-header-left">
+      <div class="gallery-icon-wrap">
+        <mat-icon>collections</mat-icon>
+      </div>
+      <span class="gallery-title">{{ getTranslation('imageViewer') || 'نمایش تصویر' }}</span>
+    </div>
+    <div class="gallery-header-right">
+      @if (hasMultiple) {
+        <span class="gallery-counter">{{ currentIndex + 1 }} / {{ images.length }}</span>
+      }
+      <button mat-icon-button class="gallery-close-btn" (click)="onClose()" matTooltip="بستن (Esc)">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
   </div>
-  <div mat-dialog-actions>
-    <button mat-raised-button (click)="onClose()">
-      <mat-icon>close</mat-icon>
-      {{ getTranslation('close') }}
-    </button>
+
+  <!-- Main Viewer -->
+  <div class="gallery-stage">
+
+    <!-- Prev Button -->
+    @if (hasMultiple) {
+      <button mat-icon-button class="gallery-nav gallery-nav--prev"
+              (click)="prev()" [disabled]="currentIndex === 0"
+              matTooltip="قبلی (→)">
+        <mat-icon>chevron_right</mat-icon>
+      </button>
+    }
+
+    <!-- Image -->
+    <div class="gallery-image-wrap">
+      <img [src]="currentImage" alt="Echo Image" class="gallery-image" />
+    </div>
+
+    <!-- Next Button -->
+    @if (hasMultiple) {
+      <button mat-icon-button class="gallery-nav gallery-nav--next"
+              (click)="next()" [disabled]="currentIndex === images.length - 1"
+              matTooltip="بعدی (←)">
+        <mat-icon>chevron_left</mat-icon>
+      </button>
+    }
   </div>
+
+  <!-- Thumbnails -->
+  @if (hasMultiple) {
+    <div class="gallery-thumbs">
+      @for (img of images; track $index) {
+        <div class="gallery-thumb"
+             [class.gallery-thumb--active]="currentIndex === $index"
+             (click)="goTo($index)">
+          <img [src]="img" alt="thumb {{ $index + 1 }}" />
+        </div>
+      }
+    </div>
+  }
+
 </div>

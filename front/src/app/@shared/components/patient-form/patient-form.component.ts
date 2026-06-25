@@ -3,14 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
-import { MatIconModule } from '@angular/material/icon';
-import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatStepperModule } from '@angular/material/stepper';
 import { ToastService } from '../../services/toast/toast.service';
 import { AuthHTTPService } from '../../../auth/auth-http.service';
 
@@ -22,14 +16,8 @@ import { AuthHTTPService } from '../../../auth/auth-http.service';
     FormsModule,
     ReactiveFormsModule,
     MatDialogModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
     MatButtonModule,
-    MatIconModule,
-    MatTooltipModule,
     MatProgressSpinnerModule,
-    MatStepperModule
   ],
   templateUrl: './patient-form.component.html',
   styleUrls: ['./patient-form.component.scss']
@@ -46,26 +34,28 @@ export class PatientFormComponent implements OnInit {
   
   loading = false;
   userId: number | null = null;
+  currentStep = 0;
+  readonly stepLabels = ['پایه', 'فشار خون', 'قلبی', 'سبک زندگی'];
 
   constructor(
     @Optional() public dialogRef: MatDialogRef<PatientFormComponent>,
     @Optional() @Inject(MAT_DIALOG_DATA) public data: any,
-    private  authHttpService : AuthHTTPService ,
-  ) {
-
-    this.authHttpService.getMe().subscribe(response => {
-      this.userId = response.data.id;
-    });
-
-    if (!this.userId && data?.userId) {
-      this.userId = data.userId;
-    }
-  }
+    private authHttpService: AuthHTTPService,
+  ) {}
 
   ngOnInit(): void {
     this.initForms();
-    if (this.userId) {
+
+    if (this.data?.userId) {
+      this.userId = this.data.userId;
       this.loadExistingData();
+    } else {
+      this.authHttpService.getMe().subscribe(response => {
+        this.userId = response.data.id;
+        if (this.userId) {
+          this.loadExistingData();
+        }
+      });
     }
   }
 
@@ -256,6 +246,18 @@ export class PatientFormComponent implements OnInit {
         this.loading = false;
       }
     });
+  }
+
+  nextStep(): void {
+    if (this.currentStep < this.stepLabels.length - 1) this.currentStep++;
+  }
+
+  prevStep(): void {
+    if (this.currentStep > 0) this.currentStep--;
+  }
+
+  goToStep(index: number): void {
+    this.currentStep = index;
   }
 
   toggleField(field: string, form: FormGroup): void {

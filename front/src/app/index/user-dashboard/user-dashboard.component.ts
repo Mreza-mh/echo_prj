@@ -19,7 +19,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ImageViewerDialogComponent } from './image-viewer-dialog.component';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { ImageViewerDialogComponent, ImageViewerData } from './image-viewer-dialog.component';
 import { PatientFormComponent } from '../../@shared/components/patient-form/patient-form.component';
 import { HeartVisualizationComponent, PatientEchoData } from '../heart-visualization/heart-visualization';
 
@@ -43,6 +44,7 @@ import { HeartVisualizationComponent, PatientEchoData } from '../heart-visualiza
     MatSelectModule,
     MatDialogModule,
     MatTooltipModule,
+    MatExpansionModule,
     ImageViewerDialogComponent,
     PatientFormComponent,
     HeartVisualizationComponent
@@ -340,40 +342,46 @@ export class UserDashboardComponent implements OnInit {
       lv_esv = esv;
     }
 
-    // Get score and category from fuzzy summary
-    const score = fuzzySummary?.score !== undefined ? parseFloat(fuzzySummary.score) : undefined;
-    const category = fuzzySummary?.category?.toLowerCase() || 'normal';
+    const score    = fuzzySummary?.score !== undefined ? parseFloat(fuzzySummary.score) : undefined;
+    const category = fuzzySummary?.category?.toLowerCase() || undefined;
+
+    const weight = parseFloat(patientInfo.weight);
+    const height = parseFloat(patientInfo.height);
+    const age    = patientInfo.age
+                     ? parseInt(patientInfo.age, 10)
+                     : this.calculateAge(this.userData?.birthday);
 
     return {
       patient_info: {
-        id: patientInfo.id || this.userData.id || 'N/A',
-        gender: patientInfo.gender || this.userData.gender || 'male',
-        weight: parseFloat(patientInfo.weight) || 70,
-        height: parseFloat(patientInfo.height) || 170,
-        age: this.calculateAge(this.userData.birthday),
-        smoker: false,
-        diabetic: false,
-        hypertensive: false
+        id:           patientInfo.id      || undefined,
+        gender:       patientInfo.gender  || undefined,
+        weight:       isNaN(weight)  ? undefined : weight,
+        height:       isNaN(height)  ? undefined : height,
+        age:          age,
+        smoker:       patientInfo.smoker       ?? undefined,
+        diabetic:     patientInfo.diabetic     ?? undefined,
+        hypertensive: patientInfo.hypertensive ?? undefined,
       },
-      lvid_d: lvid_d || 5.0,
-      lvid_s: lvid_s || 3.5,
-      ivs: ivs || 10,
-      pw: pw || 10,
-      la_volume: la_volume || 30,
-      ra_volume: ra_volume || 35,
-      aortic_root: aortic_root || 3.0,
-      aortic_asc: aortic_asc,
-      lv_edv: lv_edv,
-      lv_esv: lv_esv,
-      ef: ef || 60,
-      score: score || 20,
-      category: category
+      lvid_d,
+      lvid_s,
+      ivs,
+      pw,
+      la_volume,
+      ra_volume,
+      aortic_root,
+      aortic_asc,
+      lv_edv,
+      lv_esv,
+      ef,
+      score,
+      category: category || undefined,
     };
   }
 
-  private calculateAge(birthday: string): number {
-    if (!birthday) return 30;
+  private calculateAge(birthday: string): number | undefined {
+    if (!birthday) return undefined;
     const birthDate = new Date(birthday);
+    if (isNaN(birthDate.getTime())) return undefined;
     const today = new Date();
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
@@ -418,6 +426,18 @@ export class UserDashboardComponent implements OnInit {
     return this.visitsByDate[date] || [];
   }
 
+  get appointmentsByDate(): { date: string; appointments: any[] }[] {
+    const map = new Map<string, any[]>();
+    for (const app of this.userAppointments) {
+      const d = app.date_of_turn || 'نامشخص';
+      if (!map.has(d)) map.set(d, []);
+      map.get(d)!.push(app);
+    }
+    return Array.from(map.entries())
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .map(([date, appointments]) => ({ date, appointments }));
+  }
+
   getStatusColor(status: string): string {
     if (!status) return '#94a3b8';
     
@@ -441,16 +461,24 @@ export class UserDashboardComponent implements OnInit {
     }
   }
 
-  viewEchoFile(address: string): void {
-    if (address) {
-      this.dialog.open(ImageViewerDialogComponent, {
-        data: { imageUrl: address },
-        width: '90%',
-        maxWidth: '600px',
-        height: '90%',
-        maxHeight: '700px'
-      });
-    }
+  getMeasurementImages(frameUrl: string, previewUrl: string): string[] {
+    return [frameUrl, previewUrl].filter(u => !!u);
+  }
+
+  viewEchoFile(address: string, allImages?: string[], startIndex?: number): void {
+    if (!address && (!allImages || allImages.length === 0)) return;
+    const data: ImageViewerData = allImages && allImages.length > 0
+      ? { images: allImages, currentIndex: startIndex ?? 0 }
+      : { imageUrl: address };
+    const isMobile = window.innerWidth <= 600;
+    this.dialog.open(ImageViewerDialogComponent, {
+      data,
+      width: isMobile ? '100vw' : '92vw',
+      maxWidth: isMobile ? '100vw' : '800px',
+      height: isMobile ? '100dvh' : 'auto',
+      maxHeight: isMobile ? '100dvh' : '90vh',
+      panelClass: isMobile ? ['gallery-dialog-panel', 'gallery-dialog-mobile'] : 'gallery-dialog-panel'
+    });
   }
 
   // Profile methods
