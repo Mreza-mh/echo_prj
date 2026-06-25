@@ -45,7 +45,7 @@
           </div>
 
           <div class="hero-actions">
-            <a href="#journey" class="btn btn-primary">{{ getTranslation('getStarted') }}</a>
+            <a href="#architecture" class="btn btn-primary">{{ getTranslation('getStarted') }}</a>
             <a href="#architecture" class="btn btn-outline">{{ getTranslation('systemArchitecture') }}</a>
           </div>
         </div>
@@ -231,121 +231,126 @@
         <p>جریان داده از کاربر تا گزارش نهایی — نمای درختی کامل سیستم</p>
       </div>
 
-      <!-- ─── Tree Diagram ─── -->
+      <!-- ─── Architecture Tree ─── -->
       <div class="arch-tree glass-panel">
-
-        <!-- Root -->
         <div class="tree-root">
+
+          <!-- ══ LAYER 0: کاربران ══ -->
           <div class="tree-node root-node" tabindex="0">
-            <span class="node-icon">👤</span>
-            <span class="node-label">Users & Clients</span>
+            <svg class="node-svg" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="6" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M2 17c0-4.418 3.582-7 8-7s8 2.582 8 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <span class="node-label">کاربران سیستم</span>
+            <span class="node-tag">4 نقش</span>
             <div class="node-hover">
-              <strong>نقش‌ها:</strong> Patient · Doctor · Secretary · Admin<br>
-              <strong>دستگاه‌ها:</strong> Web Browser · PWA · Mobile<br>
-              <strong>پروتکل:</strong> HTTPS / WebSocket
+              <div class="nh-row"><span class="nh-key">بیمار</span><span class="nh-val">ثبت نوبت · مشاهده اکو · دریافت گزارش هوش مصنوعی</span></div>
+              <div class="nh-row"><span class="nh-key">پزشک</span><span class="nh-val">بررسی ویدیوهای اکو · تأیید یا ویرایش گزارش</span></div>
+              <div class="nh-row"><span class="nh-key">منشی</span><span class="nh-val">مدیریت صف نوبت · پذیرش · حسابداری</span></div>
+              <div class="nh-row"><span class="nh-key">ادمین</span><span class="nh-val">مدیریت کاربران، سرویس‌ها و تنظیمات سیستم</span></div>
+              <div class="nh-row"><span class="nh-key">دستگاه</span><span class="nh-val">Web Browser · PWA · Mobile</span></div>
             </div>
           </div>
 
           <div class="tree-children">
-
-            <!-- Branch: Frontend -->
+            <!-- ══ LAYER 1: Frontend ══ -->
             <div class="tree-branch">
               <div class="tree-node frontend-node" tabindex="0">
-                <span class="node-icon">💻</span>
+                <svg class="node-svg" viewBox="0 0 20 20" fill="none"><rect x="2" y="3" width="16" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 17h6M10 14v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                 <span class="node-label">Angular 20 Frontend</span>
-                <span class="node-port">Port 4200</span>
+                <span class="node-port">:4200</span>
                 <div class="node-hover">
-                  <strong>Framework:</strong> Angular 20 + Material UI<br>
-                  <strong>State:</strong> Services + NgRx (optional)<br>
-                  <strong>پنل‌ها:</strong><br>
-                  &nbsp;• Patient Panel — نوبت، گزارش، چت<br>
-                  &nbsp;• Doctor Panel — بررسی اکو، تایید گزارش<br>
-                  &nbsp;• Secretary Panel — صف انتظار، حسابداری<br>
-                  &nbsp;• Admin Panel — مدیریت کاربران و سرویس‌ها
+                  <div class="nh-row"><span class="nh-key">Framework</span><span class="nh-val">Angular 20 + Angular Material · Standalone Components</span></div>
+                  <div class="nh-row"><span class="nh-key">پنل بیمار</span><span class="nh-val">رزرو نوبت آنلاین (چت‌بات + درگاه) · تاریخچه اکو · گزارش هوش مصنوعی · مدل سه‌بعدی قلب · چت با دستیار (Qdrant)</span></div>
+                  <div class="nh-row"><span class="nh-key">پنل پزشک</span><span class="nh-val">مشاهده تمام اکوها (ویدیو + نتایج AI) · ویرایش inline گزارش · داشبورد روند بیمار · نسخه الکترونیک</span></div>
+                  <div class="nh-row"><span class="nh-key">پنل منشی</span><span class="nh-val">صف انتظار Real-time · تأیید/لغو نوبت (SMS) · حسابداری و گزارش مالی روزانه · تقویم و شیفت پزشکان</span></div>
+                  <div class="nh-row"><span class="nh-key">پنل ادمین</span><span class="nh-val">مدیریت کاربران · سرویس‌ها · تنظیمات سیستم · RBAC</span></div>
+                  <div class="nh-row"><span class="nh-key">ویژگی‌ها</span><span class="nh-val">Three.js 3D Heart · RTL کامل · Dark/Light theme · PWA</span></div>
                 </div>
               </div>
 
               <div class="tree-children">
-
-                <!-- Branch: Kong Gateway -->
+                <!-- ══ LAYER 2: Kong Gateway ══ -->
                 <div class="tree-branch">
                   <div class="tree-node gateway-node" tabindex="0">
-                    <span class="node-icon">🚪</span>
+                    <svg class="node-svg" viewBox="0 0 20 20" fill="none"><path d="M3 10h14M10 3l7 7-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     <span class="node-label">Kong API Gateway</span>
-                    <span class="node-port">Port 9098</span>
+                    <span class="node-port">:9098</span>
                     <div class="node-hover">
-                      <strong>Auth:</strong> JWT Validation · OAuth2<br>
-                      <strong>Security:</strong> Rate Limit 100 req/min<br>
-                      <strong>Logging:</strong> Request Tracking · Audit Trail<br>
-                      <strong>Load:</strong> Round-Robin Distribution<br>
-                      <strong>Admin:</strong> Konga UI Port 9338
+                      <div class="nh-desc">تنها نقطه ورود همه درخواست‌های API — هیچ سرویسی مستقیم در دسترس نیست</div>
+                      <div class="nh-row"><span class="nh-key">احراز هویت</span><span class="nh-val">JWT Validation · OAuth2 · Refresh Token</span></div>
+                      <div class="nh-row"><span class="nh-key">امنیت</span><span class="nh-val">Rate Limit: 100 req/min · IP Whitelist · CORS</span></div>
+                      <div class="nh-row"><span class="nh-key">مسیریابی</span><span class="nh-val">/api/laravel → Laravel · /api/ai → Python</span></div>
+                      <div class="nh-row"><span class="nh-key">لاگ</span><span class="nh-val">Request Tracking · Audit Trail · Prometheus metrics</span></div>
+                      <div class="nh-row"><span class="nh-key">پنل مدیریت</span><span class="nh-val">Konga UI :9338</span></div>
                     </div>
                   </div>
 
                   <div class="tree-children tree-dual">
 
-                    <!-- Branch: Laravel -->
+                    <!-- ══ BRANCH A: Laravel ══ -->
                     <div class="tree-branch">
                       <div class="tree-node laravel-node" tabindex="0">
-                        <span class="node-icon">⚙️</span>
-                        <span class="node-label">Laravel API</span>
-                        <span class="node-port">Port 8000</span>
+                        <svg class="node-svg" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M10 6v4l3 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                        <span class="node-label">Laravel 11 API</span>
+                        <span class="node-port">:8000</span>
                         <div class="node-hover">
-                          <strong>Endpoints:</strong> 50+ RESTful<br>
-                          <strong>ویژگی‌ها:</strong><br>
-                          &nbsp;• User Management + RBAC<br>
-                          &nbsp;• Appointment Scheduling<br>
-                          &nbsp;• Payment Processing<br>
-                          &nbsp;• Email / SMS Service<br>
-                          &nbsp;• File Management (Echo Videos)<br>
-                          &nbsp;• Job Queuing (RabbitMQ)
+                          <div class="nh-desc">هسته اصلی منطق کسب‌وکار — مدیریت کاربران، نوبت‌ها و فایل‌ها</div>
+                          <div class="nh-row"><span class="nh-key">احراز هویت</span><span class="nh-val">Laravel Sanctum · RBAC · Multi-role</span></div>
+                          <div class="nh-row"><span class="nh-key">نوبت‌دهی</span><span class="nh-val">ظرفیت · تقویم · تداخل · reminder SMS</span></div>
+                          <div class="nh-row"><span class="nh-key">فایل‌ها</span><span class="nh-val">آپلود ویدیوی اکو · ذخیره در Object Storage</span></div>
+                          <div class="nh-row"><span class="nh-key">صف‌بندی</span><span class="nh-val">Job dispatch → RabbitMQ برای پردازش‌های سنگین</span></div>
+                          <div class="nh-row"><span class="nh-key">اطلاع‌رسانی</span><span class="nh-val">Email (SMTP) · SMS · Notification center</span></div>
+                          <div class="nh-row"><span class="nh-key">API</span><span class="nh-val">50+ RESTful endpoint · Resource Collections</span></div>
                         </div>
                       </div>
 
                       <div class="tree-children tree-triple">
 
+                        <!-- MySQL -->
                         <div class="tree-branch">
                           <div class="tree-node db-node mysql-node" tabindex="0">
-                            <span class="node-icon">🗃</span>
+                            <svg class="node-svg" viewBox="0 0 20 20" fill="none"><ellipse cx="10" cy="6" rx="7" ry="3" stroke="currentColor" stroke-width="1.5"/><path d="M3 6v8c0 1.657 3.134 3 7 3s7-1.343 7-3V6" stroke="currentColor" stroke-width="1.5"/></svg>
                             <span class="node-label">MySQL 8.0</span>
-                            <span class="node-tag">Relational</span>
+                            <span class="node-tag">Relational DB</span>
                             <div class="node-hover">
-                              <strong>Tables:</strong> 15+<br>
-                              users · auth · appointments<br>
-                              services · resources · settings<br>
-                              audit_logs
+                              <div class="nh-desc">داده‌های ساختاریافته کسب‌وکار با روابط پیچیده</div>
+                              <div class="nh-row"><span class="nh-key">کاربران</span><span class="nh-val">users · roles · permissions · sessions</span></div>
+                              <div class="nh-row"><span class="nh-key">نوبت</span><span class="nh-val">appointments · services · resources · staff</span></div>
+                              <div class="nh-row"><span class="nh-key">مالی</span><span class="nh-val">invoices · payments · discounts</span></div>
+                              <div class="nh-row"><span class="nh-key">لاگ</span><span class="nh-val">audit_logs · notifications · settings</span></div>
+                              <div class="nh-row"><span class="nh-key">جداول</span><span class="nh-val">15+ table · Foreign keys · Migrations</span></div>
                             </div>
                           </div>
                         </div>
 
+                        <!-- RabbitMQ -->
                         <div class="tree-branch">
                           <div class="tree-node db-node rabbitmq-node" tabindex="0">
-                            <span class="node-icon">📨</span>
+                            <svg class="node-svg" viewBox="0 0 20 20" fill="none"><path d="M4 10h12M4 6h12M4 14h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                             <span class="node-label">RabbitMQ</span>
-                            <span class="node-tag">Queue</span>
+                            <span class="node-tag">Message Queue</span>
                             <div class="node-hover">
-                              <strong>Queues:</strong><br>
-                              &nbsp;• video_processing<br>
-                              &nbsp;• email_sending<br>
-                              &nbsp;• report_generation<br>
-                              <strong>Workers:</strong> Scalable Consumer Pool<br>
-                              <strong>Retry:</strong> Exponential Backoff
+                              <div class="nh-desc">جداسازی پردازش سنگین از درخواست کاربر — بدون بلاک شدن API</div>
+                              <div class="nh-row"><span class="nh-key">video_processing</span><span class="nh-val">ارسال ویدیو → Python AI Engine برای تحلیل</span></div>
+                              <div class="nh-row"><span class="nh-key">report_generation</span><span class="nh-val">درخواست گزارش LLM پس از تکمیل AI</span></div>
+                              <div class="nh-row"><span class="nh-key">email_sending</span><span class="nh-val">ارسال ایمیل بدون بلاک API</span></div>
+                              <div class="nh-row"><span class="nh-key">Retry</span><span class="nh-val">Exponential Backoff · Dead Letter Queue</span></div>
+                              <div class="nh-row"><span class="nh-key">Workers</span><span class="nh-val">Scalable Consumer Pool · Laravel Queue Worker</span></div>
                             </div>
                           </div>
                         </div>
 
+                        <!-- LLM -->
                         <div class="tree-branch">
                           <div class="tree-node service-node llm-node" tabindex="0">
-                            <span class="node-icon">🤖</span>
-                            <span class="node-label">Arvan Cloud AI</span>
-                            <span class="node-tag">LLM</span>
+                            <svg class="node-svg" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M7 10h6M7 7h3M7 13h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                            <span class="node-label">Arvan Cloud LLM</span>
+                            <span class="node-tag">GPT-4o-mini</span>
                             <div class="node-hover">
-                              <strong>مدل:</strong> GPT-4o-mini<br>
-                              <strong>خروجی:</strong><br>
-                              &nbsp;• گزارش فارسی ساده (بیمار)<br>
-                              &nbsp;• گزارش تخصصی (پزشک)<br>
-                              &nbsp;• HTML با CSS inline<br>
-                              &nbsp;• متن خالص (SMS)
+                              <div class="nh-desc">پس از تحلیل AI، نتایج عددی به گزارش زبان طبیعی تبدیل می‌شوند</div>
+                              <div class="nh-row"><span class="nh-key">ورودی</span><span class="nh-val">اندازه‌گیری‌های اکو + امتیاز ریسک + داده بیمار</span></div>
+                              <div class="nh-row"><span class="nh-key">گزارش بیمار</span><span class="nh-val">فارسی ساده · قابل فهم برای عموم · HTML</span></div>
+                              <div class="nh-row"><span class="nh-key">گزارش پزشک</span><span class="nh-val">اصطلاحات تخصصی · تفسیر کامل · PDF</span></div>
+                              <div class="nh-row"><span class="nh-key">فرمت‌ها</span><span class="nh-val">HTML inline CSS · Plain text (SMS) · JSON</span></div>
+                              <div class="nh-row"><span class="nh-key">زبان</span><span class="nh-val">فارسی (primary) · English (optional)</span></div>
                             </div>
                           </div>
                         </div>
@@ -353,55 +358,55 @@
                       </div>
                     </div>
 
-                    <!-- Branch: Python AI -->
+                    <!-- ══ BRANCH B: Python AI ══ -->
                     <div class="tree-branch">
                       <div class="tree-node python-node" tabindex="0">
-                        <span class="node-icon">🧠</span>
+                        <svg class="node-svg" viewBox="0 0 20 20" fill="none"><path d="M10 2C6 2 5 4 5 6v2h5v1H4c-1.5 0-3 1-3 4s1.5 4 3 4h1v-2.5c0-1.5 1.2-2.5 3-2.5h4c1.5 0 2-1 2-2V6c0-2-1-4-4-4z" stroke="currentColor" stroke-width="1.3"/><circle cx="7.5" cy="5.5" r=".8" fill="currentColor"/><path d="M10 18c4 0 5-2 5-4v-2h-5v-1h6c1.5 0 3-1 3-4s-1.5-4-3-4h-1v2.5c0 1.5-1.2 2.5-3 2.5H8c-1.5 0-2 1-2 2v4c0 2 1 4 4 4z" stroke="currentColor" stroke-width="1.3"/><circle cx="12.5" cy="14.5" r=".8" fill="currentColor"/></svg>
                         <span class="node-label">Python AI Engine</span>
-                        <span class="node-port">Port 5000</span>
+                        <span class="node-port">:5000</span>
                         <div class="node-hover">
-                          <strong>پردازش:</strong> 30–60 ثانیه<br>
-                          <strong>ماژول‌ها:</strong><br>
-                          &nbsp;• View Classification (TensorFlow)<br>
-                          &nbsp;• Segmentation (U-Net++ / PyTorch)<br>
-                          &nbsp;• Scale Detection (OpenCV)<br>
-                          &nbsp;• 2D Measurements<br>
-                          &nbsp;• ML Risk Prediction (CatBoost)<br>
-                          &nbsp;• Fuzzy Logic Analysis
+                          <div class="nh-desc">قلب هوشمند سیستم — تحلیل کامل ویدیوی اکوکاردیوگرافی در ۳۰ تا ۶۰ ثانیه</div>
+                          <div class="nh-row"><span class="nh-key">مرحله ۱</span><span class="nh-val">View Classification — تشخیص نمای اکو (PLAX · A4C · A2C) با TensorFlow</span></div>
+                          <div class="nh-row"><span class="nh-key">مرحله ۲</span><span class="nh-val">Segmentation — تقطیع حفره‌های قلب با U-Net++ / PyTorch</span></div>
+                          <div class="nh-row"><span class="nh-key">مرحله ۳</span><span class="nh-val">Scale Detection — تشخیص مقیاس تصویر با OpenCV</span></div>
+                          <div class="nh-row"><span class="nh-key">مرحله ۴</span><span class="nh-val">Measurement — محاسبه LVIDd · LVIDs · IVS · PW · EF · LA · RA</span></div>
+                          <div class="nh-row"><span class="nh-key">مرحله ۵</span><span class="nh-val">ML Risk Score — پیش‌بینی ریسک با CatBoost + Random Forest</span></div>
+                          <div class="nh-row"><span class="nh-key">مرحله ۶</span><span class="nh-val">Fuzzy Logic — تحلیل منطق فازی · دسته‌بندی: Normal · Mild · Moderate · Severe</span></div>
                         </div>
                       </div>
 
                       <div class="tree-children tree-dual">
 
+                        <!-- MongoDB -->
                         <div class="tree-branch">
                           <div class="tree-node db-node mongo-node" tabindex="0">
-                            <span class="node-icon">🍃</span>
+                            <svg class="node-svg" viewBox="0 0 20 20" fill="none"><path d="M10 2c0 0-5 4-5 9a5 5 0 0010 0C15 6 10 2 10 2z" stroke="currentColor" stroke-width="1.5"/><path d="M10 11v5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                             <span class="node-label">MongoDB</span>
-                            <span class="node-tag">NoSQL</span>
+                            <span class="node-tag">NoSQL Store</span>
                             <div class="node-hover">
-                              <strong>Collections:</strong><br>
-                              &nbsp;• patients (demographics)<br>
-                              &nbsp;• visits (echo results)<br>
-                              &nbsp;• ml_predictions<br>
-                              &nbsp;• fuzzy_analysis<br>
-                              &nbsp;• reports
+                              <div class="nh-desc">ذخیره نتایج تحلیل AI — داده‌های نیمه‌ساختاریافته و انعطاف‌پذیر</div>
+                              <div class="nh-row"><span class="nh-key">patients</span><span class="nh-val">اطلاعات دموگرافیک · تاریخچه پزشکی</span></div>
+                              <div class="nh-row"><span class="nh-key">visits</span><span class="nh-val">نتایج هر ویزیت · اندازه‌گیری‌های اکو · تصاویر</span></div>
+                              <div class="nh-row"><span class="nh-key">ml_predictions</span><span class="nh-val">خروجی مدل ML · امتیاز ریسک · feature importance</span></div>
+                              <div class="nh-row"><span class="nh-key">fuzzy_analysis</span><span class="nh-val">نتایج منطق فازی · دسته‌بندی · aggregated_data</span></div>
+                              <div class="nh-row"><span class="nh-key">reports</span><span class="nh-val">متن گزارش LLM · تاریخ تولید · نسخه‌بندی</span></div>
                             </div>
                           </div>
                         </div>
 
+                        <!-- Qdrant -->
                         <div class="tree-branch">
                           <div class="tree-node service-node faiss-node" tabindex="0">
-                            <span class="node-icon">🔍</span>
-                            <span class="node-label">Qdrant / FastAPI</span>
+                            <svg class="node-svg" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/><path d="M10 3V1M10 19v-2M3 10H1M19 10h-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                            <span class="node-label">Qdrant + FastAPI</span>
                             <span class="node-tag">Vector Search</span>
                             <div class="node-hover">
-                              <strong>Model:</strong> Sentence-BERT (768D)<br>
-                              <strong>کاربرد:</strong> تشخیص Intent بیمار<br>
-                              <strong>مسیریابی:</strong><br>
-                              &nbsp;• Support queries<br>
-                              &nbsp;• Clinical questions<br>
-                              &nbsp;• Booking requests<br>
-                              <strong>Threshold:</strong> 0.60
+                              <div class="nh-desc">موتور جستجوی معنایی — تشخیص هدف پیام بیمار و هدایت به سرویس درست</div>
+                              <div class="nh-row"><span class="nh-key">مدل</span><span class="nh-val">Sentence-BERT · 768 بُعد · فارسی + انگلیسی</span></div>
+                              <div class="nh-row"><span class="nh-key">Intent: Support</span><span class="nh-val">سؤالات عمومی → Knowledge Base</span></div>
+                              <div class="nh-row"><span class="nh-key">Intent: Clinical</span><span class="nh-val">سؤالات پزشکی → LLM با context اکو</span></div>
+                              <div class="nh-row"><span class="nh-key">Intent: Booking</span><span class="nh-val">درخواست نوبت → Laravel Appointment API</span></div>
+                              <div class="nh-row"><span class="nh-key">Threshold</span><span class="nh-val">Similarity ≥ 0.60 برای تطابق · fallback به LLM</span></div>
                             </div>
                           </div>
                         </div>
@@ -409,12 +414,466 @@
                       </div>
                     </div>
 
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ─── Complete System Flow ─── -->
+      <div class="sys-flow-head">
+        <span class="sfh-line"></span>
+        <span class="sfh-text">جریان کامل داده — از نوبت‌گیری تا گزارش نهایی</span>
+        <span class="sfh-line"></span>
+      </div>
+
+      <p class="sys-flow-hint">روی هر گره نشانگر را نگه دارید تا جزئیات کامل، نمودار و خروجی هر مرحله باز شود</p>
+
+      <div class="sys-flow">
+
+        <!-- ══ PHASE 1 — Booking ══ -->
+        <div class="sf-phase p-book">
+          <div class="sf-rail">
+            <span class="sf-pnum">۱</span>
+            <div class="sf-ptitle">
+              <strong>نوبت‌گیری هوشمند</strong>
+              <small>بیمار · چت‌بات AI · پرداخت</small>
+            </div>
+          </div>
+          <div class="sf-body">
+
+            <div class="sf-node has-pop" tabindex="0">
+              <span class="sf-ic">🧑</span>
+              <div class="sf-main">
+                <strong>بیمار</strong>
+                <small>درخواست نوبت با زبان طبیعی فارسی</small>
+                <div class="sf-pop">
+                  <div class="sf-viz viz-chat"><span>گفت‌وگوی محاوره‌ای بیمار با دستیار</span></div>
+                  <div class="sf-pop-list">
+                    <div class="pr"><span class="pk">کانال‌ها</span><span class="pv">وب · PWA · موبایل · تلفن گویا</span></div>
+                    <div class="pr"><span class="pk">ورودی</span><span class="pv">متن یا گفتار فارسی محاوره‌ای</span></div>
+                    <div class="pr"><span class="pk">نیاز کاربر</span><span class="pv">نوبت · سؤال پزشکی · پشتیبانی</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <span class="sf-link">←</span>
+
+            <div class="sf-node accent has-pop" tabindex="0">
+              <span class="sf-ic">🤖</span>
+              <div class="sf-main">
+                <strong>دستیار هوشمند — Qdrant</strong>
+                <small>Sentence-BERT (768D) · تشخیص Intent · آستانه ۰٫۶۰</small>
+                <div class="sf-tags">
+                  <span class="sf-tag">Booking → نوبت‌دهی</span>
+                  <span class="sf-tag">Clinical → LLM</span>
+                  <span class="sf-tag">Support → پشتیبانی</span>
+                </div>
+                <div class="sf-pop">
+                  <div class="sf-viz viz-vector"><span>نگاشت بردار جمله در فضای ۷۶۸ بُعدی</span></div>
+                  <div class="sf-pop-list">
+                    <div class="pr"><span class="pk">Embedding</span><span class="pv">Sentence-BERT · ۷۶۸ بُعد · Persian NLP</span></div>
+                    <div class="pr"><span class="pk">شباهت</span><span class="pv">Cosine Similarity · Top-5 با score</span></div>
+                    <div class="pr"><span class="pk">Booking</span><span class="pv">هدایت به Laravel Appointment API</span></div>
+                    <div class="pr"><span class="pk">Clinical</span><span class="pv">ارسال به LLM همراه context اکو</span></div>
+                    <div class="pr"><span class="pk">Support</span><span class="pv">پاسخ از Knowledge Base</span></div>
+                    <div class="pr"><span class="pk">آستانه</span><span class="pv">Similarity ≥ ۰٫۶۰ · در غیر این صورت fallback به LLM</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <span class="sf-link">←</span>
+
+            <div class="sf-node has-pop" tabindex="0">
+              <span class="sf-ic">💳</span>
+              <div class="sf-main">
+                <strong>پرداخت آنلاین</strong>
+                <small>درگاه امن · Laravel Payment</small>
+                <div class="sf-pop">
+                  <div class="sf-pop-list">
+                    <div class="pr"><span class="pk">درگاه</span><span class="pv">Laravel Payment Gateway · پرداخت بیعانه</span></div>
+                    <div class="pr"><span class="pk">تراکنش</span><span class="pv">Transaction Log · رهگیری وضعیت</span></div>
+                    <div class="pr"><span class="pk">بازگشت وجه</span><span class="pv">Refund Support</span></div>
+                    <div class="pr"><span class="pk">ذخیره</span><span class="pv">MySQL · invoices · payments</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="sf-down"><span>↓</span></div>
+
+        <!-- ══ PHASE 2 — Visit & Echo ══ -->
+        <div class="sf-phase p-visit">
+          <div class="sf-rail">
+            <span class="sf-pnum">۲</span>
+            <div class="sf-ptitle">
+              <strong>ویزیت و ثبت اکو</strong>
+              <small>اطلاعات بالینی · ضبط ویدیو</small>
+            </div>
+          </div>
+          <div class="sf-body">
+
+            <div class="sf-node has-pop" tabindex="0">
+              <span class="sf-ic">📋</span>
+              <div class="sf-main">
+                <strong>داده بالینی بیمار</strong>
+                <small>سن، جنسیت، قد، وزن، فشار، قند، کلسترول، سیگار…</small>
+                <div class="sf-tags"><span class="sf-tag store">۱۶ عامل خطر → MongoDB</span></div>
+                <div class="sf-pop">
+                  <div class="sf-viz viz-form"><span>فرم ثبت اطلاعات دموگرافیک و بالینی</span></div>
+                  <div class="sf-pop-list">
+                    <div class="pr"><span class="pk">دموگرافیک</span><span class="pv">سن · جنسیت · قد · وزن (پایه BMI)</span></div>
+                    <div class="pr"><span class="pk">فشار خون</span><span class="pv">ap_hi (سیستولی) · ap_lo (دیاستولی)</span></div>
+                    <div class="pr"><span class="pk">آزمایش</span><span class="pv">cholesterol · gluc · chol · fbs</span></div>
+                    <div class="pr"><span class="pk">علائم قلبی</span><span class="pv">cp · exang · oldpeak · thalach · ca · thal</span></div>
+                    <div class="pr"><span class="pk">سبک زندگی</span><span class="pv">smoke · alco · active</span></div>
+                    <div class="pr"><span class="pk">ذخیره</span><span class="pv">MongoDB.patients · شناسه یکتا</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <span class="sf-link">←</span>
+
+            <div class="sf-node has-pop" tabindex="0">
+              <span class="sf-ic">🎥</span>
+              <div class="sf-main">
+                <strong>ضبط اکوکاردیوگرافی</strong>
+                <small>۸ نما: PLAX · PSAX-AV/MV/AP · A2C · A3C · A4C · A5C</small>
+                <div class="sf-tags"><span class="sf-tag">AVI / MP4 / MOV · ۲۵–۶۰ FPS</span></div>
+                <div class="sf-pop">
+                  <div class="sf-viz viz-echo"><span>فریم خام ویدیوی اکوکاردیوگرافی</span></div>
+                  <div class="sf-pop-list">
+                    <div class="pr"><span class="pk">نماها</span><span class="pv">PLAX · PSAX-AV · PSAX-MV · PSAX-AP · A2C · A3C · A4C · A5C</span></div>
+                    <div class="pr"><span class="pk">فرمت</span><span class="pv">AVI · MP4 · MOV · MKV · WMV</span></div>
+                    <div class="pr"><span class="pk">نرخ فریم</span><span class="pv">۲۵ تا ۶۰ FPS</span></div>
+                    <div class="pr"><span class="pk">نمونه‌برداری</span><span class="pv">۸ فریم یکنواخت برای کلاسیفیکیشن</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <span class="sf-link">←</span>
+
+            <div class="sf-node accent has-pop" tabindex="0">
+              <span class="sf-ic">📨</span>
+              <div class="sf-main">
+                <strong>آپلود → صف پردازش</strong>
+                <small>Laravel فایل را ذخیره و Job به RabbitMQ می‌فرستد</small>
+                <div class="sf-tags"><span class="sf-tag">queue: video_processing</span></div>
+                <div class="sf-pop">
+                  <div class="sf-pop-list">
+                    <div class="pr"><span class="pk">مدیریت فایل</span><span class="pv">Laravel File Manager</span></div>
+                    <div class="pr"><span class="pk">ذخیره</span><span class="pv">Object Storage (Arvan S3)</span></div>
+                    <div class="pr"><span class="pk">صف</span><span class="pv">Job dispatch → RabbitMQ · queue: video_processing</span></div>
+                    <div class="pr"><span class="pk">Worker</span><span class="pv">مصرف‌کننده Python AI Engine</span></div>
+                    <div class="pr"><span class="pk">مزیت</span><span class="pv">بدون بلاک‌شدن API · Exponential Backoff</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="sf-down"><span>↓</span></div>
+
+        <!-- ══ PHASE 3 — CV Pipeline ══ -->
+        <div class="sf-phase p-cv">
+          <div class="sf-rail">
+            <span class="sf-pnum">۳</span>
+            <div class="sf-ptitle">
+              <strong>پایپلاین بینایی ماشین</strong>
+              <small>Python AI Engine · ۳۰–۶۰ ثانیه · هر ویدیو جداگانه</small>
+            </div>
+          </div>
+          <div class="sf-body sf-grid">
+            <div class="sf-row">
+
+            <div class="sf-step has-pop" tabindex="0">
+              <span class="sf-step-n">۱</span>
+              <div class="sf-step-b">
+                <strong>تشخیص نما (Classification)</strong>
+                <small>CNN با TensorFlow/Keras — ۸ فریم نمونه‌برداری‌شده → یکی از ۸ کلاس + Confidence</small>
+                <span class="sf-mini">model: echocv 0.9394</span>
+                <div class="sf-pop">
+                  <div class="sf-viz viz-classify">
+                    <div class="vbar"><span class="vbar-l">A4C</span><span class="vbar-t"><i style="width:98%"></i></span><span class="vbar-v">۹۸٪</span></div>
+                    <div class="vbar"><span class="vbar-l">PLAX</span><span class="vbar-t"><i style="width:6%"></i></span><span class="vbar-v">۶٪</span></div>
+                    <div class="vbar"><span class="vbar-l">A2C</span><span class="vbar-t"><i style="width:4%"></i></span><span class="vbar-v">۴٪</span></div>
+                    <div class="vbar"><span class="vbar-l">A5C</span><span class="vbar-t"><i style="width:3%"></i></span><span class="vbar-v">۳٪</span></div>
+                  </div>
+                  <div class="sf-pop-list">
+                    <div class="pr"><span class="pk">شبکه</span><span class="pv">CNN · TensorFlow / Keras</span></div>
+                    <div class="pr"><span class="pk">مدل</span><span class="pv">mymodel_echocv 500-500-8 · دقت ۰٫۹۳۹۴</span></div>
+                    <div class="pr"><span class="pk">ورودی</span><span class="pv">۸ فریم یکنواخت از ویدیو</span></div>
+                    <div class="pr"><span class="pk">۸ کلاس</span><span class="pv">plax · psax-av/mv/ap · a2c · a3c · a4c · a5c</span></div>
+                    <div class="pr"><span class="pk">خروجی</span><span class="pv">prediction + class_scores + confidence</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="sf-step has-pop" tabindex="0">
+              <span class="sf-step-n">۲</span>
+              <div class="sf-step-b">
+                <strong>استخراج رویداد ECG</strong>
+                <small>یافتن فریم‌های کلیدی چرخه قلب: End-Diastole · End-Systole · LVOT</small>
+                <span class="sf-mini">event frame extraction</span>
+                <div class="sf-pop">
+                  <div class="sf-viz viz-ecg">
+                    <svg viewBox="0 0 240 48" preserveAspectRatio="none" aria-hidden="true">
+                      <polyline points="0,24 40,24 48,24 54,8 60,40 66,24 100,24 110,24 116,6 122,42 128,24 170,24 180,24 186,10 192,38 198,24 240,24"/>
+                    </svg>
+                    <span>تشخیص فریم رویداد روی سیکل قلبی</span>
+                  </div>
+                  <div class="sf-pop-list">
+                    <div class="pr"><span class="pk">رویداد PLAX</span><span class="pv">End-Diastol → End-Systol → LVOT</span></div>
+                    <div class="pr"><span class="pk">رویداد A4C</span><span class="pv">End-Diastol · End-Systol</span></div>
+                    <div class="pr"><span class="pk">روش</span><span class="pv">تشخیص فریم رویداد + ذخیره تصویر</span></div>
+                    <div class="pr"><span class="pk">خروجی</span><span class="pv">event_frames.csv + فریم‌های JPG</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="sf-step has-pop" tabindex="0">
+              <span class="sf-step-n">۳</span>
+              <div class="sf-step-b">
+                <strong>تشخیص مقیاس (Scale)</strong>
+                <small>یافتن خط‌کش تصویر با OpenCV (Hough + Best-Ray) → ضریب pixel→cm</small>
+                <span class="sf-mini">fallback: ۱۲ px/cm</span>
+                <div class="sf-pop">
+                  <div class="sf-viz viz-ruler"><span>تشخیص خط‌کش و محاسبه pixel/cm</span></div>
+                  <div class="sf-pop-list">
+                    <div class="pr"><span class="pk">الگوریتم</span><span class="pv">Hough Transform + Best-Ray</span></div>
+                    <div class="pr"><span class="pk">هدف</span><span class="pv">یافتن خط‌کش کناری تصویر</span></div>
+                    <div class="pr"><span class="pk">خروجی</span><span class="pv">pixels_per_cm (نمونه ۲۸٫۶ یا ۳۲٫۶)</span></div>
+                    <div class="pr"><span class="pk">Fallback</span><span class="pv">۱۲ px/cm در صورت شکست تشخیص</span></div>
+                    <div class="pr"><span class="pk">دیباگ</span><span class="pv">debug_scale_output.jpg</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            </div>
+
+            <div class="sf-row">
+
+            <div class="sf-step has-pop" tabindex="0">
+              <span class="sf-step-n">۴</span>
+              <div class="sf-step-b">
+                <strong>اندازه‌گیری ۲بعدی</strong>
+                <small>مدل DeepLabV3+ روی هر رویداد — IVS · LVID · LVPW · LA · Aorta · Aortic-Root · RV-Base · PA</small>
+                <span class="sf-mini">DeepLabV3+ segmentation</span>
+                <div class="sf-pop">
+                  <div class="sf-viz viz-annot"><span>تصویر annotate شده با خط اندازه‌گیری</span></div>
+                  <div class="sf-pop-list">
+                    <div class="pr"><span class="pk">مدل</span><span class="pv">DeepLabV3+ · هر اندازه یک وزن جداگانه</span></div>
+                    <div class="pr"><span class="pk">PLAX</span><span class="pv">ivs · lvid · lvpw · aorta · aortic_root</span></div>
+                    <div class="pr"><span class="pk">A4C</span><span class="pv">rv_base</span></div>
+                    <div class="pr"><span class="pk">PSAX-AV</span><span class="pv">la · pa</span></div>
+                    <div class="pr"><span class="pk">خروجی</span><span class="pv">طول cm + تصویر annotate شده</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="sf-step has-pop" tabindex="0">
+              <span class="sf-step-n">۵</span>
+              <div class="sf-step-b">
+                <strong>محاسبه حجم و سطح</strong>
+                <small>سطح دهلیزها (LA/RA cm²) در A4C + سطح بطن چپ با U-Net++ / EfficientNet-B4</small>
+                <span class="sf-mini">U-Net++ best.pth</span>
+                <div class="sf-pop">
+                  <div class="sf-viz viz-mask"><span>ماسک سگمنتیشن بطن چپ (U-Net++)</span></div>
+                  <div class="sf-pop-list">
+                    <div class="pr"><span class="pk">دهلیز A4C</span><span class="pv">مساحت LA و RA به cm²</span></div>
+                    <div class="pr"><span class="pk">بطن چپ</span><span class="pv">U-Net++ · Encoder: EfficientNet-B4</span></div>
+                    <div class="pr"><span class="pk">ورودی</span><span class="pv">۲۵۶×۲۵۶ grayscale · threshold ۰٫۱۳</span></div>
+                    <div class="pr"><span class="pk">وزن</span><span class="pv">best.pth (PyTorch)</span></div>
+                    <div class="pr"><span class="pk">خروجی</span><span class="pv">area_cm2 + overlay PNG</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="sf-step has-pop" tabindex="0">
+              <span class="sf-step-n">۶</span>
+              <div class="sf-step-b">
+                <strong>تجمیع و ذخیره</strong>
+                <small>۱۲+ پارامتر قلبی + تصاویر annotate شده در هر نما</small>
+                <span class="sf-mini store">→ MongoDB.visits</span>
+                <div class="sf-pop">
+                  <div class="sf-pop-list">
+                    <div class="pr"><span class="pk">تجمیع</span><span class="pv">pipeline_summary.csv (همه نماها)</span></div>
+                    <div class="pr"><span class="pk">عمومی</span><span class="pv">result.json برای هر نما</span></div>
+                    <div class="pr"><span class="pk">داخلی</span><span class="pv">run_report.json + تصاویر annotate</span></div>
+                    <div class="pr"><span class="pk">پارامترها</span><span class="pv">۱۲+ پارامتر قلبی</span></div>
+                    <div class="pr"><span class="pk">ذخیره</span><span class="pv">MongoDB.visits</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            </div>
+          </div>
+        </div>
+
+        <div class="sf-down"><span>↓</span></div>
+
+        <!-- ══ PHASE 4 — Analysis (parallel) ══ -->
+        <div class="sf-phase p-analyze">
+          <div class="sf-rail">
+            <span class="sf-pnum">۴</span>
+            <div class="sf-ptitle">
+              <strong>تحلیل و امتیازدهی</strong>
+              <small>دو موتور موازی → ترکیب نتایج</small>
+            </div>
+          </div>
+          <div class="sf-body sf-parallel">
+
+            <!-- Lane A: Fuzzy -->
+            <div class="sf-lane lane-fuzzy has-pop" tabindex="0">
+              <div class="sf-lane-head">
+                <span class="sf-ic">🌫</span>
+                <div class="sf-lane-title">
+                  <strong>منطق فازی</strong>
+                  <small>پارامترهای اکو</small>
+                </div>
+              </div>
+              <ul class="sf-lane-steps">
+                <li><strong>نرمال‌سازی BSA</strong> — فرمول Mosteller: √((W×H)/3600)</li>
+                <li><strong>توابع عضویت</strong> — Normal / Mild / Severe بر پایه گایدلاین ASE/EACVI</li>
+                <li><strong>قوانین فازی</strong> — ۱۲ پارامتر قلبی (دیواره، حفره، آئورت، PA)</li>
+                <li><strong>Defuzzification (MOM)</strong> — خروجی: Score ۰–۱۰۰ + دسته‌بندی</li>
+              </ul>
+              <div class="sf-pop">
+                <div class="sf-viz viz-mf">
+                  <svg viewBox="0 0 240 60" preserveAspectRatio="none" aria-hidden="true">
+                    <polyline class="mf-n" points="0,12 90,12 130,52"/>
+                    <polyline class="mf-m" points="90,52 130,12 175,52"/>
+                    <polyline class="mf-s" points="130,52 175,12 240,12"/>
+                  </svg>
+                  <span>توابع عضویت: Normal · Mild · Severe</span>
+                </div>
+                <div class="sf-pop-list">
+                  <div class="pr"><span class="pk">نرمال‌سازی</span><span class="pv">BSA Mosteller √((W×H)/3600)</span></div>
+                  <div class="pr"><span class="pk">توابع</span><span class="pv">Normal (trapezoid) · Mild (triangle) · Severe (trapezoid)</span></div>
+                  <div class="pr"><span class="pk">مرجع</span><span class="pv">گایدلاین ASE / EACVI</span></div>
+                  <div class="pr"><span class="pk">۱۲ پارامتر</span><span class="pv">aortic_root/asc · la/ra_volume · rv_diameter/wall · lv_edv/esv · ivs/pw_thickness · lv_diameter · pa_diameter</span></div>
+                  <div class="pr"><span class="pk">Defuzz</span><span class="pv">MOM (Mean of Maximum)</span></div>
+                  <div class="pr"><span class="pk">خروجی</span><span class="pv">Score ۰–۱۰۰ + Category + Reasons</span></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Lane B: ML -->
+            <div class="sf-lane lane-ml has-pop" tabindex="0">
+              <div class="sf-lane-head">
+                <span class="sf-ic">📊</span>
+                <div class="sf-lane-title">
+                  <strong>مدل‌های ML</strong>
+                  <small>داده بالینی</small>
+                </div>
+              </div>
+              <ul class="sf-lane-steps">
+                <li><strong>HD — Logistic Regression</strong> — ۱۸ فیچر + StandardScaler → احتمال بیماری</li>
+                <li><strong>CV — CatBoost</strong> — ۲۰ فیچر (Cardiovascular) → احتمال ریسک</li>
+                <li><strong>ترکیب وزنی</strong> — میانگین وزن‌دار بر اساس Confidence هر مدل</li>
+                <li><strong>Severity</strong> — LOW / MODERATE / HIGH + تشخیص ۱۶ عامل خطر</li>
+              </ul>
+              <div class="sf-lane-note">داده غایب → جایگزینی با Clinical Median</div>
+              <div class="sf-pop">
+                <div class="sf-viz viz-importance">
+                  <div class="vbar"><span class="vbar-l">ap_hi</span><span class="vbar-t"><i style="width:90%"></i></span></div>
+                  <div class="vbar"><span class="vbar-l">age</span><span class="vbar-t"><i style="width:74%"></i></span></div>
+                  <div class="vbar"><span class="vbar-l">chol</span><span class="vbar-t"><i style="width:58%"></i></span></div>
+                  <div class="vbar"><span class="vbar-l">bmi</span><span class="vbar-t"><i style="width:46%"></i></span></div>
+                  <div class="vbar"><span class="vbar-l">oldpeak</span><span class="vbar-t"><i style="width:34%"></i></span></div>
+                </div>
+                <div class="sf-pop-list">
+                  <div class="pr"><span class="pk">HD مدل</span><span class="pv">Logistic Regression · UCI · ۱۳ خام + ۵ مهندسی + StandardScaler</span></div>
+                  <div class="pr"><span class="pk">CV مدل</span><span class="pv">CatBoost · Cardiovascular ۷۰هزار · ۱۱ خام + ۷ مهندسی</span></div>
+                  <div class="pr"><span class="pk">مهندسی HD</span><span class="pv">bp_category · rate_pressure_product · chronotropic_index · st_depression_index</span></div>
+                  <div class="pr"><span class="pk">مهندسی CV</span><span class="pv">bmi · map · pulse_pressure · hypertension_grade · metabolic/lifestyle_risk_score</span></div>
+                  <div class="pr"><span class="pk">ترکیب</span><span class="pv">میانگین وزنی بر اساس confidence هر مدل</span></div>
+                  <div class="pr"><span class="pk">Severity</span><span class="pv">LOW &lt;۰٫۴۵ · MODERATE ۰٫۴۵–۰٫۷۰ · HIGH ≥۰٫۷۰</span></div>
+                  <div class="pr"><span class="pk">عوامل خطر</span><span class="pv">۱۶ قانون با توضیح فارسی · داده غایب → Clinical Median</span></div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="sf-down"><span>↓</span></div>
+
+        <!-- ══ PHASE 5 — LLM Report ══ -->
+        <div class="sf-phase p-report">
+          <div class="sf-rail">
+            <span class="sf-pnum">۵</span>
+            <div class="sf-ptitle">
+              <strong>تولید گزارش با LLM</strong>
+              <small>ترکیب سه لایه → زبان طبیعی</small>
+            </div>
+          </div>
+          <div class="sf-body">
+            <div class="sf-node accent wide has-pop" tabindex="0">
+              <span class="sf-ic">🧠</span>
+              <div class="sf-main">
+                <strong>Arvan Cloud — GPT-4o-mini</strong>
+                <small>ورودی: نتایج ML + فازی + اندازه‌گیری اکو + داده بیمار (temp ۰٫۳ · max ۱۵۰۰ token)</small>
+                <div class="sf-tags">
+                  <span class="sf-tag">گزارش بیمار (فارسی ساده + HTML)</span>
+                  <span class="sf-tag">گزارش پزشک (تخصصی)</span>
+                  <span class="sf-tag store">→ MongoDB.reports</span>
+                </div>
+                <div class="sf-pop">
+                  <div class="sf-viz viz-report"><span>گزارش HTML فارسی با CSS inline</span></div>
+                  <div class="sf-pop-list">
+                    <div class="pr"><span class="pk">Prompt</span><span class="pv">System: متخصص قلب فارسی‌زبان · ورودی &lt; ۸۰۰ token</span></div>
+                    <div class="pr"><span class="pk">مدل</span><span class="pv">gpt-4o-mini · Arvan Cloud</span></div>
+                    <div class="pr"><span class="pk">پارامتر</span><span class="pv">max_tokens ۱۵۰۰ · temperature ۰٫۳</span></div>
+                    <div class="pr"><span class="pk">گزارش بیمار</span><span class="pv">فارسی ساده · HTML inline CSS · متن SMS</span></div>
+                    <div class="pr"><span class="pk">گزارش پزشک</span><span class="pv">تخصصی · همه اعداد اکو · ML · فازی</span></div>
+                    <div class="pr"><span class="pk">بخش‌ها</span><span class="pv">خلاصه وضعیت · پارامترهای اکو · ریسک · توصیه‌ها</span></div>
+                    <div class="pr"><span class="pk">ذخیره</span><span class="pv">MongoDB.reports · نسخه‌بندی</span></div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
+        <div class="sf-down"><span>↓</span></div>
+
+        <!-- ══ PHASE 6 — Delivery ══ -->
+        <div class="sf-phase p-deliver">
+          <div class="sf-rail">
+            <span class="sf-pnum">۶</span>
+            <div class="sf-ptitle">
+              <strong>تحویل و بازبینی</strong>
+              <small>دسترسی بیمار · تأیید پزشک</small>
+            </div>
+          </div>
+          <div class="sf-body sf-wrap">
+            <div class="sf-chip">📱 پنل بیمار</div>
+            <div class="sf-chip">✉️ ایمیل HTML</div>
+            <div class="sf-chip">💬 پیامک</div>
+            <div class="sf-chip">🖨 چاپ / PDF</div>
+            <div class="sf-chip review">✅ بازبینی و تأیید پزشک</div>
+          </div>
+        </div>
+
       </div>
 
       <!-- Communication Legend -->
@@ -439,1051 +898,6 @@
     </div>
   </section>
 
-
-  <!-- ═══════════════════════════════════════════════════════
-       SECTION 4 — PATIENT JOURNEY (5 Steps)
-  ═══════════════════════════════════════════════════════ -->
-  <section class="journey-section" id="journey">
-    <div class="container">
-
-      <div class="section-header">
-        <span class="section-badge">Patient Journey</span>
-        <h2>مسیر کامل <span class="gradient-text">بیمار</span></h2>
-        <p>از نوبت‌گیری هوشمند تا دریافت گزارش — تجربه‌ای یکپارچه</p>
-      </div>
-
-      <div class="journey-timeline">
-
-        <!-- Step 01 -->
-        <div class="journey-step" id="step-01">
-          <div class="step-marker">
-            <span class="step-num">01</span>
-            <div class="step-line"></div>
-          </div>
-          <div class="step-body glass-panel" tabindex="0">
-            <div class="step-head">
-              <span class="step-icon booking-icon">📅</span>
-              <div>
-                <h3>نوبت‌گیری هوشمند با AI</h3>
-                <p>چت‌بات هوشمند با Qdrant Vector Search برای درک نیاز بیمار</p>
-              </div>
-            </div>
-            <div class="step-details">
-              <div class="detail-row" tabindex="0">
-                <span class="detail-icon">🧠</span>
-                <div>
-                  <strong>Intent Detection</strong>
-                  <small>تشخیص خودکار نیاز بیمار (نوبت / سوال پزشکی / پشتیبانی)</small>
-                </div>
-                <div class="detail-expand">
-                  مدل: Sentence-BERT (768D) — آستانه: 0.60 — Top 5 نتیجه
-                </div>
-              </div>
-              <div class="detail-row" tabindex="0">
-                <span class="detail-icon">🔎</span>
-                <div>
-                  <strong>Semantic Search</strong>
-                  <small>جستجوی معنایی با Persian NLP</small>
-                </div>
-                <div class="detail-expand">
-                  Qdrant Vector DB — Cosine Similarity — Real-time Routing
-                </div>
-              </div>
-              <div class="detail-row" tabindex="0">
-                <span class="detail-icon">📆</span>
-                <div>
-                  <strong>Smart Scheduling</strong>
-                  <small>پیشنهاد تاریخ بر اساس Availability پزشکان</small>
-                </div>
-                <div class="detail-expand">
-                  Calendar Integration — Slot Management — Conflict Detection
-                </div>
-              </div>
-              <div class="detail-row" tabindex="0">
-                <span class="detail-icon">💳</span>
-                <div>
-                  <strong>Online Payment</strong>
-                  <small>پرداخت بیعانه با درگاه امن</small>
-                </div>
-                <div class="detail-expand">
-                  Laravel Payment Gateway — Transaction Log — Refund Support
-                </div>
-              </div>
-            </div>
-            <div class="step-tech-tags">
-              <span class="tech-tag">Qdrant</span>
-              <span class="tech-tag">FastAPI</span>
-              <span class="tech-tag">Persian NLP</span>
-              <span class="tech-tag">Laravel</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 02 -->
-        <div class="journey-step" id="step-02">
-          <div class="step-marker">
-            <span class="step-num">02</span>
-            <div class="step-line"></div>
-          </div>
-          <div class="step-body glass-panel" tabindex="0">
-            <div class="step-head">
-              <span class="step-icon visit-icon">🏥</span>
-              <div>
-                <h3>ویزیت و انجام اکوکاردیوگرافی</h3>
-                <p>ثبت اطلاعات بالینی + ضبط ویدیو اکو توسط پزشک</p>
-              </div>
-            </div>
-            <div class="step-details">
-              <div class="detail-row" tabindex="0">
-                <span class="detail-icon">👤</span>
-                <div>
-                  <strong>Demographics</strong>
-                  <small>سن، جنسیت، قد، وزن، سابقه پزشکی</small>
-                </div>
-                <div class="detail-expand">
-                  ذخیره در MongoDB.patients — شناسه یکتا برای هر بیمار
-                </div>
-              </div>
-              <div class="detail-row" tabindex="0">
-                <span class="detail-icon">❤️</span>
-                <div>
-                  <strong>Clinical Data</strong>
-                  <small>فشار خون، قند، کلسترول، سیگار، فعالیت بدنی</small>
-                </div>
-                <div class="detail-expand">
-                  16 عامل خطر — پایه ورودی مدل‌های ML
-                </div>
-              </div>
-              <div class="detail-row" tabindex="0">
-                <span class="detail-icon">🎥</span>
-                <div>
-                  <strong>Echo Recording</strong>
-                  <small>۸ نما: A4C · PLAX · PSAX-AV · PSAX-MV · ...</small>
-                </div>
-                <div class="detail-expand">
-                  فرمت: AVI / MP4 / MOV — Frame Rate: 25–60 FPS
-                </div>
-              </div>
-              <div class="detail-row" tabindex="0">
-                <span class="detail-icon">☁️</span>
-                <div>
-                  <strong>Upload to System</strong>
-                  <small>آپلود به سرور + ثبت در MongoDB</small>
-                </div>
-                <div class="detail-expand">
-                  Laravel File Manager — Arvan S3 (optional) — Job Queue
-                </div>
-              </div>
-            </div>
-            <div class="step-tech-tags">
-              <span class="tech-tag">Angular UI</span>
-              <span class="tech-tag">Laravel API</span>
-              <span class="tech-tag">MongoDB</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 03 -->
-        <div class="journey-step" id="step-03">
-          <div class="step-marker">
-            <span class="step-num">03</span>
-            <div class="step-line"></div>
-          </div>
-          <div class="step-body glass-panel" tabindex="0">
-            <div class="step-head">
-              <span class="step-icon processing-icon">⚙️</span>
-              <div>
-                <h3>پردازش خودکار با هوش مصنوعی</h3>
-                <p>پردازش موازی با ۶ مدل AI — زمان: ۳۰–۶۰ ثانیه</p>
-              </div>
-            </div>
-            <div class="step-details">
-              <div class="detail-row" tabindex="0">
-                <span class="detail-icon">🏷</span>
-                <div>
-                  <strong>View Classification</strong>
-                  <small>CNN: تشخیص نوع نما — ۸ کلاس — دقت 98.5%</small>
-                </div>
-                <div class="detail-expand">
-                  TensorFlow/Keras — ۸ فریم یکنواخت از ویدیو — Confidence Score
-                </div>
-              </div>
-              <div class="detail-row" tabindex="0">
-                <span class="detail-icon">🧩</span>
-                <div>
-                  <strong>Segmentation</strong>
-                  <small>U-Net++: سگمنتیشن بطن و دهلیز</small>
-                </div>
-                <div class="detail-expand">
-                  Encoder: EfficientNet-B4 — Input: 256×256 — Threshold: 0.13
-                </div>
-              </div>
-              <div class="detail-row" tabindex="0">
-                <span class="detail-icon">📏</span>
-                <div>
-                  <strong>Scale Detection</strong>
-                  <small>OpenCV: تشخیص Ruler + محاسبه pixel/cm</small>
-                </div>
-                <div class="detail-expand">
-                  Hough Transform — Best Ray Algorithm — Fallback: 12 px/cm
-                </div>
-              </div>
-              <div class="detail-row" tabindex="0">
-                <span class="detail-icon">📐</span>
-                <div>
-                  <strong>2D Measurements</strong>
-                  <small>اندازه‌گیری 12+ پارامتر: IVS · LVPW · LA · LV · ...</small>
-                </div>
-                <div class="detail-expand">
-                  PLAX: IVS, LVPW, LVIDd, Aortic Root, LA<br>
-                  A4C: LA/RA Volume, LV Area, EF
-                </div>
-              </div>
-              <div class="detail-row" tabindex="0">
-                <span class="detail-icon">📊</span>
-                <div>
-                  <strong>ML Risk Prediction</strong>
-                  <small>۲ مدل موازی: Logistic Regression + CatBoost</small>
-                </div>
-                <div class="detail-expand">
-                  16 عامل خطر — Combined Weighted Score — Levels: LOW / MODERATE / HIGH
-                </div>
-              </div>
-              <div class="detail-row" tabindex="0">
-                <span class="detail-icon">🌫</span>
-                <div>
-                  <strong>Fuzzy Logic</strong>
-                  <small>تحلیل فازی ۱۲ پارامتر + Score 0–100</small>
-                </div>
-                <div class="detail-expand">
-                  Scikit-fuzzy — Membership Functions — Defuzz: MOM Method
-                </div>
-              </div>
-            </div>
-            <div class="step-tech-tags">
-              <span class="tech-tag">TensorFlow</span>
-              <span class="tech-tag">PyTorch</span>
-              <span class="tech-tag">OpenCV</span>
-              <span class="tech-tag">CatBoost</span>
-              <span class="tech-tag">Scikit-fuzzy</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 04 -->
-        <div class="journey-step" id="step-04">
-          <div class="step-marker">
-            <span class="step-num">04</span>
-            <div class="step-line"></div>
-          </div>
-          <div class="step-body glass-panel" tabindex="0">
-            <div class="step-head">
-              <span class="step-icon report-icon">📄</span>
-              <div>
-                <h3>تولید گزارش با LLM</h3>
-                <p>گزارش تخصصی و ساده با Arvan Cloud AI — مدل GPT-4o-mini</p>
-              </div>
-            </div>
-            <div class="step-details">
-              <div class="detail-row" tabindex="0">
-                <span class="detail-icon">🔧</span>
-                <div>
-                  <strong>Prompt Engineering</strong>
-                  <small>تبدیل داده‌های خام به Prompt ساختاریافته</small>
-                </div>
-                <div class="detail-expand">
-                  System Prompt متخصص قلب — Input &lt; 800 token — Persian NLG
-                </div>
-              </div>
-              <div class="detail-row" tabindex="0">
-                <span class="detail-icon">🌐</span>
-                <div>
-                  <strong>Medical → Simple</strong>
-                  <small>تبدیل اصطلاحات پزشکی به زبان ساده فارسی</small>
-                </div>
-                <div class="detail-expand">
-                  لحن دلگرم‌کننده — توصیه‌های عملی — هشدار بدون ترساندن
-                </div>
-              </div>
-              <div class="detail-row" tabindex="0">
-                <span class="detail-icon">🖥</span>
-                <div>
-                  <strong>HTML Report</strong>
-                  <small>گزارش زیبا با CSS inline — آماده چاپ و ایمیل</small>
-                </div>
-                <div class="detail-expand">
-                  Responsive HTML — Inline CSS — Print-ready — Email-compatible
-                </div>
-              </div>
-              <div class="detail-row" tabindex="0">
-                <span class="detail-icon">📝</span>
-                <div>
-                  <strong>Specialist Report</strong>
-                  <small>گزارش تخصصی برای پزشکان با جزئیات فنی</small>
-                </div>
-                <div class="detail-expand">
-                  پارامترهای کامل اکو — ML Scores — Fuzzy Analysis — Risk Factors
-                </div>
-              </div>
-            </div>
-            <div class="step-tech-tags">
-              <span class="tech-tag">GPT-4o-mini</span>
-              <span class="tech-tag">Arvan AI</span>
-              <span class="tech-tag">Persian NLG</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Step 05 -->
-        <div class="journey-step" id="step-05">
-          <div class="step-marker">
-            <span class="step-num">05</span>
-          </div>
-          <div class="step-body glass-panel" tabindex="0">
-            <div class="step-head">
-              <span class="step-icon delivery-icon">📬</span>
-              <div>
-                <h3>ارسال و دسترسی</h3>
-                <p>تحویل همزمان به بیمار و پزشک — روش‌های متعدد</p>
-              </div>
-            </div>
-            <div class="step-details">
-              <div class="detail-row" tabindex="0">
-                <span class="detail-icon">📱</span>
-                <div>
-                  <strong>Patient Panel</strong>
-                  <small>دسترسی آنلاین به گزارش در پنل بیمار</small>
-                </div>
-              </div>
-              <div class="detail-row" tabindex="0">
-                <span class="detail-icon">✉️</span>
-                <div>
-                  <strong>Email Notification</strong>
-                  <small>ارسال گزارش HTML به ایمیل بیمار</small>
-                </div>
-              </div>
-              <div class="detail-row" tabindex="0">
-                <span class="detail-icon">💬</span>
-                <div>
-                  <strong>SMS Alert</strong>
-                  <small>ارسال خلاصه گزارش به موبایل</small>
-                </div>
-              </div>
-              <div class="detail-row" tabindex="0">
-                <span class="detail-icon">🖨</span>
-                <div>
-                  <strong>Print & PDF</strong>
-                  <small>امکان چاپ و دانلود PDF</small>
-                </div>
-              </div>
-              <div class="detail-row" tabindex="0">
-                <span class="detail-icon">✅</span>
-                <div>
-                  <strong>Doctor Review</strong>
-                  <small>تایید یا ویرایش نهایی توسط پزشک متخصص</small>
-                </div>
-              </div>
-            </div>
-            <div class="step-tech-tags">
-              <span class="tech-tag">RabbitMQ</span>
-              <span class="tech-tag">Mail Service</span>
-              <span class="tech-tag">SMS API</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Journey Summary Stats -->
-      <div class="journey-stats">
-        <div class="stat-box glass-panel">
-          <span class="stat-icon">⚡</span>
-          <h4>30–60 ثانیه</h4>
-          <p>زمان پردازش کامل</p>
-        </div>
-        <div class="stat-box glass-panel">
-          <span class="stat-icon">🎯</span>
-          <h4>98.5%</h4>
-          <p>دقت تشخیص نما</p>
-        </div>
-        <div class="stat-box glass-panel">
-          <span class="stat-icon">🧠</span>
-          <h4>6 مدل AI</h4>
-          <p>پردازش موازی</p>
-        </div>
-        <div class="stat-box glass-panel">
-          <span class="stat-icon">📋</span>
-          <h4>3 فرمت</h4>
-          <p>HTML / Text / PDF</p>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-
-  <!-- ═══════════════════════════════════════════════════════
-       SECTION 5 — CV PIPELINE (5 Steps)
-  ═══════════════════════════════════════════════════════ -->
-  <section class="cv-pipeline-section" id="cv-pipeline">
-    <div class="container">
-
-      <div class="section-header">
-        <span class="section-badge">Computer Vision Pipeline</span>
-        <h2>پردازش تصویر اکو با <span class="gradient-text">هوش مصنوعی</span></h2>
-        <p>۵ مرحله پردازش — از ویدیو خام تا اندازه‌گیری دقیق پارامترهای قلبی</p>
-      </div>
-
-      <div class="pipeline-flow">
-
-        <!-- Pipeline Step 1 -->
-        <div class="pipeline-step" tabindex="0">
-          <div class="pipeline-num">1</div>
-          <div class="pipeline-content glass-panel">
-            <div class="pipeline-head">
-              <span class="pipe-icon">🎥</span>
-              <h3>Video Input</h3>
-            </div>
-            <div class="pipeline-img-placeholder" aria-label="فریم اولیه ویدیو اکو">
-              <!-- img src="/images/steps/step1-video.jpg" -->
-              <span>فریم اولیه ویدیو اکو</span>
-            </div>
-            <ul class="pipeline-meta">
-              <li><strong>فرمت:</strong> AVI · MP4 · MOV</li>
-              <li><strong>Frame Rate:</strong> 25–60 FPS</li>
-              <li><strong>نمونه‌برداری:</strong> ۸ فریم یکنواخت</li>
-            </ul>
-          </div>
-          <div class="pipe-arrow">↓</div>
-        </div>
-
-        <!-- Pipeline Step 2 -->
-        <div class="pipeline-step" tabindex="0">
-          <div class="pipeline-num">2</div>
-          <div class="pipeline-content glass-panel">
-            <div class="pipeline-head">
-              <span class="pipe-icon">🏷</span>
-              <h3>View Classification</h3>
-            </div>
-            <div class="pipeline-img-placeholder classify" aria-label="نتیجه تشخیص نمای A4C">
-              <!-- img src="/images/steps/step2-classify.jpg" -->
-              <span>A4C — Confidence: 98.5%</span>
-            </div>
-            <ul class="pipeline-meta">
-              <li><strong>مدل:</strong> CNN (TensorFlow/Keras)</li>
-              <li><strong>خروجی:</strong> A4C · PLAX · PSAX-AV · PSAX-MV · ...</li>
-              <li><strong>دقت:</strong> 98.5% | Confidence: 0–1</li>
-            </ul>
-            <div class="classification-grid">
-              <span>A4C</span><span>PLAX</span><span>PSAX-AV</span>
-              <span>PSAX-MV</span><span>A2C</span><span>SC</span>
-              <span>RVIF</span><span>OTHER</span>
-            </div>
-          </div>
-          <div class="pipe-arrow">↓</div>
-        </div>
-
-        <!-- Pipeline Step 3 -->
-        <div class="pipeline-step" tabindex="0">
-          <div class="pipeline-num">3</div>
-          <div class="pipeline-content glass-panel">
-            <div class="pipeline-head">
-              <span class="pipe-icon">📏</span>
-              <h3>Scale Detection</h3>
-            </div>
-            <div class="pipeline-img-placeholder scale" aria-label="تشخیص Ruler">
-              <!-- img src="/images/steps/step3-scale.jpg" -->
-              <span>Ruler Detection — 28.6 px/cm</span>
-            </div>
-            <ul class="pipeline-meta">
-              <li><strong>الگوریتم:</strong> Hough Transform + Best Ray</li>
-              <li><strong>خروجی:</strong> ضریب تبدیل pixel→cm</li>
-              <li><strong>Fallback:</strong> ۱۲ px/cm در صورت شکست</li>
-            </ul>
-          </div>
-          <div class="pipe-arrow">↓</div>
-        </div>
-
-        <!-- Pipeline Step 4 -->
-        <div class="pipeline-step" tabindex="0">
-          <div class="pipeline-num">4</div>
-          <div class="pipeline-content glass-panel">
-            <div class="pipeline-head">
-              <span class="pipe-icon">🧩</span>
-              <h3>Deep Segmentation</h3>
-            </div>
-            <div class="pipeline-img-placeholder segment" aria-label="ماسک سگمنتیشن بطن چپ">
-              <!-- img src="/images/steps/step4-segment.jpg" -->
-              <span>U-Net++ LV Mask</span>
-            </div>
-            <ul class="pipeline-meta">
-              <li><strong>مدل:</strong> U-Net++ (PyTorch)</li>
-              <li><strong>Encoder:</strong> EfficientNet-B4</li>
-              <li><strong>Input:</strong> 256×256 grayscale | Threshold: 0.13</li>
-            </ul>
-            <div class="segment-targets">
-              <span>Left Ventricle</span>
-              <span>Left Atrium</span>
-              <span>Right Atrium</span>
-            </div>
-          </div>
-          <div class="pipe-arrow">↓</div>
-        </div>
-
-        <!-- Pipeline Step 5 -->
-        <div class="pipeline-step" tabindex="0">
-          <div class="pipeline-num">5</div>
-          <div class="pipeline-content glass-panel">
-            <div class="pipeline-head">
-              <span class="pipe-icon">📐</span>
-              <h3>Measurements & Output</h3>
-            </div>
-            <div class="pipeline-img-placeholder measure" aria-label="اندازه‌گیری پارامترهای قلبی">
-              <!-- img src="/images/steps/step5-measure.jpg" -->
-              <span>LVIDd: 52.4 mm</span>
-            </div>
-            <div class="measurements-by-view">
-              <div class="view-measures">
-                <strong>PLAX View:</strong>
-                <ul>
-                  <li>IVS (cm)</li>
-                  <li>LVPW (cm)</li>
-                  <li>LVIDd (cm)</li>
-                  <li>Aortic Root (cm)</li>
-                  <li>LA (cm)</li>
-                </ul>
-              </div>
-              <div class="view-measures">
-                <strong>A4C View:</strong>
-                <ul>
-                  <li>LA Volume (cm²)</li>
-                  <li>RA Volume (cm²)</li>
-                  <li>LV Area (cm²)</li>
-                  <li>EF (%)</li>
-                  <li>LV EDV / ESV</li>
-                </ul>
-              </div>
-            </div>
-            <ul class="pipeline-meta">
-              <li><strong>مجموع پارامترها:</strong> 12+</li>
-              <li><strong>خروجی:</strong> JSON → MongoDB</li>
-            </ul>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Pipeline I/O Summary -->
-      <div class="pipeline-summary glass-panel">
-        <div class="summary-grid">
-          <div class="summary-item">
-            <span class="sum-icon">📥</span>
-            <h5>Input</h5>
-            <p>۱ فایل ویدیو (MP4 / AVI)</p>
-          </div>
-          <div class="summary-item">
-            <span class="sum-icon">⏱</span>
-            <h5>Processing</h5>
-            <p>۳۰–۶۰ ثانیه</p>
-          </div>
-          <div class="summary-item">
-            <span class="sum-icon">📤</span>
-            <h5>Output</h5>
-            <p>12+ پارامتر + Confidence Scores</p>
-          </div>
-          <div class="summary-item">
-            <span class="sum-icon">💾</span>
-            <h5>Storage</h5>
-            <p>MongoDB + LLM Report</p>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-
-  <!-- ═══════════════════════════════════════════════════════
-       SECTION 6 — ML RISK PREDICTION
-  ═══════════════════════════════════════════════════════ -->
-  <section class="ml-section" id="ml-models">
-    <div class="container">
-
-      <div class="section-header">
-        <span class="section-badge">Machine Learning</span>
-        <h2>مدل‌های <span class="gradient-text">پیش‌بینی ریسک</span></h2>
-        <p>دو مدل ML موازی برای تشخیص بیماری قلبی با رویکردهای مکمل</p>
-      </div>
-
-      <div class="ml-models-grid">
-
-        <!-- Model 1 -->
-        <div class="ml-model-card glass-panel" tabindex="0">
-          <div class="model-header">
-            <span class="model-icon">📉</span>
-            <div>
-              <h3>Model 1 — Logistic Regression</h3>
-              <span class="model-tag">UCI Heart Disease Dataset</span>
-            </div>
-          </div>
-          <div class="model-img-placeholder" aria-label="نمودار Logistic Regression">
-            <!-- img src="/images/ml/logistic-regression.jpg" -->
-            <span>نمودار ضرایب / Feature Importance</span>
-          </div>
-          <div class="model-details">
-            <table class="model-table">
-              <tr><td>Dataset</td><td>UCI Heart Disease</td></tr>
-              <tr><td>Raw Features</td><td>13</td></tr>
-              <tr><td>Engineered Features</td><td>5</td></tr>
-              <tr><td>Scaler</td><td>StandardScaler</td></tr>
-              <tr><td>Accuracy</td><td>~85%</td></tr>
-            </table>
-            <div class="engineered-features" tabindex="0">
-              <strong>Feature Engineering:</strong>
-              <ul>
-                <li><code>bp_category</code> — طبقه‌بندی فشار خون (5 سطح)</li>
-                <li><code>rate_pressure_product</code> — (HR × SBP) / 100</li>
-                <li><code>chronotropic_index</code> — HR / (220 – age)</li>
-                <li><code>st_depression_index</code> — oldpeak / (HR/100)</li>
-                <li><code>age_st_depression</code> — age × oldpeak</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <!-- Model 2 -->
-        <div class="ml-model-card glass-panel" tabindex="0">
-          <div class="model-header">
-            <span class="model-icon">📈</span>
-            <div>
-              <h3>Model 2 — CatBoost</h3>
-              <span class="model-tag">Cardiovascular Dataset — 70,000 نمونه</span>
-            </div>
-          </div>
-          <div class="model-img-placeholder catboost" aria-label="نمودار Feature Importance CatBoost">
-            <!-- img src="/images/ml/catboost-importance.jpg" -->
-            <span>نمودار Feature Importance</span>
-          </div>
-          <div class="model-details">
-            <table class="model-table">
-              <tr><td>Dataset</td><td>Kaggle Cardiovascular</td></tr>
-              <tr><td>Samples</td><td>70,000</td></tr>
-              <tr><td>Raw Features</td><td>11</td></tr>
-              <tr><td>Engineered Features</td><td>7</td></tr>
-              <tr><td>Accuracy</td><td>~73%</td></tr>
-            </table>
-            <div class="engineered-features" tabindex="0">
-              <strong>Feature Engineering:</strong>
-              <ul>
-                <li><code>bmi / bmi_category</code> — شاخص توده بدنی (6 دسته)</li>
-                <li><code>map</code> — Mean Arterial Pressure</li>
-                <li><code>pulse_pressure</code> — SBP – DBP</li>
-                <li><code>hypertension_grade</code> — 0–4 (ESC/ESH)</li>
-                <li><code>metabolic_risk_score</code> — BMI + HTN + Chol + Gluc</li>
-                <li><code>lifestyle_risk_score</code> — Smoke×3 + Alco×2 – Active×1.5</li>
-                <li><code>age_hypertension_interaction</code> — age × HTN grade</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- Combined Risk Score -->
-      <div class="combined-score glass-panel">
-        <h4>Combined Risk Score — خروجی ترکیبی</h4>
-        <p>Weighted Average بر اساس Confidence هر مدل — بازه: 0–100</p>
-        <div class="risk-scale">
-          <div class="risk-zone low">
-            <span class="risk-label">LOW</span>
-            <span class="risk-range">0 — 44</span>
-            <span class="risk-desc">ریسک پایین</span>
-          </div>
-          <div class="risk-zone moderate">
-            <span class="risk-label">MODERATE</span>
-            <span class="risk-range">45 — 70</span>
-            <span class="risk-desc">ریسک متوسط</span>
-          </div>
-          <div class="risk-zone high">
-            <span class="risk-label">HIGH</span>
-            <span class="risk-range">71 — 100</span>
-            <span class="risk-desc">ریسک بالا</span>
-          </div>
-        </div>
-        <p class="risk-note">
-          در صورت عدم دسترسی به داده، مقادیر Clinical Median جایگزین می‌شوند.
-          تشخیص خودکار 16 عامل خطر با توضیح فارسی.
-        </p>
-      </div>
-
-    </div>
-  </section>
-
-
-  <!-- ═══════════════════════════════════════════════════════
-       SECTION 7 — FUZZY LOGIC
-  ═══════════════════════════════════════════════════════ -->
-  <section class="fuzzy-section" id="fuzzy-logic">
-    <div class="container">
-
-      <div class="section-header">
-        <span class="section-badge">Fuzzy Logic Analysis</span>
-        <h2>تحلیل فازی <span class="gradient-text">۱۲ پارامتر قلبی</span></h2>
-        <p>Scikit-fuzzy برای مدیریت مرزهای نامشخص بیماری — Score 0–100</p>
-      </div>
-
-      <div class="fuzzy-layout">
-
-        <!-- Parameters -->
-        <div class="fuzzy-params glass-panel" tabindex="0">
-          <h4>پارامترهای ورودی (12)</h4>
-          <div class="params-grid">
-            <div class="param-group" tabindex="0">
-              <h5>Aortic</h5>
-              <ul>
-                <li>aortic_root</li>
-                <li>aortic_asc</li>
-              </ul>
-            </div>
-            <div class="param-group" tabindex="0">
-              <h5>Atria</h5>
-              <ul>
-                <li>la_volume / BSA</li>
-                <li>ra_volume / BSA</li>
-              </ul>
-            </div>
-            <div class="param-group" tabindex="0">
-              <h5>Right Ventricle</h5>
-              <ul>
-                <li>rv_diameter</li>
-                <li>rv_wall</li>
-              </ul>
-            </div>
-            <div class="param-group" tabindex="0">
-              <h5>Left Ventricle</h5>
-              <ul>
-                <li>lv_edv / BSA</li>
-                <li>lv_esv / BSA</li>
-              </ul>
-            </div>
-            <div class="param-group" tabindex="0">
-              <h5>Wall Thickness</h5>
-              <ul>
-                <li>ivs_thickness</li>
-                <li>pw_thickness</li>
-              </ul>
-            </div>
-            <div class="param-group" tabindex="0">
-              <h5>Diameter / PA</h5>
-              <ul>
-                <li>lv_diameter</li>
-                <li>pa_diameter</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-
-        <!-- Fuzzy Logic Flow -->
-        <div class="fuzzy-flow glass-panel">
-          <h4>جریان پردازش فازی</h4>
-
-          <div class="fuzzy-step" tabindex="0">
-            <span class="fuzzy-step-num">①</span>
-            <div>
-              <strong>BSA Normalization</strong>
-              <p>فرمول Mosteller: √((W × H) / 3600)</p>
-            </div>
-          </div>
-
-          <div class="fuzzy-step" tabindex="0">
-            <span class="fuzzy-step-num">②</span>
-            <div>
-              <strong>Membership Functions</strong>
-              <div class="mf-table">
-                <div class="mf-row">
-                  <span class="mf-label normal">Normal</span>
-                  <span>Trapezoidal [0, 0, n_max, mild_max]</span>
-                </div>
-                <div class="mf-row">
-                  <span class="mf-label mild">Mild</span>
-                  <span>Triangular [n_max, mild_max, sev_max]</span>
-                </div>
-                <div class="mf-row">
-                  <span class="mf-label severe">Severe</span>
-                  <span>Trapezoidal [mild_max, sev_max, ∞, ∞]</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="fuzzy-step" tabindex="0">
-            <span class="fuzzy-step-num">③</span>
-            <div>
-              <strong>Fuzzy Rules</strong>
-              <div class="rules-list">
-                <div class="rule">
-                  <span class="rule-out normal">Normal</span>
-                  <span>اگر همه پارامترها Normal باشند (AND)</span>
-                </div>
-                <div class="rule">
-                  <span class="rule-out mild">Mild</span>
-                  <span>اگر حداقل یکی Mild باشد (OR)</span>
-                </div>
-                <div class="rule">
-                  <span class="rule-out severe">Severe</span>
-                  <span>اگر حداقل یکی Severe باشد (OR)</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="fuzzy-step" tabindex="0">
-            <span class="fuzzy-step-num">④</span>
-            <div>
-              <strong>Defuzzification — MOM Method</strong>
-              <p>Mean of Maximum — خروجی: Score 0–100 + Category + Reasons</p>
-            </div>
-          </div>
-
-          <div class="fuzzy-img-placeholder" aria-label="نمودار توابع عضویت">
-            <!-- img src="/images/fuzzy/membership-functions.png" -->
-            <span>نمودار توابع عضویت (Normal / Mild / Severe)</span>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-
-  <!-- ═══════════════════════════════════════════════════════
-       SECTION 8 — LLM REPORT GENERATION
-  ═══════════════════════════════════════════════════════ -->
-  <section class="llm-section" id="llm">
-    <div class="container">
-
-      <div class="section-header">
-        <span class="section-badge">LLM Integration</span>
-        <h2>تولید گزارش با <span class="gradient-text">هوش مصنوعی</span></h2>
-        <p>Arvan Cloud AI (GPT-4o-mini) — تبدیل داده‌های خام به گزارش پزشکی فارسی</p>
-      </div>
-
-      <div class="llm-layout">
-
-        <!-- Input/Output Flow -->
-        <div class="llm-flow glass-panel">
-          <h4>جریان تولید گزارش</h4>
-          <div class="llm-flow-steps">
-            <div class="llm-step" tabindex="0">
-              <span class="llm-step-icon">📊</span>
-              <div>
-                <strong>Input</strong>
-                <p>خلاصه ML Score + Fuzzy Score + Echo Measurements + Demographics</p>
-                <small>حجم ورودی: &lt; 800 token</small>
-              </div>
-            </div>
-            <div class="llm-arrow">↓</div>
-            <div class="llm-step" tabindex="0">
-              <span class="llm-step-icon">🔧</span>
-              <div>
-                <strong>Prompt Engineering</strong>
-                <p>System Prompt: متخصص قلب فارسی‌زبان</p>
-                <small>لحن دلگرم‌کننده — هشدار بدون ترساندن</small>
-              </div>
-            </div>
-            <div class="llm-arrow">↓</div>
-            <div class="llm-step" tabindex="0">
-              <span class="llm-step-icon">☁️</span>
-              <div>
-                <strong>Arvan Cloud AI API</strong>
-                <p>مدل: gpt-4o-mini | Provider: Arvan Cloud</p>
-                <small>max_tokens: 1500 — temperature: 0.3</small>
-              </div>
-            </div>
-            <div class="llm-arrow">↓</div>
-            <div class="llm-step" tabindex="0">
-              <span class="llm-step-icon">📄</span>
-              <div>
-                <strong>Outputs (3 فرمت)</strong>
-                <ul>
-                  <li>📑 HTML زیبا با CSS inline (بیمار)</li>
-                  <li>📝 متن ساده (SMS)</li>
-                  <li>🔬 گزارش تخصصی (پزشک)</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Sample Report Preview -->
-        <div class="llm-preview glass-panel">
-          <div class="preview-header">
-            <span>نمونه گزارش تولید شده</span>
-            <span class="preview-badge">HTML Report</span>
-          </div>
-          <div class="report-preview-placeholder" aria-label="اسکرین‌شات گزارش HTML">
-            <!-- img src="/images/llm/sample-report.png" -->
-            <span>اسکرین‌شات گزارش HTML با CSS inline</span>
-            <small>گزارش فارسی — طراحی زیبا — آماده چاپ</small>
-          </div>
-          <div class="report-sections">
-            <span class="report-section">خلاصه وضعیت</span>
-            <span class="report-section">پارامترهای اکو</span>
-            <span class="report-section">ریسک قلبی</span>
-            <span class="report-section">توصیه‌های پزشکی</span>
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-
-  <!-- ═══════════════════════════════════════════════════════
-       SECTION 9 — USER PANELS
-  ═══════════════════════════════════════════════════════ -->
-  <section class="panels-section" id="user-panels">
-    <div class="container">
-
-      <div class="section-header">
-        <span class="section-badge">User Panels</span>
-        <h2>پنل‌های <span class="gradient-text">کاربری</span></h2>
-        <p>سه پنل جداگانه با دسترسی‌های متفاوت برای هر نقش</p>
-      </div>
-
-      <div class="panels-grid">
-
-        <!-- Patient Panel -->
-        <div class="panel-card patient-panel glass-panel" tabindex="0">
-          <div class="panel-header">
-            <span class="panel-icon">🧑‍⚕️</span>
-            <h3>پنل بیمار</h3>
-          </div>
-          <div class="panel-screenshot" aria-label="اسکرین‌شات پنل بیمار">
-            <!-- img src="/images/panels/patient-panel.png" -->
-            <span>Dashboard بیمار</span>
-          </div>
-          <ul class="panel-features">
-            <li tabindex="0">
-              <span class="feat-icon">📅</span>
-              <div>
-                <strong>رزرو نوبت آنلاین</strong>
-                <small>با چت‌بات هوشمند و درگاه پرداخت</small>
-              </div>
-            </li>
-            <li tabindex="0">
-              <span class="feat-icon">📋</span>
-              <div>
-                <strong>تاریخچه اکو</strong>
-                <small>مشاهده تمام ویزیت‌های قبلی</small>
-              </div>
-            </li>
-            <li tabindex="0">
-              <span class="feat-icon">📊</span>
-              <div>
-                <strong>گزارش‌های AI</strong>
-                <small>دریافت گزارش ساده فارسی</small>
-              </div>
-            </li>
-            <li tabindex="0">
-              <span class="feat-icon">💬</span>
-              <div>
-                <strong>چت با دستیار هوشمند</strong>
-                <small>Qdrant Semantic Search</small>
-              </div>
-            </li>
-          </ul>
-        </div>
-
-        <!-- Secretary Panel -->
-        <div class="panel-card secretary-panel glass-panel" tabindex="0">
-          <div class="panel-header">
-            <span class="panel-icon">🗂</span>
-            <h3>پنل منشی</h3>
-          </div>
-          <div class="panel-screenshot" aria-label="اسکرین‌شات پنل منشی">
-            <!-- img src="/images/panels/secretary-panel.png" -->
-            <span>مدیریت صف و نوبت‌ها</span>
-          </div>
-          <ul class="panel-features">
-            <li tabindex="0">
-              <span class="feat-icon">📋</span>
-              <div>
-                <strong>مدیریت صف انتظار</strong>
-                <small>نمایش Real-time بیماران</small>
-              </div>
-            </li>
-            <li tabindex="0">
-              <span class="feat-icon">✅</span>
-              <div>
-                <strong>تایید / لغو نوبت‌ها</strong>
-                <small>ارسال SMS اطلاع‌رسانی خودکار</small>
-              </div>
-            </li>
-            <li tabindex="0">
-              <span class="feat-icon">💰</span>
-              <div>
-                <strong>حسابداری و پرداخت‌ها</strong>
-                <small>گزارش مالی روزانه</small>
-              </div>
-            </li>
-            <li tabindex="0">
-              <span class="feat-icon">📆</span>
-              <div>
-                <strong>تقویم پزشکان</strong>
-                <small>مدیریت شیفت و Availability</small>
-              </div>
-            </li>
-          </ul>
-        </div>
-
-        <!-- Doctor Panel -->
-        <div class="panel-card doctor-panel glass-panel" tabindex="0">
-          <div class="panel-header">
-            <span class="panel-icon">👨‍⚕️</span>
-            <h3>پنل پزشک</h3>
-          </div>
-          <div class="panel-screenshot" aria-label="اسکرین‌شات پنل پزشک">
-            <!-- img src="/images/panels/doctor-panel.png" -->
-            <span>Dashboard تحلیلی پزشک</span>
-          </div>
-          <ul class="panel-features">
-            <li tabindex="0">
-              <span class="feat-icon">🫀</span>
-              <div>
-                <strong>مشاهده تمام اکوها</strong>
-                <small>دسترسی به ویدیو + نتایج AI</small>
-              </div>
-            </li>
-            <li tabindex="0">
-              <span class="feat-icon">✏️</span>
-              <div>
-                <strong>تایید / ویرایش گزارش‌های AI</strong>
-                <small>Inline editor برای تصحیح</small>
-              </div>
-            </li>
-            <li tabindex="0">
-              <span class="feat-icon">📈</span>
-              <div>
-                <strong>داشبورد بیماران</strong>
-                <small>روند تغییرات در طول زمان</small>
-              </div>
-            </li>
-            <li tabindex="0">
-              <span class="feat-icon">📝</span>
-              <div>
-                <strong>نسخه الکترونیک</strong>
-                <small>صدور و ارسال دیجیتال</small>
-              </div>
-            </li>
-          </ul>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
-
   <!-- ═══════════════════════════════════════════════════════
        SECTION 10 — FINAL CTA
   ═══════════════════════════════════════════════════════ -->
@@ -1495,7 +909,7 @@
           {{ getTranslation('comprehensivePlatform') }}
         </p>
         <div class="cta-actions">
-          <a href="#journey" class="btn btn-primary">{{ getTranslation('getStarted') }}</a>
+          <a href="#architecture" class="btn btn-primary">{{ getTranslation('getStarted') }}</a>
           <a href="#architecture" class="btn btn-outline">{{ getTranslation('systemArchitecture') }}</a>
           <a href="mailto:contact@cardioai.ir" class="btn btn-ghost">{{ getTranslation('contactEmail') }}</a>
         </div>

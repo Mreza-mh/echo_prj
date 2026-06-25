@@ -1,109 +1,123 @@
 <div class="pf-wrap" dir="rtl">
 
-  <!-- Header -->
+  <!-- ─── Header ─── -->
   <div class="pf-header">
     <div class="pf-header-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
       </svg>
     </div>
-    <div class="pf-header-text">
-      <h2 class="pf-title">فرم ارزیابی ریسک قلبی و عروقی</h2>
+    <div>
+      <h2 class="pf-title">ارزیابی ریسک قلبی</h2>
       <p class="pf-subtitle">اطلاعات پزشکی بیمار را با دقت وارد نمایید</p>
     </div>
   </div>
 
-  <!-- Stepper -->
-  <mat-stepper [linear]="false" #stepper class="pf-stepper">
+  <!-- ─── Progress ─── -->
+  <div class="pf-progress">
+    <div class="pf-steps">
+      @for (s of stepLabels; track $index) {
+        <div class="ps-item" [class.active]="currentStep === $index" [class.done]="currentStep > $index"
+             (click)="currentStep >= $index && goToStep($index)">
+          <div class="ps-dot">
+            @if (currentStep > $index) {
+              <svg viewBox="0 0 12 12" fill="none"><polyline points="2,6 5,9 10,3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            } @else {
+              <span>{{ $index + 1 }}</span>
+            }
+          </div>
+          <span class="ps-label">{{ s }}</span>
+        </div>
+        @if ($index < stepLabels.length - 1) {
+          <div class="ps-line" [class.done]="currentStep > $index"></div>
+        }
+      }
+    </div>
+  </div>
 
-    <!-- ─── Step 1: اطلاعات پایه ─── -->
-    <mat-step [stepControl]="basicInfoForm">
-      <ng-template matStepLabel>اطلاعات پایه</ng-template>
+  <!-- ─── Body ─── -->
+  <div class="pf-body">
+
+    <!-- Step 1: اطلاعات پایه -->
+    @if (currentStep === 0) {
       <form [formGroup]="basicInfoForm" class="step-form">
 
         <div class="step-head">
-          <span class="step-accent"></span>
+          <div class="step-num">۱</div>
           <div>
             <h3 class="step-title">اطلاعات پایه بیمار</h3>
             <p class="step-sub">سن، جنسیت، قد و وزن</p>
           </div>
         </div>
 
-        <div class="form-grid">
-
-          <div class="field-group">
-            <label class="field-label">
-              سن
-              <span class="field-unit">سال</span>
+        <div class="field-group">
+          <label class="field-label">جنسیت</label>
+          <div class="gender-group">
+            <label class="gender-card" [class.sel]="basicInfoForm.get('gender')?.value === 'male'">
+              <input type="radio" formControlName="gender" value="male" hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8" r="4"/><path d="M12 12v8M9 16h6"/>
+              </svg>
+              <span>مرد</span>
             </label>
-            <input type="number" class="native-input" formControlName="age" placeholder="مثال: 45"
-              [class.has-error]="basicInfoForm.get('age')?.invalid && basicInfoForm.get('age')?.touched">
-            <span class="field-error" *ngIf="basicInfoForm.get('age')?.hasError('min') && basicInfoForm.get('age')?.touched">حداقل ۱۸ سال</span>
-            <span class="field-error" *ngIf="basicInfoForm.get('age')?.hasError('max') && basicInfoForm.get('age')?.touched">حداکثر ۱۲۰ سال</span>
-          </div>
-
-          <div class="field-group">
-            <label class="field-label">جنسیت</label>
-            <div class="radio-group">
-              <label class="radio-card" [class.selected]="basicInfoForm.get('gender')?.value === 'male'">
-                <input type="radio" formControlName="gender" value="male" hidden>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="8" r="4"/><path d="M12 12v8M9 16h6"/>
-                </svg>
-                مرد
-              </label>
-              <label class="radio-card" [class.selected]="basicInfoForm.get('gender')?.value === 'female'">
-                <input type="radio" formControlName="gender" value="female" hidden>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="8" r="4"/><path d="M12 12v8M9 19h6"/>
-                </svg>
-                زن
-              </label>
-            </div>
-          </div>
-
-          <div class="field-group">
-            <label class="field-label">
-              قد
-              <span class="field-unit">cm</span>
+            <label class="gender-card" [class.sel]="basicInfoForm.get('gender')?.value === 'female'">
+              <input type="radio" formControlName="gender" value="female" hidden>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="8" r="4"/><path d="M12 12v6M9 16h6M12 18v3"/>
+              </svg>
+              <span>زن</span>
             </label>
-            <input type="number" class="native-input" formControlName="height" placeholder="مثال: 175"
-              [class.has-error]="basicInfoForm.get('height')?.invalid && basicInfoForm.get('height')?.touched">
-            <span class="field-error" *ngIf="basicInfoForm.get('height')?.hasError('min') && basicInfoForm.get('height')?.touched">حداقل ۱۰۰ سانتی‌متر</span>
-            <span class="field-error" *ngIf="basicInfoForm.get('height')?.hasError('max') && basicInfoForm.get('height')?.touched">حداکثر ۲۳۰ سانتی‌متر</span>
-          </div>
-
-          <div class="field-group">
-            <label class="field-label">
-              وزن
-              <span class="field-unit">kg</span>
-            </label>
-            <input type="number" class="native-input" formControlName="weight" placeholder="مثال: 75"
-              [class.has-error]="basicInfoForm.get('weight')?.invalid && basicInfoForm.get('weight')?.touched">
-            <span class="field-error" *ngIf="basicInfoForm.get('weight')?.hasError('min') && basicInfoForm.get('weight')?.touched">حداقل ۳۰ کیلوگرم</span>
-            <span class="field-error" *ngIf="basicInfoForm.get('weight')?.hasError('max') && basicInfoForm.get('weight')?.touched">حداکثر ۲۵۰ کیلوگرم</span>
           </div>
         </div>
 
-        <div class="step-actions">
+        <div class="form-grid">
+          <div class="field-group">
+            <label class="field-label">سن <span class="fu">سال</span></label>
+            <input type="number" class="pf-input" formControlName="age" placeholder="مثال: ۴۵"
+              [class.err]="basicInfoForm.get('age')?.invalid && basicInfoForm.get('age')?.touched">
+            @if (basicInfoForm.get('age')?.hasError('min') && basicInfoForm.get('age')?.touched) {
+              <span class="field-err">حداقل ۱۸ سال</span>
+            }
+            @if (basicInfoForm.get('age')?.hasError('max') && basicInfoForm.get('age')?.touched) {
+              <span class="field-err">حداکثر ۱۲۰ سال</span>
+            }
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">قد <span class="fu">cm</span></label>
+            <input type="number" class="pf-input" formControlName="height" placeholder="مثال: ۱۷۵"
+              [class.err]="basicInfoForm.get('height')?.invalid && basicInfoForm.get('height')?.touched">
+            @if (basicInfoForm.get('height')?.hasError('min') && basicInfoForm.get('height')?.touched) {
+              <span class="field-err">حداقل ۱۰۰ سانتی‌متر</span>
+            }
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">وزن <span class="fu">kg</span></label>
+            <input type="number" class="pf-input" formControlName="weight" placeholder="مثال: ۷۵"
+              [class.err]="basicInfoForm.get('weight')?.invalid && basicInfoForm.get('weight')?.touched">
+            @if (basicInfoForm.get('weight')?.hasError('min') && basicInfoForm.get('weight')?.touched) {
+              <span class="field-err">حداقل ۳۰ کیلوگرم</span>
+            }
+          </div>
+        </div>
+
+        <div class="step-nav">
           <span></span>
-          <button type="button" class="step-btn step-btn-next" matStepperNext>
+          <button type="button" class="btn-next" (click)="nextStep()">
             بعدی
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="15 18 9 12 15 6"/>
-            </svg>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="10 12 6 8 10 4"/></svg>
           </button>
         </div>
       </form>
-    </mat-step>
+    }
 
-    <!-- ─── Step 2: فشار خون و متابولیسم ─── -->
-    <mat-step [stepControl]="cardiovascularForm">
-      <ng-template matStepLabel>فشار خون</ng-template>
+    <!-- Step 2: فشار خون -->
+    @if (currentStep === 1) {
       <form [formGroup]="cardiovascularForm" class="step-form">
 
         <div class="step-head">
-          <span class="step-accent"></span>
+          <div class="step-num">۲</div>
           <div>
             <h3 class="step-title">فشار خون و متابولیسم</h3>
             <p class="step-sub">فشار خون، کلسترول و قند خون</p>
@@ -111,92 +125,72 @@
         </div>
 
         <div class="form-grid">
-
           <div class="field-group">
-            <label class="field-label">
-              فشار خون سیستولیک
-              <span class="field-unit">mmHg</span>
-            </label>
-            <input type="number" class="native-input" formControlName="ap_hi" placeholder="مثال: 120"
-              [class.has-error]="cardiovascularForm.get('ap_hi')?.invalid && cardiovascularForm.get('ap_hi')?.touched">
-            <span class="field-error" *ngIf="cardiovascularForm.get('ap_hi')?.hasError('min') && cardiovascularForm.get('ap_hi')?.touched">حداقل ۶۰</span>
-            <span class="field-error" *ngIf="cardiovascularForm.get('ap_hi')?.hasError('max') && cardiovascularForm.get('ap_hi')?.touched">حداکثر ۳۰۰</span>
+            <label class="field-label">فشار سیستولیک <span class="fu">mmHg</span></label>
+            <input type="number" class="pf-input" formControlName="ap_hi" placeholder="مثال: ۱۲۰">
           </div>
-
           <div class="field-group">
-            <label class="field-label">
-              فشار خون دیاستولیک
-              <span class="field-unit">mmHg</span>
-            </label>
-            <input type="number" class="native-input" formControlName="ap_lo" placeholder="مثال: 80"
-              [class.has-error]="cardiovascularForm.get('ap_lo')?.invalid && cardiovascularForm.get('ap_lo')?.touched">
-            <span class="field-error" *ngIf="cardiovascularForm.get('ap_lo')?.hasError('min') && cardiovascularForm.get('ap_lo')?.touched">حداقل ۴۰</span>
-            <span class="field-error" *ngIf="cardiovascularForm.get('ap_lo')?.hasError('max') && cardiovascularForm.get('ap_lo')?.touched">حداکثر ۲۰۰</span>
+            <label class="field-label">فشار دیاستولیک <span class="fu">mmHg</span></label>
+            <input type="number" class="pf-input" formControlName="ap_lo" placeholder="مثال: ۸۰">
           </div>
-
           <div class="field-group">
-            <label class="field-label">وضعیت کلسترول</label>
-            <select class="native-select" formControlName="cholesterol">
+            <label class="field-label">کلسترول</label>
+            <select class="pf-select" formControlName="cholesterol">
               <option value="">انتخاب کنید</option>
               <option [value]="1">نرمال</option>
               <option [value]="2">بالاتر از نرمال</option>
-              <option [value]="3">بسیار بالاتر از نرمال</option>
+              <option [value]="3">بسیار بالا</option>
             </select>
           </div>
-
           <div class="field-group">
-            <label class="field-label">وضعیت قند خون</label>
-            <select class="native-select" formControlName="gluc">
+            <label class="field-label">قند خون</label>
+            <select class="pf-select" formControlName="gluc">
               <option value="">انتخاب کنید</option>
               <option [value]="1">نرمال</option>
               <option [value]="2">بالاتر از نرمال</option>
-              <option [value]="3">بسیار بالاتر از نرمال</option>
+              <option [value]="3">بسیار بالا</option>
             </select>
           </div>
         </div>
 
-        <div class="alert-error" *ngIf="cardiovascularForm.hasError('invalidBloodPressure')">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
-          </svg>
-          فشار خون سیستولیک باید بزرگتر از دیاستولیک باشد
-        </div>
-
-        <div class="step-actions">
-          <button type="button" class="step-btn step-btn-prev" matStepperPrevious>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="9 18 15 12 9 6"/>
+        @if (cardiovascularForm.hasError('invalidBloodPressure')) {
+          <div class="alert-err">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+              <circle cx="8" cy="8" r="6"/><line x1="8" y1="5" x2="8" y2="8"/><circle cx="8" cy="11" r=".5" fill="currentColor"/>
             </svg>
+            فشار سیستولیک باید بزرگتر از دیاستولیک باشد
+          </div>
+        }
+
+        <div class="step-nav">
+          <button type="button" class="btn-prev" (click)="prevStep()">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="6 4 10 8 6 12"/></svg>
             قبلی
           </button>
-          <button type="button" class="step-btn step-btn-next" matStepperNext>
+          <button type="button" class="btn-next" (click)="nextStep()">
             بعدی
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="15 18 9 12 15 6"/>
-            </svg>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="10 12 6 8 10 4"/></svg>
           </button>
         </div>
       </form>
-    </mat-step>
+    }
 
-    <!-- ─── Step 3: اطلاعات تخصصی قلبی ─── -->
-    <mat-step [stepControl]="heartDiseaseForm">
-      <ng-template matStepLabel>اطلاعات قلبی</ng-template>
+    <!-- Step 3: اطلاعات قلبی -->
+    @if (currentStep === 2) {
       <form [formGroup]="heartDiseaseForm" class="step-form">
 
         <div class="step-head">
-          <span class="step-accent"></span>
+          <div class="step-num">۳</div>
           <div>
             <h3 class="step-title">اطلاعات تخصصی قلبی</h3>
-            <p class="step-sub">ECG، ضربان، درد قفسه سینه و سایر شاخص‌ها</p>
+            <p class="step-sub">ECG، ضربان، درد قفسه سینه</p>
           </div>
         </div>
 
-        <div class="form-grid col-3">
-
+        <div class="form-grid col3">
           <div class="field-group">
             <label class="field-label">نوع درد قفسه سینه</label>
-            <select class="native-select" formControlName="cp">
+            <select class="pf-select" formControlName="cp">
               <option value="">انتخاب کنید</option>
               <option [value]="0">آنژین معمولی</option>
               <option [value]="1">آنژین غیرمعمول</option>
@@ -204,77 +198,59 @@
               <option [value]="3">بدون علامت</option>
             </select>
           </div>
-
           <div class="field-group">
-            <label class="field-label">
-              فشار خون استراحت
-              <span class="field-unit">mmHg</span>
-            </label>
-            <input type="number" class="native-input" formControlName="trestbps" placeholder="مثال: 120">
+            <label class="field-label">فشار استراحت <span class="fu">mmHg</span></label>
+            <input type="number" class="pf-input" formControlName="trestbps" placeholder="۱۲۰">
           </div>
-
           <div class="field-group">
-            <label class="field-label">
-              کلسترول خون
-              <span class="field-unit">mg/dL</span>
-            </label>
-            <input type="number" class="native-input" formControlName="chol" placeholder="مثال: 200">
+            <label class="field-label">کلسترول خون <span class="fu">mg/dL</span></label>
+            <input type="number" class="pf-input" formControlName="chol" placeholder="۲۰۰">
           </div>
-
           <div class="field-group">
             <label class="field-label">قند خون ناشتا</label>
-            <select class="native-select" formControlName="fbs">
+            <select class="pf-select" formControlName="fbs">
               <option value="">انتخاب کنید</option>
               <option [value]="0">کمتر از ۱۲۰ mg/dL</option>
               <option [value]="1">بیشتر از ۱۲۰ mg/dL</option>
             </select>
           </div>
-
           <div class="field-group">
-            <label class="field-label">نتیجه ECG استراحت</label>
-            <select class="native-select" formControlName="restecg">
+            <label class="field-label">ECG استراحت</label>
+            <select class="pf-select" formControlName="restecg">
               <option value="">انتخاب کنید</option>
               <option [value]="0">نرمال</option>
               <option [value]="1">ناهنجاری ST-T</option>
               <option [value]="2">هیپرتروفی بطن چپ</option>
             </select>
           </div>
-
           <div class="field-group">
             <label class="field-label">حداکثر ضربان قلب</label>
-            <input type="number" class="native-input" formControlName="thalach" placeholder="مثال: 150">
+            <input type="number" class="pf-input" formControlName="thalach" placeholder="۱۵۰">
           </div>
-
           <div class="field-group">
-            <label class="field-label">آنژین ناشی از ورزش</label>
-            <select class="native-select" formControlName="exang">
+            <label class="field-label">آنژین ورزشی</label>
+            <select class="pf-select" formControlName="exang">
               <option value="">انتخاب کنید</option>
               <option [value]="0">خیر</option>
               <option [value]="1">بله</option>
             </select>
           </div>
-
           <div class="field-group">
-            <label class="field-label">
-              افت ST (oldpeak)
-              <span class="field-unit">0–6.2</span>
-            </label>
-            <input type="number" step="0.1" class="native-input" formControlName="oldpeak" placeholder="مثال: 1.5">
+            <label class="field-label">افت ST <span class="fu">oldpeak</span></label>
+            <input type="number" step="0.1" class="pf-input" formControlName="oldpeak" placeholder="۱.۵">
           </div>
-
           <div class="field-group">
             <label class="field-label">شیب ST</label>
-            <select class="native-select" formControlName="slope">
+            <select class="pf-select" formControlName="slope">
               <option value="">انتخاب کنید</option>
               <option [value]="0">صعودی</option>
               <option [value]="1">مسطح</option>
               <option [value]="2">نزولی</option>
             </select>
           </div>
-
           <div class="field-group">
-            <label class="field-label">رگ‌های اصلی (فلوروسکوپی)</label>
-            <select class="native-select" formControlName="ca">
+            <label class="field-label">رگ‌های اصلی</label>
+            <select class="pf-select" formControlName="ca">
               <option value="">انتخاب کنید</option>
               <option [value]="0">۰</option>
               <option [value]="1">۱</option>
@@ -283,10 +259,9 @@
               <option [value]="4">۴</option>
             </select>
           </div>
-
           <div class="field-group">
-            <label class="field-label">وضعیت تالاسمی</label>
-            <select class="native-select" formControlName="thal">
+            <label class="field-label">تالاسمی</label>
+            <select class="pf-select" formControlName="thal">
               <option value="">انتخاب کنید</option>
               <option [value]="0">نرمال</option>
               <option [value]="1">نقص ثابت</option>
@@ -296,30 +271,25 @@
           </div>
         </div>
 
-        <div class="step-actions">
-          <button type="button" class="step-btn step-btn-prev" matStepperPrevious>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
+        <div class="step-nav">
+          <button type="button" class="btn-prev" (click)="prevStep()">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="6 4 10 8 6 12"/></svg>
             قبلی
           </button>
-          <button type="button" class="step-btn step-btn-next" matStepperNext>
+          <button type="button" class="btn-next" (click)="nextStep()">
             بعدی
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="15 18 9 12 15 6"/>
-            </svg>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="10 12 6 8 10 4"/></svg>
           </button>
         </div>
       </form>
-    </mat-step>
+    }
 
-    <!-- ─── Step 4: سبک زندگی ─── -->
-    <mat-step [stepControl]="lifestyleForm">
-      <ng-template matStepLabel>سبک زندگی</ng-template>
+    <!-- Step 4: سبک زندگی -->
+    @if (currentStep === 3) {
       <form [formGroup]="lifestyleForm" class="step-form">
 
         <div class="step-head">
-          <span class="step-accent"></span>
+          <div class="step-num">۴</div>
           <div>
             <h3 class="step-title">سبک زندگی</h3>
             <p class="step-sub">عادات روزانه بیمار</p>
@@ -327,82 +297,72 @@
         </div>
 
         <div class="lifestyle-grid">
-
-          <label class="toggle-card" [class.active]="lifestyleForm.get('smoke')?.value == 1"
-                 (click)="toggleField('smoke', lifestyleForm)">
+          <button type="button" class="toggle-card" [class.on]="lifestyleForm.get('smoke')?.value == 1"
+                  (click)="toggleField('smoke', lifestyleForm)">
             <div class="tc-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M18 12H2v4h16v-4z"/><path d="M22 12v4"/><path d="M7 8c0-2.2 2-3 2-5"/><path d="M12 8c0-2.2 2-3 2-5"/>
               </svg>
             </div>
-            <div class="tc-text">
-              <span class="tc-label">مصرف سیگار</span>
-              <span class="tc-val">{{ lifestyleForm.get('smoke')?.value == 1 ? 'بله' : 'خیر' }}</span>
+            <span class="tc-label">مصرف سیگار</span>
+            <div class="tc-pill" [class.on]="lifestyleForm.get('smoke')?.value == 1">
+              {{ lifestyleForm.get('smoke')?.value == 1 ? 'بله' : 'خیر' }}
             </div>
-            <div class="tc-toggle" [class.on]="lifestyleForm.get('smoke')?.value == 1"></div>
-            <input type="hidden" formControlName="smoke">
-          </label>
+          </button>
 
-          <label class="toggle-card" [class.active]="lifestyleForm.get('alco')?.value == 1"
-                 (click)="toggleField('alco', lifestyleForm)">
+          <button type="button" class="toggle-card" [class.on]="lifestyleForm.get('alco')?.value == 1"
+                  (click)="toggleField('alco', lifestyleForm)">
             <div class="tc-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M8 22h8"/><path d="M7 10h10l-1 7H8L7 10z"/><path d="M7 10L5 3h14l-2 7"/>
               </svg>
             </div>
-            <div class="tc-text">
-              <span class="tc-label">مصرف الکل</span>
-              <span class="tc-val">{{ lifestyleForm.get('alco')?.value == 1 ? 'بله' : 'خیر' }}</span>
+            <span class="tc-label">مصرف الکل</span>
+            <div class="tc-pill" [class.on]="lifestyleForm.get('alco')?.value == 1">
+              {{ lifestyleForm.get('alco')?.value == 1 ? 'بله' : 'خیر' }}
             </div>
-            <div class="tc-toggle" [class.on]="lifestyleForm.get('alco')?.value == 1"></div>
-            <input type="hidden" formControlName="alco">
-          </label>
+          </button>
 
-          <label class="toggle-card" [class.active]="lifestyleForm.get('active')?.value == 1"
-                 (click)="toggleField('active', lifestyleForm)">
+          <button type="button" class="toggle-card" [class.on]="lifestyleForm.get('active')?.value == 1"
+                  (click)="toggleField('active', lifestyleForm)">
             <div class="tc-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="5" r="2"/><path d="M10.41 8.06l-3.9 2.6A1 1 0 0 0 6 11.7V15l3 2v5"/><path d="M13.59 8.06l3.9 2.6A1 1 0 0 1 18 11.7V15l-3 2v5"/>
               </svg>
             </div>
-            <div class="tc-text">
-              <span class="tc-label">فعالیت بدنی</span>
-              <span class="tc-val">{{ lifestyleForm.get('active')?.value == 1 ? 'فعال' : 'غیرفعال' }}</span>
+            <span class="tc-label">فعالیت بدنی</span>
+            <div class="tc-pill" [class.on]="lifestyleForm.get('active')?.value == 1">
+              {{ lifestyleForm.get('active')?.value == 1 ? 'فعال' : 'غیرفعال' }}
             </div>
-            <div class="tc-toggle" [class.on]="lifestyleForm.get('active')?.value == 1"></div>
-            <input type="hidden" formControlName="active">
-          </label>
-
+          </button>
         </div>
 
-        <div class="step-actions">
-          <button type="button" class="step-btn step-btn-prev" matStepperPrevious>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="9 18 15 12 9 6"/>
-            </svg>
+        <div class="step-nav">
+          <button type="button" class="btn-prev" (click)="prevStep()">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><polyline points="6 4 10 8 6 12"/></svg>
             قبلی
           </button>
           <span></span>
         </div>
       </form>
-    </mat-step>
-  </mat-stepper>
+    }
 
-  <!-- Footer -->
+  </div>
+
+  <!-- ─── Footer ─── -->
   <div class="pf-footer">
-    <button type="button" class="footer-btn footer-btn-cancel" (click)="onCancel()" [disabled]="loading">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-      </svg>
-      انصراف
-    </button>
-    <button type="button" class="footer-btn footer-btn-save" (click)="onSubmit()" [disabled]="loading">
-      <mat-spinner *ngIf="loading" diameter="18" strokeWidth="2.5"></mat-spinner>
-      <svg *ngIf="!loading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-        <polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
-      </svg>
-      {{ loading ? 'در حال ذخیره...' : 'ذخیره اطلاعات' }}
+    <button type="button" class="btn-cancel" (click)="onCancel()" [disabled]="loading">انصراف</button>
+    <button type="button" class="btn-save" (click)="onSubmit()" [disabled]="loading">
+      @if (loading) {
+        <mat-spinner diameter="16" strokeWidth="2"></mat-spinner>
+        در حال ذخیره...
+      } @else {
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="13 3 6 10 3 7"/>
+        </svg>
+        ذخیره اطلاعات
+      }
     </button>
   </div>
+
 </div>

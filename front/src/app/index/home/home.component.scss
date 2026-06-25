@@ -837,29 +837,72 @@ $r-xl: 28px;
     border: 1px solid color-mix(in srgb, var(--cyan) 15%, transparent);
   }
 
+  // Node SVG icon
+  .node-svg {
+    width:       18px;
+    height:      18px;
+    flex-shrink: 0;
+    color:       color-mix(in srgb, var(--accent, var(--cyan)) 90%, transparent);
+    opacity:     .85;
+    transition:  opacity $t-base;
+  }
+
   // Hover panel
   .node-hover {
     max-height: 0;
-    overflow: hidden;
-    opacity: 0;
-    width: 100%;
+    overflow:   hidden;
+    opacity:    0;
+    width:      100%;
     transition: max-height $t-slow, opacity $t-base 0.05s, padding $t-base;
-    font-size: 0.78rem;
-    color: $text-muted;
-    line-height: 1.7;
-    padding: 0 0 0 0;
+    font-size:  0.78rem;
+    color:      $text-muted;
+    line-height: 1.6;
+    padding:    0;
+  }
 
-    strong { color: $text-primary; }
+  // Hover panel rows
+  .nh-desc {
+    font-size:     .75rem;
+    color:         $text-primary;
+    line-height:   1.5;
+    padding-bottom: 8px;
+    border-bottom: 1px solid $border;
+    margin-bottom: 6px;
+    font-style:    italic;
+  }
+
+  .nh-row {
+    display:   flex;
+    gap:       6px;
+    padding:   2px 0;
+    font-size: .74rem;
+  }
+
+  .nh-key {
+    color:       $cyan;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+    min-width:   70px;
+
+    &::after { content: ':'; }
+  }
+
+  .nh-val {
+    color: $text-muted;
+    line-height: 1.5;
   }
 
   &:hover, &:focus {
-    border-color: color-mix(in srgb, var(--cyan) 30%, transparent);
-    transform: translateX(-4px);
-    background: var(--surface-muted);
+    border-color: color-mix(in srgb, var(--accent, var(--cyan)) 30%, transparent);
+    transform:    translateX(-4px);
+    background:   var(--surface-muted);
+
+    .node-svg { opacity: 1; }
 
     .node-hover {
-      max-height: 300px;
-      opacity: 1;
+      max-height: 400px;
+      opacity:    1;
       padding-top: 12px;
       border-top: 1px solid $border;
       margin-top: 10px;
@@ -878,6 +921,707 @@ $r-xl: 28px;
 .rabbitmq-node { --accent: var(--rabbit-color);  border-color: color-mix(in srgb, var(--accent) 20%, transparent); &:hover { @include accent-glow(0.6); } }
 .llm-node      { --accent: var(--purple);        border-color: color-mix(in srgb, var(--accent) 20%, transparent); &:hover { @include accent-glow(0.6); } }
 .faiss-node    { --accent: var(--cyan);          border-color: color-mix(in srgb, var(--accent) 20%, transparent); &:hover { @include accent-glow(0.6); } }
+
+// ── COMPLETE SYSTEM FLOW ─────────────────────────────────────────────
+
+.sys-flow-head {
+  display:     flex;
+  align-items: center;
+  gap:         16px;
+  margin:      48px 0 28px;
+
+  .sfh-line {
+    flex:       1;
+    height:     1px;
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--cyan) 35%, transparent), transparent);
+  }
+  .sfh-text {
+    font-size:   0.9rem;
+    font-weight: 700;
+    color:       $text-primary;
+    white-space: nowrap;
+    @media (max-width: 600px) { font-size: 0.78rem; white-space: normal; text-align: center; }
+  }
+}
+
+.sys-flow-hint {
+  text-align:    center;
+  font-size:     0.78rem;
+  color:         $text-ghost;
+  margin:        -12px 0 22px;
+  @media (max-width: 600px) { font-size: 0.72rem; }
+}
+
+.sys-flow {
+  display:        flex;
+  flex-direction: column;
+  gap:            0;
+}
+
+// ── Hover popover (inline reveal, tree-style) ────────────────────────
+.has-pop {
+  position: relative;
+  cursor:   pointer;
+
+  // round chevron badge at the inline-end top corner
+  &::after {
+    content:         '⌄';
+    position:        absolute;
+    top:             10px;
+    left:            10px;
+    width:           22px;
+    height:          22px;
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    padding-bottom:  3px;
+    border-radius:   50%;
+    font-size:       0.9rem;
+    line-height:     1;
+    color:           $cyan;
+    background:      var(--glass-bg-bright);
+    border:          1px solid color-mix(in srgb, var(--cyan) 22%, transparent);
+    opacity:         .6;
+    transition:      transform $t-spring, opacity $t-base, background $t-base, box-shadow $t-base;
+    z-index:         3;
+  }
+  &:hover::after, &:focus::after, &:focus-within::after {
+    opacity:    1;
+    transform:  rotate(180deg);
+    background: $cyan;
+    color:      #fff;
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--cyan) 12%, transparent);
+  }
+}
+
+.sf-pop {
+  max-height: 0;
+  opacity:    0;
+  overflow:   hidden;
+  width:      100%;
+  text-align: right; // start-aligned content even inside centered cards
+  transform:  translateY(-8px);
+  transition:
+    max-height 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity    0.4s ease 0.08s,
+    transform  0.5s cubic-bezier(0.22, 1, 0.36, 1),
+    margin     0.45s ease,
+    padding    0.45s ease;
+}
+.has-pop:hover .sf-pop,
+.has-pop:focus .sf-pop,
+.has-pop:focus-within .sf-pop {
+  max-height:    760px;
+  opacity:       1;
+  transform:     translateY(0);
+  margin-top:    14px;
+  padding:       14px;
+  border:        1px solid $border;
+  border-radius: $r-sm;
+  background:    color-mix(in srgb, var(--bg-void) 22%, transparent);
+}
+
+.sf-pop-list {
+  display:        flex;
+  flex-direction: column;
+  gap:            7px;
+  margin-top:     11px;
+}
+.pr {
+  display:     flex;
+  gap:         9px;
+  font-size:   0.72rem;
+  line-height: 1.55;
+
+  .pk {
+    position:      relative;
+    color:         $cyan;
+    font-weight:   700;
+    min-width:     84px;
+    padding-right: 12px;
+    flex-shrink:   0;
+
+    // small leading marker
+    &::before {
+      content:  '';
+      position: absolute;
+      right:    0;
+      top:      6px;
+      width:    5px;
+      height:   5px;
+      border-radius: 1.5px;
+      background: $cyan;
+      transform: rotate(45deg);
+    }
+  }
+  .pv { color: $text-muted; }
+}
+
+// ── Popover visuals (chart / image placeholders) ─────────────────────
+.sf-viz {
+  position:        relative;
+  height:          104px;
+  border-radius:   $r-sm;
+  border:          1px solid $border;
+  background:      var(--surface-muted);
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  overflow:        hidden;
+  text-align:      center;
+  box-shadow:      inset 0 1px 0 color-mix(in srgb, var(--text-bright) 4%, transparent);
+
+  > span {
+    position:   relative;
+    z-index:    2;
+    font-size:  0.68rem;
+    color:      $text-ghost;
+    padding:    0 14px;
+    line-height: 1.5;
+  }
+
+  // image-slot affordance: corner badge marking where a real image goes
+  &.viz-chat, &.viz-vector, &.viz-form, &.viz-echo,
+  &.viz-ruler, &.viz-annot, &.viz-mask, &.viz-report {
+    > span::before {
+      content:       '🖼  ';
+      filter:        grayscale(0.2);
+      opacity:       .8;
+    }
+    &::after {
+      content:       'IMAGE';
+      position:      absolute;
+      top:           7px;
+      right:         7px;
+      z-index:       2;
+      font-family:   $font-mono;
+      font-size:     0.5rem;
+      letter-spacing: 0.1em;
+      padding:       2px 6px;
+      border-radius: 5px;
+      color:         $text-ghost;
+      background:    var(--glass-bg-bright);
+      border:        1px solid $border;
+    }
+  }
+
+  // soft tinted backdrops per type
+  &.viz-chat      { background: linear-gradient(135deg, color-mix(in srgb, var(--cyan) 8%, var(--surface-muted)), var(--surface-muted)); }
+  &.viz-vector    { background: radial-gradient(circle at 30% 40%, color-mix(in srgb, var(--purple) 22%, transparent) 0 2px, transparent 3px), radial-gradient(circle at 60% 65%, color-mix(in srgb, var(--cyan) 22%, transparent) 0 2px, transparent 3px), radial-gradient(circle at 75% 30%, color-mix(in srgb, var(--mint) 22%, transparent) 0 2px, transparent 3px), radial-gradient(circle at 45% 75%, color-mix(in srgb, var(--cyan) 18%, transparent) 0 2px, transparent 3px), var(--surface-muted); }
+  &.viz-form      { background: repeating-linear-gradient(180deg, transparent 0 18px, color-mix(in srgb, var(--cyan) 5%, transparent) 18px 20px), var(--surface-muted); }
+  &.viz-echo      { background: radial-gradient(ellipse 60% 80% at 50% 100%, color-mix(in srgb, var(--cyan) 14%, transparent), transparent 70%), #0b1220; > span { color: #9fb3c8; } }
+  &.viz-ruler     { background: repeating-linear-gradient(90deg, transparent 0 14px, color-mix(in srgb, var(--cyan) 16%, transparent) 14px 15px), var(--surface-muted); }
+  &.viz-annot     { background: linear-gradient(135deg, color-mix(in srgb, var(--mint) 8%, var(--surface-muted)), var(--surface-muted)); }
+  &.viz-mask      { background: radial-gradient(ellipse 45% 60% at 50% 50%, color-mix(in srgb, var(--purple) 30%, transparent), transparent 70%), #0b1220; > span { color: #c4b5fd; } }
+  &.viz-report    { background: repeating-linear-gradient(180deg, transparent 0 10px, color-mix(in srgb, var(--text-ghost) 12%, transparent) 10px 12px), var(--surface-muted); }
+}
+
+// Bar charts (classification confidence + feature importance)
+.viz-classify, .viz-importance {
+  flex-direction: column;
+  justify-content: center;
+  gap:        5px;
+  padding:    10px 14px;
+  height:     auto;
+  min-height: 92px;
+}
+.vbar {
+  display:     flex;
+  align-items: center;
+  gap:         8px;
+  width:       100%;
+
+  .vbar-l {
+    font-family: $font-mono;
+    font-size:   0.6rem;
+    color:       $text-muted;
+    min-width:   46px;
+    text-align:  left;
+    flex-shrink: 0;
+  }
+  .vbar-t {
+    flex:          1;
+    height:        7px;
+    border-radius: 4px;
+    background:    color-mix(in srgb, var(--text-ghost) 18%, transparent);
+    overflow:      hidden;
+    i {
+      display:    block;
+      height:     100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, $cyan, color-mix(in srgb, var(--cyan) 55%, var(--purple)));
+    }
+  }
+  .vbar-v {
+    font-family: $font-mono;
+    font-size:   0.58rem;
+    color:       $text-ghost;
+    min-width:   28px;
+    flex-shrink: 0;
+  }
+}
+.viz-importance .vbar-t i { background: linear-gradient(90deg, var(--purple), $cyan); }
+
+// ECG + Membership-function SVG visuals
+.viz-ecg, .viz-mf {
+  flex-direction: column;
+  gap:        4px;
+  padding:    8px 12px;
+  svg {
+    width:  100%;
+    height: 46px;
+    polyline { fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  }
+}
+.viz-ecg svg polyline { stroke: $cyan; }
+.viz-mf  svg {
+  .mf-n { stroke: var(--mint);   fill: none; stroke-width: 2; }
+  .mf-m { stroke: var(--cyan);   fill: none; stroke-width: 2; }
+  .mf-s { stroke: var(--purple); fill: none; stroke-width: 2; }
+}
+
+// Phase block
+.sf-phase {
+  display:       grid;
+  grid-template-columns: 200px 1fr;
+  gap:           20px;
+  align-items:   stretch;
+
+  @media (max-width: 820px) { grid-template-columns: 1fr; gap: 12px; }
+}
+
+// Left rail — number + title
+.sf-rail {
+  display:     flex;
+  align-items: center;
+  gap:         14px;
+  padding:     16px 0;
+
+  @media (max-width: 820px) { padding: 4px 0; }
+
+  .sf-pnum {
+    width:           46px;
+    height:          46px;
+    border-radius:   13px;
+    background:      linear-gradient(150deg, $cyan, color-mix(in srgb, var(--cyan) 55%, var(--purple)));
+    color:           #fff;
+    font-size:       1.15rem;
+    font-weight:     800;
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    flex-shrink:     0;
+    box-shadow:      0 4px 14px color-mix(in srgb, var(--cyan) 28%, transparent);
+  }
+  .sf-ptitle {
+    display:        flex;
+    flex-direction: column;
+    gap:            2px;
+    strong { font-size: 0.92rem; color: $text-bright; font-weight: 700; }
+    small  { font-size: 0.72rem; color: $text-muted; line-height: 1.4; }
+  }
+}
+
+// Phase body
+.sf-body {
+  @include glass;
+  border-radius: $r-lg;
+  padding:       18px;
+  display:       flex;
+  align-items:   flex-start;
+  gap:           12px;
+  flex-wrap:     wrap;
+
+  @media (max-width: 560px) { padding: 14px; }
+}
+
+// A node card — vertical, avatar-on-top, expands on hover
+.sf-node {
+  flex:           1 1 0;
+  min-width:      0;
+  align-self:     stretch;
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  text-align:     center;
+  gap:            12px;
+  padding:        22px 16px 18px;
+  border-radius:  $r-lg;
+  background:     linear-gradient(170deg, var(--glass-bg-bright), var(--surface-muted));
+  border:         1px solid $border;
+  position:       relative;
+  overflow:       hidden;
+  transition:
+    flex-grow   $t-slow,
+    border-color $t-base,
+    box-shadow  $t-base,
+    background  $t-base;
+
+  // top sheen
+  &::before {
+    content:    '';
+    position:   absolute;
+    inset:      0 0 auto 0;
+    height:     2px;
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--cyan) 35%, transparent), transparent);
+    opacity:    0;
+    transition: opacity $t-base;
+  }
+
+  &:hover, &:focus, &:focus-within {
+    flex-grow:    2.6;
+    z-index:      2;
+    border-color: color-mix(in srgb, var(--cyan) 40%, transparent);
+    box-shadow:
+      0 16px 38px color-mix(in srgb, var(--cyan) 11%, transparent),
+      0 4px 12px color-mix(in srgb, var(--text-bright) 5%, transparent);
+
+    &::before { opacity: 1; }
+    .sf-ic {
+      border-color: color-mix(in srgb, var(--cyan) 45%, transparent);
+      box-shadow:
+        0 6px 18px color-mix(in srgb, var(--cyan) 28%, transparent),
+        0 0 0 5px color-mix(in srgb, var(--cyan) 8%, transparent);
+      transform: scale(1.04);
+    }
+  }
+
+  &.accent {
+    border-color: color-mix(in srgb, var(--cyan) 30%, transparent);
+    background:   linear-gradient(170deg, color-mix(in srgb, var(--cyan) 9%, var(--glass-bg-bright)), color-mix(in srgb, var(--cyan) 4%, var(--surface-muted)));
+  }
+  &.wide { flex: 1 1 100%; }
+
+  @media (max-width: 700px) { flex: 1 1 100% !important; }
+
+  // avatar-style icon at top-center
+  .sf-ic {
+    width:           58px;
+    height:          58px;
+    flex-shrink:     0;
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    font-size:       1.7rem;
+    line-height:     1;
+    border-radius:   50%;
+    background:      radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--cyan) 20%, var(--bg-elevated)), var(--bg-elevated));
+    border:          1px solid color-mix(in srgb, var(--cyan) 20%, transparent);
+    box-shadow:      0 4px 14px color-mix(in srgb, var(--cyan) 14%, transparent), inset 0 1px 0 color-mix(in srgb, var(--text-bright) 8%, transparent);
+    transition:      border-color $t-base, box-shadow $t-base, transform $t-spring;
+  }
+
+  .sf-main {
+    display:        flex;
+    flex-direction: column;
+    align-items:    center;
+    gap:            5px;
+    width:          100%;
+    min-width:      0;
+    strong { font-size: 0.9rem; color: $text-bright; font-weight: 800; letter-spacing: -0.01em; }
+    small  { font-size: 0.74rem; color: $text-muted; line-height: 1.55; max-width: 34ch; }
+  }
+}
+
+// Connecting arrow between nodes
+.sf-link {
+  color:       $cyan;
+  font-size:   1.4rem;
+  opacity:     .4;
+  flex-shrink: 0;
+  align-self:  flex-start;
+  margin-top:  34px; // align beside the avatars
+  @media (max-width: 700px) { display: none; }
+}
+
+// Tags inside a node
+.sf-tags {
+  display:         flex;
+  flex-wrap:       wrap;
+  justify-content: center;
+  gap:             5px;
+  margin-top:      6px;
+}
+.sf-tag {
+  font-family:   $font-mono;
+  font-size:     0.62rem;
+  padding:       3px 9px;
+  border-radius: 100px;
+  background:    $cyan-dim;
+  color:         $cyan;
+  border:        1px solid color-mix(in srgb, var(--cyan) 16%, transparent);
+  white-space:   nowrap;
+  transition:    background $t-base, border-color $t-base;
+
+  &.store {
+    background: $mint-dim;
+    color:      $mint;
+    border-color: color-mix(in srgb, var(--mint) 18%, transparent);
+  }
+}
+
+// Down connector between phases
+.sf-down {
+  display:         flex;
+  justify-content: flex-start;
+  padding:         6px 0 6px 78px;
+
+  @media (max-width: 820px) { padding-left: 22px; }
+
+  span {
+    color:       $cyan;
+    font-size:   1.3rem;
+    opacity:     .5;
+    line-height: 1;
+  }
+}
+
+// CV pipeline — 6 steps in two rows (flex so a hovered card widens)
+.sf-grid {
+  display:        flex;
+  flex-direction: column;
+  gap:            12px;
+}
+.sf-row {
+  display:     flex;
+  gap:         12px;
+  align-items: stretch;
+
+  @media (max-width: 760px) { flex-wrap: wrap; }
+}
+.sf-step {
+  flex:           1 1 0;
+  min-width:      0;
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  text-align:     center;
+  gap:            10px;
+  padding:        20px 14px 16px;
+  border-radius:  $r-lg;
+  background:     linear-gradient(170deg, var(--glass-bg-bright), var(--surface-muted));
+  border:         1px solid $border;
+  position:       relative;
+  overflow:       hidden;
+  transition:
+    flex-grow   $t-slow,
+    border-color $t-base,
+    box-shadow  $t-base;
+
+  @media (max-width: 760px) { flex: 1 1 calc(50% - 6px); }
+  @media (max-width: 480px) { flex: 1 1 100% !important; }
+
+  &::before {
+    content:    '';
+    position:   absolute;
+    inset:      0 0 auto 0;
+    height:     2px;
+    background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--cyan) 35%, transparent), transparent);
+    opacity:    0;
+    transition: opacity $t-base;
+  }
+
+  &:hover, &:focus, &:focus-within {
+    flex-grow:    2.2;
+    z-index:      2;
+    border-color: color-mix(in srgb, var(--cyan) 40%, transparent);
+    box-shadow:   0 16px 36px color-mix(in srgb, var(--cyan) 10%, transparent);
+    &::before { opacity: 1; }
+    .sf-step-n {
+      box-shadow: 0 6px 16px color-mix(in srgb, var(--cyan) 32%, transparent), 0 0 0 5px color-mix(in srgb, var(--cyan) 9%, transparent);
+      transform:  scale(1.05);
+    }
+  }
+
+  // number badge at top-center
+  .sf-step-n {
+    width:           42px;
+    height:          42px;
+    border-radius:   50%;
+    background:      linear-gradient(150deg, $cyan, color-mix(in srgb, var(--cyan) 55%, var(--purple)));
+    color:           #fff;
+    font-size:       1rem;
+    font-weight:     800;
+    display:         flex;
+    align-items:     center;
+    justify-content: center;
+    flex-shrink:     0;
+    box-shadow:      0 4px 12px color-mix(in srgb, var(--cyan) 28%, transparent);
+    transition:      box-shadow $t-base, transform $t-spring;
+  }
+  .sf-step-b {
+    display:        flex;
+    flex-direction: column;
+    align-items:    center;
+    gap:            5px;
+    min-width:      0;
+    width:          100%;
+    strong { font-size: 0.84rem; color: $text-bright; font-weight: 800; letter-spacing: -0.01em; }
+    small  { font-size: 0.72rem; color: $text-muted; line-height: 1.55; }
+  }
+  .sf-mini {
+    align-self:    center;
+    font-family:   $font-mono;
+    font-size:     0.58rem;
+    color:         $cyan;
+    margin-top:    2px;
+    padding:       2px 8px;
+    border-radius: 100px;
+    background:    $cyan-dim;
+    border:        1px solid color-mix(in srgb, var(--cyan) 14%, transparent);
+    &.store { color: $mint; background: $mint-dim; border-color: color-mix(in srgb, var(--mint) 16%, transparent); }
+  }
+
+  // pop content stays start-aligned even though the card is centered
+  .sf-pop { text-align: right; }
+}
+
+// Analysis — parallel lanes (flex so a hovered lane widens, like the others)
+.sf-parallel {
+  display:     flex;
+  gap:         14px;
+  align-items: flex-start;
+
+  @media (max-width: 760px) { flex-wrap: wrap; }
+}
+.sf-lane {
+  flex:          1 1 0;
+  min-width:     0;
+  padding:       22px 18px 18px;
+  border-radius: $r-lg;
+  background:    linear-gradient(170deg, var(--glass-bg-bright), var(--surface-muted));
+  border:        1px solid $border;
+  position:      relative;
+  overflow:      hidden;
+  transition:    flex-grow $t-slow, border-color $t-base, box-shadow $t-base;
+
+  @media (max-width: 760px) { flex: 1 1 100% !important; }
+
+  // top accent bar
+  &::before {
+    content:    '';
+    position:   absolute;
+    inset:      0 0 auto 0;
+    height:     3px;
+    background: linear-gradient(90deg, var(--cyan), color-mix(in srgb, var(--cyan) 40%, transparent));
+  }
+  &.lane-fuzzy::before { background: linear-gradient(90deg, var(--purple), color-mix(in srgb, var(--purple) 40%, transparent)); }
+
+  &:hover, &:focus, &:focus-within {
+    flex-grow:    1.8;
+    z-index:      2;
+    border-color: color-mix(in srgb, var(--cyan) 32%, transparent);
+    box-shadow:   0 16px 36px color-mix(in srgb, var(--cyan) 10%, transparent);
+  }
+  &.lane-fuzzy:hover, &.lane-fuzzy:focus, &.lane-fuzzy:focus-within {
+    border-color: color-mix(in srgb, var(--purple) 32%, transparent);
+    box-shadow:   0 16px 36px color-mix(in srgb, var(--purple) 10%, transparent);
+  }
+
+  // header — avatar icon centered on top, matching the other cards
+  .sf-lane-head {
+    display:        flex;
+    flex-direction: column;
+    align-items:    center;
+    text-align:     center;
+    gap:            9px;
+    margin-bottom:  15px;
+    padding-bottom: 15px;
+    border-bottom:  1px solid $border;
+
+    .sf-ic {
+      width:           56px;
+      height:          56px;
+      flex-shrink:     0;
+      display:         flex;
+      align-items:     center;
+      justify-content: center;
+      font-size:       1.65rem;
+      line-height:     1;
+      border-radius:   50%;
+      background:      radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--cyan) 20%, var(--bg-elevated)), var(--bg-elevated));
+      border:          1px solid color-mix(in srgb, var(--cyan) 20%, transparent);
+      box-shadow:      0 4px 14px color-mix(in srgb, var(--cyan) 14%, transparent), inset 0 1px 0 color-mix(in srgb, var(--text-bright) 8%, transparent);
+      transition:      box-shadow $t-base, transform $t-spring;
+    }
+    .sf-lane-title {
+      display:        flex;
+      flex-direction: column;
+      gap:            2px;
+      strong { font-size: 0.92rem; color: $text-bright; font-weight: 800; letter-spacing: -0.01em; }
+      small  { font-size: 0.72rem; color: $text-muted; }
+    }
+  }
+
+  // fuzzy lane → purple avatar
+  &.lane-fuzzy .sf-lane-head .sf-ic {
+    background:   radial-gradient(circle at 50% 35%, color-mix(in srgb, var(--purple) 22%, var(--bg-elevated)), var(--bg-elevated));
+    border-color: color-mix(in srgb, var(--purple) 22%, transparent);
+    box-shadow:   0 4px 14px color-mix(in srgb, var(--purple) 14%, transparent), inset 0 1px 0 color-mix(in srgb, var(--text-bright) 8%, transparent);
+  }
+
+  &:hover .sf-lane-head .sf-ic, &:focus-within .sf-lane-head .sf-ic { transform: scale(1.04); }
+  .sf-lane-steps {
+    list-style: none;
+    display:    flex;
+    flex-direction: column;
+    gap:        8px;
+
+    li {
+      position:    relative;
+      padding-right: 16px;
+      font-size:   0.74rem;
+      color:       $text-muted;
+      line-height: 1.6;
+
+      &::before {
+        content:  '';
+        position: absolute;
+        right:    0;
+        top:      8px;
+        width:    6px;
+        height:   6px;
+        border-radius: 50%;
+        background: $cyan;
+      }
+      strong { color: $text-primary; font-weight: 700; }
+    }
+  }
+  &.lane-fuzzy .sf-lane-steps li::before { background: var(--purple); }
+
+  .sf-lane-note {
+    margin-top:    12px;
+    padding-top:   10px;
+    border-top:    1px dashed $border;
+    font-size:     0.68rem;
+    color:         $text-ghost;
+  }
+}
+
+// Delivery — chips
+.sf-wrap { gap: 11px; }
+.sf-chip {
+  padding:       11px 18px;
+  border-radius: 100px;
+  background:    linear-gradient(160deg, var(--glass-bg-bright), var(--surface-muted));
+  border:        1px solid $border;
+  font-size:     0.8rem;
+  font-weight:   700;
+  color:         $text-primary;
+  transition:    border-color $t-base, transform $t-spring, box-shadow $t-base;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--cyan) 35%, transparent);
+    transform:    translateY(-3px);
+    box-shadow:   0 8px 22px color-mix(in srgb, var(--cyan) 10%, transparent);
+  }
+  &.review {
+    background:   $mint-dim;
+    color:        $mint;
+    border-color: color-mix(in srgb, var(--mint) 25%, transparent);
+    &:hover { box-shadow: 0 8px 22px color-mix(in srgb, var(--mint) 12%, transparent); }
+  }
+}
 
 // Communication legend
 .comm-legend {

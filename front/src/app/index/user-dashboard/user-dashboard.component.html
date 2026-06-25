@@ -37,7 +37,7 @@
     <!-- 3D HEART VISUALIZATION -->
     @if (heartVisualizationData) {
       <div class="row mb-5">
-        <div class="col-12">
+        <div class="col-12 p-0">
           <mat-card class="heart-visualization-card">
             <mat-card-header>
               <mat-card-title>
@@ -61,7 +61,7 @@
     <div class="row g-4">
 
       <!-- ECHO HISTORY - Full Width -->
-      <div class="col-12">
+      <div class="col-12 p-0">
         @if (echoData) {
           <mat-card class="echo-card mb-4">
             <mat-card-header>
@@ -76,85 +76,116 @@
               @if (patientInfo) {
                 <div class="patient-info-banner mb-3">
                   <div class="info-chip">
-                    <mat-icon>badge</mat-icon>
-                    <span><strong>ID:</strong> {{ patientInfo.id }}</span>
-                  </div>
-                  <div class="info-chip">
-                    <mat-icon>wc</mat-icon>
-                    <span><strong>{{ getTranslation('gender') || 'جنسیت' }}:</strong> {{ patientInfo.gender }}</span>
+                    <div class="info-chip-icon">
+                      @if (patientInfo.gender === 'female' || patientInfo.gender === 'F') {
+                        <mat-icon>female</mat-icon>
+                      } @else {
+                        <mat-icon>male</mat-icon>
+                      }
+                    </div>
+                    <span>
+                      <strong>{{ getTranslation('gender') || 'جنسیت' }}</strong>
+                      {{ patientInfo.gender === 'female' || patientInfo.gender === 'F' ? 'زن' : 'مرد' }}
+                    </span>
                   </div>
                   @if (patientInfo.age) {
                     <div class="info-chip">
-                      <mat-icon>cake</mat-icon>
-                      <span><strong>{{ getTranslation('age') || 'سن' }}:</strong> {{ patientInfo.age }} سال</span>
+                      <div class="info-chip-icon">
+                        <mat-icon>elderly</mat-icon>
+                      </div>
+                      <span>
+                        <strong>{{ getTranslation('age') || 'سن' }}</strong>
+                        {{ patientInfo.age }} سال
+                      </span>
                     </div>
                   }
                   <div class="info-chip">
-                    <mat-icon>monitor_weight</mat-icon>
-                    <span><strong>{{ getTranslation('weight') || 'وزن' }}:</strong> {{ patientInfo.weight_kg || patientInfo.weight || 'N/A' }} kg</span>
+                    <div class="info-chip-icon">
+                      <mat-icon>scale</mat-icon>
+                    </div>
+                    <span>
+                      <strong>{{ getTranslation('weight') || 'وزن' }}</strong>
+                      {{ patientInfo.weight_kg || patientInfo.weight || '—' }} kg
+                    </span>
                   </div>
                   <div class="info-chip">
-                    <mat-icon>height</mat-icon>
-                    <span><strong>{{ getTranslation('height') || 'قد' }}:</strong> {{ patientInfo.height_cm || patientInfo.height || 'N/A' }} cm</span>
+                    <div class="info-chip-icon">
+                      <mat-icon>straighten</mat-icon>
+                    </div>
+                    <span>
+                      <strong>{{ getTranslation('height') || 'قد' }}</strong>
+                      {{ patientInfo.height_cm || patientInfo.height || '—' }} cm
+                    </span>
                   </div>
                 </div>
               }
 
 @if (hasLlmReport && llmReportText) {
-  <div class="llm-report-card animate__animated animate__fadeInUp mb-4">
-    
-    <div class="report-header">
-      <div class="header-bg-pattern"></div>
-      
-      <div class="header-content">
-        <div class="icon-wrapper pulse-animation">
+  <div class="rx-report-card mb-4">
+
+    <!-- Prescription-style top strip -->
+    <div class="rx-header">
+      <div class="rx-header-brand">
+        <div class="rx-logo">
+          <mat-icon>ecg_heart</mat-icon>
+        </div>
+        <div class="rx-brand-text">
+          <span class="rx-clinic">Echo AI</span>
+          <span class="rx-subtitle">گزارش تحلیل اکوکاردیوگرافی</span>
+        </div>
+
+                <div class="rx-actions">
+          <button mat-icon-button class="rx-action-btn" (click)="viewFullHtmlReport()"
+                  matTooltip="مشاهده کامل گزارش">
+            <mat-icon>open_in_new</mat-icon>
+          </button>
+          <button mat-icon-button class="rx-action-btn" (click)="downloadReportPdf()"
+                  matTooltip="دانلود PDF">
+            <mat-icon>picture_as_pdf</mat-icon>
+          </button>
+        </div>
+        
+      </div>
+
+      <div class="rx-meta">
+        <div class="rx-ai-badge ">
           <mat-icon>auto_awesome</mat-icon>
+          هوش مصنوعی
         </div>
-        <div class="title-wrapper">
-          <h4 class="fw-bold mb-1">{{ getTranslation('smartReport') || 'گزارش ارزیابی هوشمند' }}</h4>
-          <div class="meta-badges">
-            <span class="badge-ai">
-              <mat-icon>memory</mat-icon>
-              {{ getTranslation('aiGeneratedReport') || 'تولید شده توسط هوش مصنوعی' }}
-            </span>
-            @if (llmReportData?.generated_at) {
-              <span class="badge-time">
-                <mat-icon>schedule</mat-icon>
-                {{ llmReportData.generated_at | date:'yyyy/MM/dd - HH:mm' }}
-              </span>
-            }
-          </div>
-        </div>
-      </div>
-
-      <div class="report-actions">
-        <button mat-icon-button class="action-btn" (click)="viewFullHtmlReport()" 
-                matTooltip="{{ getTranslation('viewFullReport') || 'مشاهده کامل' }}">
-          <mat-icon>fullscreen</mat-icon>
-        </button>
-        <button mat-icon-button class="action-btn" (click)="downloadReportPdf()"
-                matTooltip="{{ getTranslation('downloadPdf') || 'دانلود PDF' }}">
-          <mat-icon>picture_as_pdf</mat-icon>
-        </button>
-      </div>
-    </div>
-    
-    <div class="report-body">
-      <div class="report-text-container">
-        @for (paragraph of llmReportText.split('\n\n'); track $index) {
-          @if (paragraph.trim()) {
-            <p class="report-paragraph">
-              @if ($index === 0) {
-                <mat-icon class="first-letter-icon">format_quote</mat-icon>
-              }
-              {{ paragraph }}
-            </p>
-          }
+        @if (llmReportData?.generated_at) {
+          <span class="rx-date" dir="ltr">{{ llmReportData.generated_at | date:'yyyy/MM/dd' }}</span>
         }
+
       </div>
     </div>
 
-    
+    <!-- Decorative Rx symbol divider -->
+    <div class="rx-divider">
+      <span class="rx-symbol">ai doki</span>
+    </div>
+
+    <!-- Prescription body -->
+    <div class="rx-body">
+      <div class="rx-watermark">ECHO</div>
+      @for (paragraph of llmReportText.split('\n\n'); track $index) {
+        @if (paragraph.trim()) {
+          <div class="rx-paragraph">
+            <p class="rx-text">{{ paragraph }}</p>
+            <!-- <span class="rx-bullet">◆</span> -->
+          </div>
+        }
+      }
+    </div>
+
+    <!-- Bottom seal -->
+    <div class="rx-footer mx-auto">
+      <div class="rx-seal mx-auto">
+        <span>تولید شده توسط سیستم هوش مصنوعی </span>
+        <mat-icon>verified</mat-icon>
+      </div>
+      <span class="rx-disclaimer mx-auto">این گزارش جنبه اطلاع‌رسانی دارد و جایگزین نظر پزشک نمی‌شود</span>
+    </div>
+
   </div>
 }
               @if (visitDates.length > 0) {
@@ -241,50 +272,41 @@
 
                        @if (visit.measurements?.length) {
                          <div class="measurements-section mt-3">
-                           <h6>
+                           <div class="ms-header">
                              <mat-icon>straighten</mat-icon>
-                             {{ getTranslation('measurements') || 'اندازه‌گیری‌ها' }}
-                           </h6>
-                           <div class="table-responsive">
+                             <span>{{ getTranslation('measurements') || 'اندازه‌گیری‌ها' }}</span>
+                           </div>
+
+                           <!-- Desktop table -->
+                           <div class="table-responsive ms-desktop">
                              <table class="measurements-table">
                                <thead>
                                  <tr>
-                                   <th>{{ getTranslation('eventName') || 'رویداد' }}</th>
-                                   <th>{{ getTranslation('measurementName') || 'اندازه‌گیری' }}</th>
-                                   <th>{{ getTranslation('value') || 'مقدار' }}</th>
-                                   <th>{{ getTranslation('text') || 'توضیحات' }}</th>
-                                   <th>{{ getTranslation('frameImage') || 'تصویر فریم' }}</th>
-                                   <th>{{ getTranslation('previewImage') || 'پیش‌نمایش' }}</th>
+                                   <th>رویداد</th>
+                                   <th>اندازه‌گیری</th>
+                                   <th>مقدار</th>
+                                   <th>توضیحات</th>
+                                   <th>تصاویر</th>
                                  </tr>
                                </thead>
                                <tbody>
                                  @for (m of visit.measurements; track m.event_frame_number) {
                                    <tr>
+                                     <td><span class="event-badge">{{ m.event_name }}</span></td>
+                                     <td><strong>{{ m.measurement_name }}</strong></td>
+                                     <td><span class="value-highlight">{{ m.value | number:'1.2-2' }} {{ m.unit }}</span></td>
+                                     <td><small class="text-muted">{{ m.text }}</small></td>
                                      <td>
-                                       <span class="event-badge">{{ m.event_name }}</span>
-                                     </td>
-                                     <td>
-                                       <strong>{{ m.measurement_name }}</strong>
-                                     </td>
-                                     <td>
-                                       <span class="value-highlight">{{ m.value | number:'1.2-2' }} {{ m.unit }}</span>
-                                     </td>
-                                     <td>
-                                       <small class="text-muted">{{ m.text }}</small>
-                                     </td>
-                                     <td>
-                                       <div class="image-preview" (click)="viewEchoFile(m.event_frame_image_url); $event.stopPropagation()">
-                                         <img [src]="m.event_frame_image_url" alt="Event Frame">
-                                         <div class="image-overlay">
-                                           <mat-icon>zoom_in</mat-icon>
+                                       <div class="ms-img-row">
+                                         <div class="image-preview"
+                                              (click)="viewEchoFile(m.event_frame_image_url, getMeasurementImages(m.event_frame_image_url, m.measurement_preview_image_url), 0); $event.stopPropagation()">
+                                           <img [src]="m.event_frame_image_url" alt="Event Frame">
+                                           <div class="image-overlay"><mat-icon>zoom_in</mat-icon></div>
                                          </div>
-                                       </div>
-                                     </td>
-                                     <td>
-                                       <div class="image-preview" (click)="viewEchoFile(m.measurement_preview_image_url); $event.stopPropagation()">
-                                         <img [src]="m.measurement_preview_image_url" alt="Measurement">
-                                         <div class="image-overlay">
-                                           <mat-icon>zoom_in</mat-icon>
+                                         <div class="image-preview"
+                                              (click)="viewEchoFile(m.measurement_preview_image_url, getMeasurementImages(m.event_frame_image_url, m.measurement_preview_image_url), 1); $event.stopPropagation()">
+                                           <img [src]="m.measurement_preview_image_url" alt="Measurement">
+                                           <div class="image-overlay"><mat-icon>zoom_in</mat-icon></div>
                                          </div>
                                        </div>
                                      </td>
@@ -292,6 +314,34 @@
                                  }
                                </tbody>
                              </table>
+                           </div>
+
+                           <!-- Mobile cards -->
+                           <div class="ms-mobile">
+                             @for (m of visit.measurements; track m.event_frame_number) {
+                               <div class="ms-card">
+                                 <div class="ms-card-top">
+                                   <span class="event-badge">{{ m.event_name }}</span>
+                                   <span class="value-highlight">{{ m.value | number:'1.2-2' }} {{ m.unit }}</span>
+                                 </div>
+                                 <div class="ms-card-name">{{ m.measurement_name }}</div>
+                                 @if (m.text) {
+                                   <div class="ms-card-desc">{{ m.text }}</div>
+                                 }
+                                 <div class="ms-card-images">
+                                   <div class="image-preview"
+                                        (click)="viewEchoFile(m.event_frame_image_url, getMeasurementImages(m.event_frame_image_url, m.measurement_preview_image_url), 0); $event.stopPropagation()">
+                                     <img [src]="m.event_frame_image_url" alt="Event Frame">
+                                     <div class="image-overlay"><mat-icon>zoom_in</mat-icon></div>
+                                   </div>
+                                   <div class="image-preview"
+                                        (click)="viewEchoFile(m.measurement_preview_image_url, getMeasurementImages(m.event_frame_image_url, m.measurement_preview_image_url), 1); $event.stopPropagation()">
+                                     <img [src]="m.measurement_preview_image_url" alt="Measurement">
+                                     <div class="image-overlay"><mat-icon>zoom_in</mat-icon></div>
+                                   </div>
+                                 </div>
+                               </div>
+                             }
                            </div>
                          </div>
                        }
@@ -318,92 +368,86 @@
       </div>
 
       <!-- APPOINTMENTS - Full Width -->
-<div class="col-12">
-  <mat-card class="appointments-card mb-4">
-    <mat-card-header class="border-bottom pb-3 mb-3">
-      <mat-card-title class="d-flex align-items-center gap-2 m-0 fs-5">
-        <mat-icon class="text-primary">event_available</mat-icon>
-        {{ getTranslation('yourAppointments') || 'نوبت‌های شما' }}
-      </mat-card-title>
-    </mat-card-header>
-
-    <mat-card-content>
-      @if (userAppointments.length === 0) {
-        <div class="no-data-state text-center py-5">
-          <div class="icon-circle bg-light d-inline-flex p-4 rounded-circle mb-3">
-            <mat-icon class="text-muted" style="font-size: 40px; width: 40px; height: 40px;">event_busy</mat-icon>
+      <div class="col-12 p-1">
+        <div class="appointments-section">
+          <!-- Section Header -->
+          <div class="appt-section-header">
+            <div class="appt-header-left">
+              <div class="appt-icon-wrap">
+                <mat-icon>event_available</mat-icon>
+              </div>
+              <div>
+                <h3 class="appt-title">{{ getTranslation('yourAppointments') || 'نوبت‌های شما' }}</h3>
+                @if (userAppointments.length > 0) {
+                  <span class="appt-count-badge">{{ userAppointments.length }} نوبت</span>
+                }
+              </div>
+            </div>
           </div>
-          <h5 class="text-dark fw-bold mb-2">{{ getTranslation('noAppointmentsBooked') || 'نوبتی ثبت نشده است' }}</h5>
-          <p class="text-muted small">شما در حال حاضر هیچ نوبت فعالی ندارید.</p>
-        </div>
-      } @else {
-        <div class="responsive-table-container">
-          <table class="modern-table">
-            <thead>
-              <tr>
-                <th>{{ getTranslation('service') || 'خدمت' }}</th>
-                <th>{{ getTranslation('doctor') || 'پزشک' }}</th>
-                <th>{{ getTranslation('date') || 'تاریخ' }}</th>
-                <th>{{ getTranslation('time') || 'زمان' }}</th>
-                <th>{{ getTranslation('duration') || 'مدت' }}</th>
-                <th>{{ getTranslation('status') || 'وضعیت' }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (app of userAppointments; track app.id) {
-                <tr class="table-row-hover">
-                  <td [attr.data-label]="getTranslation('service') || 'خدمت'">
-                    <div class="cell-content">
-                      <mat-icon class="cell-icon text-primary-light">medical_services</mat-icon>
-                      <strong class="text-dark">{{ app.service?.title || 'N/A' }}</strong>
-                    </div>
-                  </td>
-                  <td [attr.data-label]="getTranslation('doctor') || 'پزشک'">
-                    <div class="cell-content">
-                      <div class="avatar-sm bg-light-primary text-primary rounded-circle d-flex align-items-center justify-content-center me-2">
-                        <mat-icon style="font-size: 18px; width: 18px; height: 18px;">person</mat-icon>
+
+          <!-- Empty State -->
+          @if (userAppointments.length === 0) {
+            <div class="appt-empty-state">
+              <div class="appt-empty-icon">
+                <mat-icon>event_busy</mat-icon>
+              </div>
+              <p class="appt-empty-title">{{ getTranslation('noAppointmentsBooked') || 'نوبتی ثبت نشده است' }}</p>
+              <p class="appt-empty-sub">شما در حال حاضر هیچ نوبت فعالی ندارید.</p>
+            </div>
+          } @else {
+            <!-- Accordion by Date -->
+            <mat-accordion class="appt-accordion" multi="false">
+              @for (group of appointmentsByDate; track group.date; let first = $first) {
+                <mat-expansion-panel class="appt-panel" [expanded]="first">
+                  <mat-expansion-panel-header class="appt-panel-header">
+                    <mat-panel-title class="appt-panel-title">
+                      <mat-icon class="appt-date-icon">calendar_month</mat-icon>
+                      <span class="appt-date-text" dir="ltr">{{ group.date }}</span>
+                    </mat-panel-title>
+                    <mat-panel-description class="appt-panel-desc">
+                      <span class="appt-badge">{{ group.appointments.length }} نوبت</span>
+                    </mat-panel-description>
+                  </mat-expansion-panel-header>
+
+                  <!-- Appointment Cards inside panel -->
+                  <div class="appt-cards-grid">
+                    @for (app of group.appointments; track app.id) {
+                      <div class="appt-card">
+                        <div class="appt-card-row">
+                          <div class="appt-card-field">
+                            <span class="appt-field-label">
+                              <mat-icon class="appt-field-icon">medical_services</mat-icon>
+                              خدمت
+                            </span>
+                            <span class="appt-field-value">{{ app.service?.title || '—' }}</span>
+                          </div>
+                          <div class="appt-card-field">
+                            <span class="appt-field-label">
+                              <mat-icon class="appt-field-icon">person</mat-icon>
+                              پزشک
+                            </span>
+                            <span class="appt-field-value">{{ app.staff?.user?.name || '—' }}</span>
+                          </div>
+                        </div>
+                        <div class="appt-card-row appt-card-row--bottom">
+                          <div class="appt-time-chip">
+                            <mat-icon>schedule</mat-icon>
+                            <span dir="ltr">{{ app.start_time }}</span>
+                          </div>
+                          <div class="appt-duration-chip">
+                            <mat-icon>timer</mat-icon>
+                            <span>{{ app.service?.duration || '—' }}</span>
+                          </div>
+                        </div>
                       </div>
-                      <span class="fw-medium">{{ app.staff?.user?.name || 'N/A' }}</span>
-                    </div>
-                  </td>
-                  <td [attr.data-label]="getTranslation('date') || 'تاریخ'">
-                    <div class="cell-content">
-                      <mat-icon class="cell-icon text-muted">calendar_today</mat-icon>
-                      <span>{{ app.date_of_turn }}</span>
-                    </div>
-                  </td>
-                  <td [attr.data-label]="getTranslation('time') || 'زمان'">
-                    <div class="cell-content">
-                      <mat-icon class="cell-icon text-muted">schedule</mat-icon>
-                      <span dir="ltr">{{ app.start_time }}</span>
-                    </div>
-                  </td>
-                  <td [attr.data-label]="getTranslation('duration') || 'مدت'">
-                    <span class="duration-badge bg-light text-dark rounded-pill px-3 py-1 text-nowrap border">
-                      <mat-icon style="font-size: 14px; width: 14px; height: 14px; vertical-align: middle;" class="me-1">timer</mat-icon>
-                      {{ app.service?.duration || '00:45:00' }}
-                    </span>
-                  </td>
-                  <td [attr.data-label]="getTranslation('status') || 'وضعیت'">
-                    <div class="status-cell d-inline-flex align-items-center px-3 py-1 rounded-pill bg-light">
-                      <span class="status-dot rounded-circle me-2"
-                            style="width: 8px; height: 8px;"
-                            [style.background-color]="getStatusColor(app.status?.title || 'pending')">
-                      </span>
-                      <span class="status-text small fw-bold">
-                        {{ app.status?.label || app.status?.title || 'در انتظار' }}
-                      </span>
-                    </div>
-                  </td>
-                </tr>
+                    }
+                  </div>
+                </mat-expansion-panel>
               }
-            </tbody>
-          </table>
+            </mat-accordion>
+          }
         </div>
-      }
-    </mat-card-content>
-  </mat-card>
-</div>
+      </div>
 
     </div>
   }

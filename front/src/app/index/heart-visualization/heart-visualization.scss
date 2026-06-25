@@ -1,16 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
 //  Heart Visualization — Clinical Precision Theme
-//  Two themes  ·  dark (default)  ·  light
-//
-//  LAYOUT STRATEGY
-//  ─────────────────────────────────────────────────────────────
-//  Desktop  : container is position:relative, canvas fills it,
-//             panel floats as position:absolute overlay (right side).
-//
-//  Mobile   : container becomes display:flex + flex-direction:column.
-//             .canvas-wrapper  →  flex:1  (canvas grows to fill space)
-//             .controls-panel  →  position:static, full-width at bottom
-//             Canvas is ALWAYS fully visible above the panel.
 // ═══════════════════════════════════════════════════════════════
 
 // ───────────────────────────────────────────────────────────────
@@ -23,7 +12,7 @@
                                 linear-gradient(180deg, #08060e 0%, #0b0812 100%);
 
   // Panel glass
-  --hv-panel-bg:               rgba(9, 9, 20, 0.9);
+  --hv-panel-bg:               rgba(9, 9, 20, 0.92);
   --hv-panel-border:           rgba(255, 255, 255, 0.09);
   --hv-panel-shadow-desktop:   0 0 0 1px rgba(255,255,255,0.05),
                                 0 20px 60px rgba(0, 0, 0, 0.7),
@@ -201,13 +190,10 @@
 }
 
 // ═══════════════════════════════════════════════════════════════
-//  Container  — the root element
+//  Container
 // ═══════════════════════════════════════════════════════════════
 
 .heart-visualization-container {
-  // ── Desktop layout ──
-  // Relatively-positioned block; canvas-wrapper fills it absolutely,
-  // controls-panel floats on top absolutely.
   position:      relative;
   width:         100%;
   height:        100%;
@@ -223,7 +209,6 @@
 // ═══════════════════════════════════════════════════════════════
 
 .canvas-wrapper {
-  // Desktop: fill the whole container so overlays work correctly
   position: absolute;
   inset:    0;
 }
@@ -347,66 +332,116 @@
 .label-content {
   background:      var(--hv-label-bg);
   backdrop-filter: blur(14px);
-  border-radius:   10px;
-  padding:         9px 13px;
+  border-radius:   8px;
+  padding:         6px 10px;
   border:          1.5px solid transparent;
   box-shadow:      var(--hv-label-shadow);
-  min-width:       84px;
+  min-width:       68px;
   text-align:      center;
   transition:      transform 0.2s ease;
 
-  &:hover { transform: scale(1.1); }
+  &:hover { transform: scale(1.08); }
 }
 
 .label-name {
-  font-size:      10px;
+  font-size:      9px;
   font-weight:    700;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom:  5px;
-  opacity:        0.82;
+  letter-spacing: 0.08em;
+  margin-bottom:  3px;
+  opacity:        0.72;
 }
 
 .label-value {
-  font-size:            17px;
+  font-size:            14px;
   font-weight:          800;
   line-height:          1;
   font-variant-numeric: tabular-nums;
 }
 
 .label-unit {
-  font-size:   11px;
+  font-size:   10px;
   font-weight: 500;
-  opacity:     0.75;
+  opacity:     0.7;
   margin-left: 2px;
 }
 
-// Status colours for labels
 .measurement-label.status-normal .label-content { border-color: var(--hv-normal-ring); color: var(--hv-normal); }
 .measurement-label.status-warn   .label-content { border-color: var(--hv-warn-ring);   color: var(--hv-warn);   }
 .measurement-label.status-danger .label-content { border-color: var(--hv-danger-ring); color: var(--hv-danger); }
 .measurement-label.status-info   .label-content { border-color: var(--hv-info-ring);   color: var(--hv-info);   }
 
 // ═══════════════════════════════════════════════════════════════
-//  Controls Panel  — DESKTOP (position: absolute, floats over canvas)
+//  Mobile Key Metrics Badges  (hidden on desktop)
+// ═══════════════════════════════════════════════════════════════
+
+.mobile-badges {
+  display:         none; // desktop: hidden
+  position:        absolute;
+  bottom:          12px;
+  left:            50%;
+  transform:       translateX(-50%);
+  flex-direction:  row;
+  gap:             8px;
+  z-index:         15;
+  pointer-events:  none;
+}
+
+.mobile-badge {
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  gap:             2px;
+  padding:         6px 10px;
+  background:      rgba(5, 5, 14, 0.78);
+  backdrop-filter: blur(12px);
+  border:          1px solid rgba(255,255,255,0.1);
+  border-radius:   10px;
+  min-width:       48px;
+
+  .mb-label {
+    font-size:      9px;
+    font-weight:    700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    opacity:        0.6;
+    color:          #fff;
+  }
+
+  .mb-value {
+    font-size:            15px;
+    font-weight:          800;
+    line-height:          1;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &.mb-normal { border-color: var(--hv-normal-ring); .mb-value { color: var(--hv-normal); } }
+  &.mb-warn   { border-color: var(--hv-warn-ring);   .mb-value { color: var(--hv-warn);   } }
+  &.mb-danger { border-color: var(--hv-danger-ring); .mb-value { color: var(--hv-danger); } }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  Controls Panel — Desktop (floats over canvas, right side)
 // ═══════════════════════════════════════════════════════════════
 
 .controls-panel {
   position:        absolute;
-  top:             24px;
-  right:           24px;
-  width:           340px;
-  max-width:       calc(100% - 48px);
+  top:             20px;
+  right:           20px;
+  bottom:          20px;        // stretch full height so it doesn't overflow
+  width:           300px;
+  max-width:       calc(100% - 40px);
   background:      var(--hv-panel-bg);
   backdrop-filter: blur(32px) saturate(1.4);
-  border-radius:   16px;
+  border-radius:   14px;
   border:          1px solid var(--hv-panel-border);
   box-shadow:      var(--hv-panel-shadow-desktop);
   overflow:        hidden;
   z-index:         20;
   animation:       hv-slide-in-right 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  display:         flex;
+  flex-direction:  column;
 
-  // Left accent bar
   &::before {
     content:       '';
     position:      absolute;
@@ -417,6 +452,7 @@
     background:    var(--hv-accent-gradient);
     border-radius: 0 2px 2px 0;
     z-index:       1;
+    flex-shrink:   0;
   }
 }
 
@@ -425,11 +461,12 @@
 // ───────────────────────────────────────────────────────────────
 
 .panel-header {
-  padding: 12px 20px 0;
+  padding:    10px 18px 0;
+  flex-shrink: 0;
 
   .ecg-line {
     width:    100%;
-    height:   26px;
+    height:   22px;
     overflow: visible;
 
     polyline {
@@ -451,18 +488,19 @@
 // ───────────────────────────────────────────────────────────────
 
 .tabs {
-  display:       flex;
-  background:    var(--hv-tabs-bg);
+  display:     flex;
+  background:  var(--hv-tabs-bg);
   border-bottom: 1px solid var(--hv-tab-border);
+  flex-shrink: 0;
 }
 
 .tab-btn {
   flex:            1;
-  padding:         13px 14px;
+  padding:         11px 10px;
   background:      transparent;
   border:          none;
   color:           var(--hv-tab-inactive);
-  font-size:       13px;
+  font-size:       12px;
   font-weight:     700;
   letter-spacing:  0.02em;
   cursor:          pointer;
@@ -470,11 +508,12 @@
   display:         flex;
   align-items:     center;
   justify-content: center;
-  gap:             7px;
+  gap:             6px;
   position:        relative;
   outline:         none;
+  white-space:     nowrap;
 
-  .icon { font-size: 16px; line-height: 1; }
+  .icon { width: 15px; height: 15px; flex-shrink: 0; }
 
   &:hover {
     background: var(--hv-tab-hover-bg);
@@ -489,8 +528,8 @@
       content:       '';
       position:      absolute;
       bottom:        0;
-      left:          12px;
-      right:         12px;
+      left:          10px;
+      right:         10px;
       height:        2.5px;
       background:    var(--hv-tab-indicator);
       border-radius: 2px 2px 0 0;
@@ -503,11 +542,12 @@
 // ───────────────────────────────────────────────────────────────
 
 .tab-content {
-  padding:    14px 18px;
-  max-height: 420px;
+  padding:    12px 14px;
+  flex:       1;           // fill remaining panel height
   overflow-y: auto;
+  min-height: 0;           // required for flex child to scroll
 
-  &::-webkit-scrollbar        { width: 6px; }
+  &::-webkit-scrollbar        { width: 5px; }
   &::-webkit-scrollbar-track  { background: var(--hv-scroll-track); border-radius: 3px; }
   &::-webkit-scrollbar-thumb  { background: var(--hv-scroll-thumb); border-radius: 3px; }
 }
@@ -519,28 +559,28 @@
 .info-grid {
   display:        flex;
   flex-direction: column;
-  gap:            7px;
+  gap:            6px;
 }
 
 .info-item {
   display:         flex;
   align-items:     center;
-  gap:             10px;
-  padding:         10px 13px;
+  gap:             8px;
+  padding:         9px 11px;
   background:      var(--hv-item-bg);
-  border-radius:   10px;
+  border-radius:   9px;
   border:          1px solid var(--hv-item-border);
   transition:      background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
   animation:       hv-item-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
 
   @for $i from 1 through 12 {
-    &:nth-child(#{$i}) { animation-delay: #{$i * 40}ms; }
+    &:nth-child(#{$i}) { animation-delay: #{$i * 35}ms; }
   }
 
   &:hover {
     background:   var(--hv-item-hover-bg);
     border-color: var(--hv-item-hover-border);
-    transform:    translateX(3px);
+    transform:    translateX(2px);
   }
 
   &.highlight {
@@ -550,17 +590,18 @@
 }
 
 .info-label {
-  font-size:      11.5px;
+  font-size:      11px;
   font-weight:    700;
   color:          var(--hv-text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   flex:           1;
   min-width:      0;
+  line-height:    1.3;
 }
 
 .info-value {
-  font-size:            14.5px;
+  font-size:            14px;
   font-weight:          800;
   color:                var(--hv-value-color);
   font-variant-numeric: tabular-nums;
@@ -569,13 +610,13 @@
 }
 
 .info-status {
-  width:           25px;
-  height:          25px;
+  width:           24px;
+  height:          24px;
   display:         flex;
   align-items:     center;
   justify-content: center;
   border-radius:   50%;
-  font-size:       12px;
+  font-size:       11px;
   font-weight:     800;
   flex-shrink:     0;
 
@@ -585,12 +626,12 @@
 }
 
 .info-badge {
-  padding:        4px 10px;
+  padding:        3px 9px;
   border-radius:  20px;
-  font-size:      11px;
+  font-size:      10.5px;
   font-weight:    800;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   flex-shrink:    0;
 
   &.badge-normal { background: var(--hv-normal-bg); color: var(--hv-normal); box-shadow: 0 0 0 1px var(--hv-normal-ring); }
@@ -603,21 +644,22 @@
 // ───────────────────────────────────────────────────────────────
 
 .action-buttons {
-  display:    flex;
-  gap:        10px;
-  padding:    13px 18px;
-  border-top: 1px solid var(--hv-footer-border);
-  background: var(--hv-footer-bg);
+  display:     flex;
+  gap:         8px;
+  padding:     10px 14px;
+  border-top:  1px solid var(--hv-footer-border);
+  background:  var(--hv-footer-bg);
+  flex-shrink: 0;
 }
 
 .action-btn {
   flex:          1;
-  padding:       11px;
+  padding:       10px;
   background:    var(--hv-btn-bg);
   border:        1px solid var(--hv-btn-border);
-  border-radius: 10px;
+  border-radius: 9px;
   color:         var(--hv-btn-color);
-  font-size:     18px;
+  font-size:     17px;
   cursor:        pointer;
   transition:    all 0.22s cubic-bezier(0.22, 1, 0.36, 1);
   outline:       none;
@@ -643,55 +685,51 @@
 
 @media (max-width: 1024px) and (min-width: 769px) {
   .controls-panel {
-    width:  300px;
-    top:    16px;
-    right:  16px;
+    width:  270px;
+    top:    14px;
+    right:  14px;
+    bottom: 14px;
   }
-
-  .tab-content { max-height: 370px; }
 }
 
 // ═══════════════════════════════════════════════════════════════
 //  Responsive — Mobile  ≤ 768px
 //
-//  KEY CHANGE: container switches to flex-column.
-//  canvas-wrapper takes flex:1 (all available height above panel).
-//  controls-panel becomes position:static → flows BELOW the canvas.
-//  Heart is ALWAYS fully visible.
+//  Container switches to flex-column.
+//  canvas-wrapper: flex:1 (fills space above panel).
+//  controls-panel: position:static, full-width at bottom.
 // ═══════════════════════════════════════════════════════════════
 
 @media (max-width: 768px) {
 
-  // 1. Container: flex column, full viewport height
   .heart-visualization-container {
     display:        flex;
     flex-direction: column;
-    min-height:     100dvh;  // fills the mobile viewport
-    border-radius:  0;       // edge-to-edge on phones
+    min-height:     100dvh;
+    border-radius:  0;
   }
 
-  // 2. Canvas wrapper: grows to fill all space above the panel
   .canvas-wrapper {
-    position:   relative;   // override desktop absolute
-    inset:      auto;       // clear all absolute offsets
-    flex:       1;          // grow
-    min-height: 260px;      // never collapse below this
+    position:   relative;
+    inset:      auto;
+    flex:       1;
+    min-height: 320px;      // more generous on mobile
   }
 
-  // 3. Controls panel: static, full-width, docked at bottom
   .controls-panel {
-    position:      static;  // ← THE KEY FIX
+    position:      static;
     width:         100%;
     max-width:     100%;
-    border-radius: 16px 16px 0 0;
+    bottom:        auto;    // clear desktop bottom
+    border-radius: 20px 20px 0 0;
     border:        1px solid var(--hv-panel-border);
     border-bottom: none;
     box-shadow:    var(--hv-panel-shadow-mobile);
     animation:     hv-slide-in-up 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
-    max-height:    none;    // no forced height; let content determine it
-    overflow:      visible; // allow tab-content to scroll inside
+    max-height:    52vh;    // cap so canvas stays visible
+    flex-direction: column;
+    display:        flex;
 
-    // left bar becomes top bar on mobile
     &::before {
       width:         100%;
       height:        3px;
@@ -699,38 +737,65 @@
       top:           0;
       left:          0;
       right:         0;
-      border-radius: 16px 16px 0 0;
+      border-radius: 20px 20px 0 0;
     }
   }
 
-  // 4. Scrollable tab content: limit height on mobile
+  // Drag handle hint
+  .panel-header {
+    padding:     10px 16px 0;
+    position:    relative;
+
+    &::before {
+      content:       '';
+      display:       block;
+      width:         36px;
+      height:        4px;
+      background:    var(--hv-panel-border);
+      border-radius: 2px;
+      margin:        0 auto 8px;
+    }
+  }
+
   .tab-content {
-    padding:    12px 16px;
-    max-height: 38vh;
+    padding:    10px 14px;
+    flex:       1;
+    min-height: 0;
+    max-height: none;
   }
 
-  // 5. Slightly smaller items
+  .info-grid { gap: 5px; }
+
   .info-item {
-    padding: 9px 12px;
+    padding: 9px 11px;
     gap:     8px;
-    &:hover { transform: none; } // no translateX on touch
+    &:hover { transform: none; }
   }
 
-  .info-label { font-size: 11px; }
+  .info-label { font-size: 10.5px; }
   .info-value { font-size: 13.5px; }
 
   .tab-btn {
-    padding:   12px 12px;
-    font-size: 12.5px;
-    gap:       6px;
-    .icon { font-size: 15px; }
+    padding:   11px 10px;
+    font-size: 12px;
+    gap:       5px;
+    .icon { font-size: 14px; }
   }
 
-  .action-buttons { padding: 11px 16px; gap: 8px; }
-  .action-btn     { padding: 10px; font-size: 17px; }
+  .action-buttons {
+    padding:    10px 14px;
+    gap:        8px;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+  }
 
-  // Hide floating 3D labels (shown in panel)
+  .action-btn {
+    padding:   12px;
+    font-size: 18px;
+  }
+
   .measurement-label { display: none; }
+
+  .mobile-badges { display: flex; }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -739,35 +804,33 @@
 
 @media (max-width: 480px) {
 
-  .canvas-wrapper { min-height: 220px; }
+  .canvas-wrapper { min-height: 260px; }
 
   .controls-panel {
-    border-radius: 12px 12px 0 0;
+    max-height:    55vh;
+    border-radius: 16px 16px 0 0;
 
-    &::before { border-radius: 12px 12px 0 0; }
+    &::before { border-radius: 16px 16px 0 0; }
   }
 
-  .tab-content {
-    padding:    10px 12px;
-    max-height: 36vh;
-  }
-
-  .panel-header { padding: 10px 14px 0; }
+  .panel-header { padding: 8px 12px 0; }
 
   .tab-btn {
-    padding:   10px 10px;
+    padding:   10px 8px;
     font-size: 11.5px;
-    gap:       5px;
-    .icon { font-size: 14px; }
+    gap:       4px;
+    .icon { width: 13px; height: 13px; }
   }
 
-  .info-item   { padding: 8px 10px; }
-  .info-label  { font-size: 10.5px; }
+  .tab-content { padding: 8px 10px; }
+
+  .info-item   { padding: 8px 10px; gap: 7px; }
+  .info-label  { font-size: 10px; }
   .info-value  { font-size: 13px; }
 
-  .info-status { width: 22px; height: 22px; font-size: 11px; }
-  .info-badge  { padding: 3px 8px; font-size: 10px; }
+  .info-status { width: 22px; height: 22px; font-size: 10px; }
+  .info-badge  { padding: 3px 7px; font-size: 10px; }
 
-  .action-buttons { padding: 10px 12px; gap: 7px; }
-  .action-btn     { padding: 9px; font-size: 16px; border-radius: 9px; }
+  .action-buttons { padding: 10px 12px; gap: 6px; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+  .action-btn     { padding: 11px; font-size: 17px; border-radius: 8px; }
 }
