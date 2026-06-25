@@ -1,5 +1,4 @@
 from __future__ import annotations
-# """این فایل اجرای کامل پایپ‌لاین را مرحله‌به‌مرحله پیش می‌برد و خروجی داخلی و خروجی قابل‌نمایش را می‌سازد."""
 
 from datetime import datetime
 import json
@@ -15,12 +14,12 @@ from pipeline.classification import (
     run_classification,
     save_classification_outputs,
 )
-from pipeline.config import DEFAULT_ONE_FRAME_FPS, DEFAULT_ONE_FRAME_REPEAT, MODEL_VIDEO_SIZE, VIEW_PIPELINES
+from pipeline.config import VIEW_PIPELINES
 from pipeline.events import extract_events
 from pipeline.measurement.a4c_volume import run_a4c_atrial_areas
+from pipeline.measurement.inference_2d import run_single_inference
 from pipeline.measurement.lv_segmentation import run_lv_segmentation
 from pipeline.measurement import scale as scale_module
-from pipeline.measurement.scale import visualize_scale_result
 
 from pipeline.results import (
     build_session_paths,
@@ -228,12 +227,16 @@ def save_reports(
 
 
 def process_video(
-    video_path: Path,                       # C:\Users\SiBIRAN\Desktop\prj\404445623\dd.avi
-    measurement_module: object,             # ماژول inference_2d (مدل‌های DeepLabV3+)
-    args,                                   # آرگومان‌های خط فرمان (Namespace)
-    output_root: Path,                      # C:\Users\SiBIRAN\Desktop\prj\result
-    patient_config: dict[str, Any] | None = None,  # {'gender': 'male', 'weight': 10, 'height': 160}
-    ) -> list[dict[str, Any]]:
+    video_path: Path,
+    output_root: Path,
+    *,
+    manual_view: str | None = None,
+    classifier_model: str | None = None,
+    classifier_samples: int = 8,
+    device: str | None = None,
+    default_pixels_per_cm: float = 12.0,
+    patient_config: dict[str, Any] | None = None,
+) -> list[dict[str, Any]]:
     # """
     # تابع اصلی پردازش یک ویدیوی اکوکاردیوگرافی.
 
@@ -256,9 +259,9 @@ def process_video(
     # ================================================================================================
     classification_result = run_classification(
         video_path,
-        manual_view=args.view,                # None (اگر کاربر --view ندهد)
-        classifier_model=args.classifier_model,
-        classifier_samples=args.classifier_samples,  # 8
+        manual_view=manual_view,
+        classifier_model=classifier_model,
+        classifier_samples=classifier_samples,
     )
     # classification_result = {
     #     "video_path": "C:\\Users\\SiBIRAN\\Desktop\\prj\\404445623\\dd.avi",
@@ -282,7 +285,7 @@ def process_video(
     detected_view = normalize_view_label(classification_result["prediction"])
     # detected_view = "a4c"
 
-    patient_id = patient_config.get("id") if patient_config else getattr(args, "patient_id", None)
+    patient_id = patient_config.get("user_id") if patient_config else None
     if not patient_id:
         patient_id = video_path.parent.name if video_path.parent.name != "." else safe_name(video_path.stem)
 
@@ -327,7 +330,7 @@ def process_video(
         }
         save_reports(
             video_path=video_path, output_root=output_root, session_paths=session_paths,
-            patient_id=patient_id, patient_name=getattr(args, "patient_name", None),
+            patient_id=patient_id, patient_name=None,
             patient_config=patient_config, classification_result=classification_result,
             events_result={"event_frames": {}, "events_csv": None},
             internal_rows=[unsupported_row],
@@ -390,7 +393,7 @@ def process_video(
                                                 # original_frame: np.ndarray (BGR, shape مثلاً 1080x1920x3)
     cap.release()
 
-    fallback_scale = float(args.default_pixels_per_cm)   # 12.0 (مقدار پیش‌فرض از آرگومان)
+    fallback_scale = float(default_pixels_per_cm)
 
     global_pixels_per_cm, global_scale_source = scale_module.estimate_pixels_per_cm_from_bgr(
         original_frame, default_pixels_per_cm=fallback_scale
@@ -438,7 +441,6 @@ def process_video(
             continue
 
 
-
         segment_height, segment_width = frame_bgr.shape[:2]
         # segment_height = 507, segment_width = 612
 
@@ -468,14 +470,14 @@ def process_video(
 
             try:
                 # ----- ۸-ث-۱. اجرای مدل DeepLabV3+ -----
-                measurement_result = measurement_module.run_single_inference(
-                    model_weights=measurement_name,   # "rv_base"
-                    file_path=str(frame_path),        # "C:\\Users\\...\\frame_0060.jpg"
+                measurement_result = run_single_inference(
+                    model_weights=measurement_name,
+                    file_path=str(frame_path),
                     output_path=str(annotated_output_path),
-                    device=args.device,               # None → خودکار (cpu چون ویندوز)
-                    pixels_per_cm=pixels_per_cm,      # 28.6
-                    segment_width=segment_width,      # 612
-                    segment_height=segment_height,    # 507
+                    device=device,
+                    pixels_per_cm=pixels_per_cm,
+                    segment_width=segment_width,
+                    segment_height=segment_height,
                 )
                 # measurement_result = {
                 #     "measurement_name": "rv_base",
@@ -561,7 +563,7 @@ def process_video(
                     "measurement_message": str(exc),
                     "pixels_per_cm": pixels_per_cm,
                     "scale_source": scale_source,
-                    "device": args.device,
+                    "device": device,
                 }
 
             internal_rows.append(row)
@@ -600,10 +602,10 @@ def process_video(
             weights_path = Path(__file__).parent / "measurement" / "models" / "best.pth"
             if weights_path.exists():
                 lv_volume_report = run_lv_segmentation(
-                    volume_context["bgr"],                       # تصویر BGR
-                    float(volume_context["pixels_per_cm"]),      # 28.6
+                    volume_context["bgr"],
+                    float(volume_context["pixels_per_cm"]),
                     model_path=str(weights_path),
-                    device=args.device,
+                    device=device,
                     output_dir=str(Path(session_paths["internal_reports_dir"]) / "lv_volume"),
                 )
                 # lv_volume_report = {
@@ -638,7 +640,7 @@ def process_video(
         output_root=output_root,                         # پوشه ریشه خروجی
         session_paths=session_paths,                     # مسیرهای جلسه
         patient_id=patient_id,                           # "404445623"
-        patient_name=getattr(args, "patient_name", None), # None
+        patient_name=None, # None
         patient_config=patient_config,                   # {'gender': 'male', 'weight': 10, 'height': 160}
         classification_result=classification_result,     # نتیجه کلاسیفیکیشن
         events_result=events_result,                     # نتیجه رویدادها

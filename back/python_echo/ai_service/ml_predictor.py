@@ -1,21 +1,3 @@
-"""
-CardioAI — ML Risk Predictor
-============================
-استنتاج ریسک قلبی-عروقی با دو مدل انتخابی که از notebook ترین شدند:
-
-  • HD_LogisticRegression  → داده‌های ECG / تست ورزش (Heart Disease UCI)
-  • CV_CatBoost            → داده‌های فشار خون / سبک زندگی (Cardiovascular)
-
-ساختار Feature Engineering دقیقاً از notebook کپی شده تا
-بردار ورودی با آنچه مدل روی آن ترین شده یکسان باشد.
-
-قرارداد فایل‌های مدل (در پوشه models/):
-  models/hd_logisticregression.joblib   ← مدل LR
-  models/hd_scaler.joblib               ← StandardScaler مربوط به LR
-  models/cv_catboost.joblib             ← مدل CatBoost
-  models/hd_features.json              ← (اختیاری) لیست feature ها
-  models/cv_features.json              ← (اختیاری) لیست feature ها
-"""
 from __future__ import annotations
 
 import json
@@ -31,11 +13,10 @@ import numpy as np
 # ─── Model file paths ────────────────────────────────────────────────────────
 MODELS_DIR = Path(
     os.getenv("CARDIOAI_MODELS_DIR",
-              Path(__file__).resolve().parent / "models")
+                Path(__file__).resolve().parent / "models")
 )
 
 # ─── Feature lists — exact order used during training ─────────────────────────
-#     اگر models/hd_features.json وجود داشت، از آن استفاده می‌شه (اولویت بالاتر)
 HD_FEATURES_DEFAULT: List[str] = [
     # Raw features (Heart Disease dataset)
     "age", "sex", "cp", "trestbps", "chol", "fbs", "restecg",
@@ -125,6 +106,7 @@ class MLRiskPredictor:
     # ── Loading ──────────────────────────────────────────────────────────────
 
     def _load_feature_list(self, tag: str) -> Optional[List[str]]:
+        # in: "hd" | "cv"  → out: ["age","sex",...] or None
         path = self.models_dir / f"{tag}_features.json"
         if path.exists():
             with path.open(encoding="utf-8") as f:
@@ -132,7 +114,7 @@ class MLRiskPredictor:
         return None
 
     def _load_models(self, hd_file: str, cv_file: str, scaler_file: str) -> None:
-        """بارگذاری مدل‌ها با پشتیبانی از فرمت‌های .pkl و .joblib"""
+        # هر سه فایل را با .pkl/.joblib جستجو و در self._hd_model / _cv_model / _hd_scaler ست می‌کند
         for attr, fname, label in [
             ("_hd_model",  hd_file,     "HD_LogisticRegression"),
             ("_cv_model",  cv_file,     "CV_CatBoost"),
@@ -149,27 +131,25 @@ class MLRiskPredictor:
             if path:
                 try:
                     setattr(self, attr, joblib.load(path))
-                    print(f"✓ {label} بارگذاری شد: {path.name}")
                 except Exception as e:
-                    warnings.warn(f"⚠️  خطا در بارگذاری {label}: {e}")
+                    warnings.warn(f"خطا در بارگذاری {label}: {e}")
             else:
-                warnings.warn(f"⚠️  {label} یافت نشد: {fname}.pkl یا {fname}.joblib")
+                warnings.warn(f"{label} یافت نشد: {fname}.pkl یا {fname}.joblib")
 
     # ── Feature Engineering (دقیقاً مطابق Cell 5 notebook) ───────────────────
 
     @staticmethod
     def _parse_gender_cv(raw: Dict[str, Any]) -> float:
-        """CV dataset: gender=1(زن) / 2(مرد)"""
+        # in: {"gender": 2} | {"gender": "male"} | {"sex": 1}  → out: 1.0(زن) | 2.0(مرد)
         g = raw.get("gender", raw.get("sex", 1))
         if isinstance(g, str):
             return 2.0 if g.lower() in ("male", "مرد", "m", "2") else 1.0
         v = float(g) if g is not None else 1.0
-        # اگر به صورت 0/1 وارد شده (HD style) تبدیل کن
-        return 2.0 if v == 1.0 else 1.0
+        return v if v in (1.0, 2.0) else 1.0
 
     @staticmethod
     def _parse_gender_hd(raw: Dict[str, Any]) -> float:
-        """HD dataset: sex=1(مرد) / 0(زن)"""
+        # in: {"sex": 1} | {"sex": "female"} | {"gender": 2}  → out: 0.0(زن) | 1.0(مرد)
         g = raw.get("sex", raw.get("gender", 1))
         if isinstance(g, str):
             return 1.0 if g.lower() in ("male", "مرد", "m", "2") else 0.0
@@ -178,7 +158,11 @@ class MLRiskPredictor:
 
     @staticmethod
     def _engineer_hd(raw: Dict[str, Any]) -> Dict[str, Any]:
-        """Feature engineering برای مدل Heart Disease — دقیقاً مثل notebook"""
+        """
+        in : {"age":54, "sex":1, "trestbps":130, "thalach":150, "oldpeak":1.2, ...}
+        out: همان + {"bp_category":2.0, "rate_pressure_product":195.0,
+            "chronotropic_index":0.91, "st_depression_index":0.8, "age_st_depression":64.8}
+        """
         d: Dict[str, Any] = dict(raw)
         d["sex"] = MLRiskPredictor._parse_gender_hd(raw)
 
@@ -208,7 +192,13 @@ class MLRiskPredictor:
 
     @staticmethod
     def _engineer_cv(raw: Dict[str, Any]) -> Dict[str, Any]:
-        """Feature engineering برای مدل Cardiovascular — دقیقاً مثل notebook"""
+        """
+        in : {"age":24, "gender":2, "height":184, "weight":75, "ap_hi":120, "ap_lo":80, ...}
+        out: همان + {"bmi":22.1, "bmi_category":1.0, "map":93.3, "pulse_pressure":40.0,
+                     "hypertension_grade":0.0, "metabolic_risk_score":0.0,
+                     "lifestyle_risk_score":-1.5, "age_bmi_interaction":5.3,
+                     "age_hypertension_interaction":0.0}
+        """
         d: Dict[str, Any] = dict(raw)
         d["gender"] = MLRiskPredictor._parse_gender_cv(raw)
 
@@ -245,7 +235,7 @@ class MLRiskPredictor:
         bmi_val = d.get("bmi", 0)
         if bmi_val:
             score += (bmi_val > 30) * 2.0 + (bmi_val > 35) * 1.5
-        ht_grade = d.get("hypertension_grade", 0)
+        ht_grade = d.get("hypertension_grade", 0) #Grade 1: +1.5
         if ht_grade: score += ht_grade * 1.5
         chol = d.get("cholesterol")
         if chol: score += (float(chol) - 1) * 2.0
@@ -277,20 +267,16 @@ class MLRiskPredictor:
 
     # ── Vector building & imputation ─────────────────────────────────────────
 
+    @staticmethod
     def _build_vector(
-        self,
         engineered: Dict[str, Any],
         features:   List[str],
     ) -> Tuple[np.ndarray, float, List[str]]:
         """
-        ساخت بردار ورودی مدل با جایگزینی هوشمند مقادیر گمشده.
-
-        اولویت:
-          1. مقدار واقعی بیمار
-          2. میانه جمعیت بالینی (CLINICAL_MEDIANS)
-          3. صفر
-
-        Returns: (vector [1×n], confidence_ratio, missing_feature_names)
+        in : engineered dict + لیست feature های مرتب‌شده مدل
+        out: (array shape(1,n), confidence 0-1, missing_names[])
+             مقادیر غایب → CLINICAL_MEDIANS → 0.0
+             confidence = تعداد فیچر واقعی / کل فیچرها
         """
         vec:     List[float] = []
         missing: List[str]   = []
@@ -314,7 +300,12 @@ class MLRiskPredictor:
     # ── Per-model prediction ─────────────────────────────────────────────────
 
     def _predict_hd(self, patient: Dict[str, Any]) -> Dict[str, Any]:
-        """استنتاج با مدل HD_LogisticRegression"""
+        """
+        in : patient dict (raw از MongoDB)
+        out: {"model":"HD_LogisticRegression", "probability":0.7279, "probability_pct":72.8,
+              "confidence":1.0, "missing_features":[], "n_features_used":18, "_engineered":{...}}
+             یا {"error":"..."} اگر مدل لود نشده باشد
+        """
         if self._hd_model is None:
             return {
                 "model": "HD_LogisticRegression", "probability": 0.5,
@@ -341,7 +332,12 @@ class MLRiskPredictor:
         }
 
     def _predict_cv(self, patient: Dict[str, Any]) -> Dict[str, Any]:
-        """استنتاج با مدل CV_CatBoost"""
+        """
+        in : patient dict (raw از MongoDB)
+        out: {"model":"CV_CatBoost", "probability":0.0924, "probability_pct":9.2,
+              "confidence":1.0, "missing_features":[], "n_features_used":20, "_engineered":{...}}
+             یا {"error":"..."} اگر مدل لود نشده باشد
+        """
         if self._cv_model is None:
             return {
                 "model": "CV_CatBoost", "probability": 0.5,
@@ -371,7 +367,11 @@ class MLRiskPredictor:
         hd_eng: Dict[str, Any],
         cv_eng: Dict[str, Any],
     ) -> List[Dict[str, Any]]:
-        """شناسایی عوامل خطر قابل توضیح برای بیمار و پزشک"""
+        """
+        in : دو dict engineered (HD و CV)
+        out: [{"feature":"ca","value":2,"label_fa":"کاهش جریان کرونری","label_en":"..."},...]
+             فقط فیچرهایی که rule شان True شده (از RISK_FACTOR_DEFS)
+        """
         combined = {**hd_eng, **cv_eng}
         found: List[Dict[str, Any]] = []
 
@@ -382,13 +382,13 @@ class MLRiskPredictor:
             try:
                 if rule(val):
                     found.append({
-                        "feature":   feat,
-                        "value":     round(float(val), 2) if isinstance(val, float) else val,
-                        "label_fa":  label_fa,
-                        "label_en":  label_en,
+                        "feature":  feat,
+                        "value":    round(float(val), 2) if isinstance(val, float) else val,
+                        "label_fa": label_fa,
+                        "label_en": label_en,
                     })
-            except Exception:
-                pass
+            except Exception as e:
+                warnings.warn(f"خطا در بررسی عامل خطر {feat}: {e}")
 
         return found
 
@@ -396,24 +396,21 @@ class MLRiskPredictor:
 
     def predict(self, patient_data: Dict[str, Any]) -> Dict[str, Any]:
         """
-        استنتاج کامل ریسک قلبی-عروقی با هر دو مدل.
+        in : {"age":24, "sex":1, "gender":2, "height":184, "weight":75,
+               "ap_hi":120, "ap_lo":80, "cholesterol":1, "gluc":1,
+               "smoke":0, "alco":0, "active":1,
+               "cp":0, "trestbps":130, "chol":200, "thalach":160,
+               "exang":0, "oldpeak":0.5, "slope":1, "ca":2, "thal":2}
+             فیلدهای غایب از CLINICAL_MEDIANS جایگزین می‌شوند
 
-        ورودی:
-            patient_data : اطلاعات بیمار از MongoDB (می‌تواند ناقص باشد)
-                           فیلدهای اصلی: age, gender/sex, weight, height,
-                           ap_hi, ap_lo, smoke, alco, active, cholesterol, gluc
-                           فیلدهای اختیاری (اکو/ECG): trestbps, thalach, cp,
-                           oldpeak, exang, fbs, restecg, slope, ca, thal
-
-        خروجی dict:
-            hd_result       : نتیجه HD_LogisticRegression
-            cv_result       : نتیجه CV_CatBoost
-            combined_score  : امتیاز ترکیبی [0–100] (میانگین وزنی با confidence)
-            combined_prob   : احتمال ترکیبی [0–1]
-            severity        : LOW | MODERATE | HIGH
-            risk_factors    : لیست عوامل خطر شناسایی‌شده
-            bmi             : BMI محاسبه‌شده (در صورت وجود height و weight)
-            confidence      : اطمینان کلی [0–1]
+        out: {"hd_result":   {probability, probability_pct, confidence, missing_features},
+              "cv_result":   {probability, probability_pct, confidence, missing_features},
+              "combined_score": 41.0,    # میانگین وزنی × 100
+              "combined_prob":  0.4102,
+              "severity":       "LOW",   # LOW(<0.45) | MODERATE(0.45-0.70) | HIGH(≥0.70)
+              "risk_factors":   [...],
+              "bmi":            22.1,
+              "confidence":     1.0}
         """
         hd = self._predict_hd(patient_data)
         cv = self._predict_cv(patient_data)
