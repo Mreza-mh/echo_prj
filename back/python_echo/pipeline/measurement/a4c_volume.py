@@ -4,8 +4,6 @@ Apical four-chamber style atrial area segmentation (pixel + cm²).
 Used by `main.py` when the detected view is `a4c`. Requires a B-mode crop (BGR)
 and `pixels_per_cm` on that image (same calibration as linear measurements).
 """
-
-# این فایل برای نمای A4C سطح دهلیزها را حساب می‌کند و خروجی تصویری و JSON آن را می‌سازد.
 from __future__ import annotations
 
 import json
@@ -19,266 +17,132 @@ import numpy as np
 from pipeline.measurement.scale import pixel_area_to_cm2
 
 
-def frangi_vesselness(gray: np.ndarray, sigmas: list[float] | None = None, beta: float = 0.5, c: float = 15) -> np.ndarray:
+def _fit_and_clip_ellipse(
+    mask: np.ndarray,
+    valve_a: tuple[int, int],
+    valve_b: tuple[int, int],
+    clip_x: int,
+    keep_left: bool,
+) -> np.ndarray:
     """
-    فیلتر Frangi برای تشخیص ساختارهای لوله‌ای/عروقی در تصویر.
-    
-    منطق:
-      - در چند مقیاس (sigma)، مشتقات دوم تصویر محاسبه می‌شود.
-      - مقادیر ویژه Hessian تحلیل می‌شود.
-      - ساختارهای ridge مانند (عروق) امتیاز بالاتری می‌گیرند.
-    
-    ورودی:
-        gray  : تصویر grayscale
-        sigmas: لیست مقیاس‌ها (پیش‌فرض [1.0, 2.0, 3.0])
-        beta  : پارامتر حساسیت به ساختارهای blob-like (پیش‌فرض 0.5)
-        c     : پارامتر حساسیت به نویز (پیش‌فرض 15)
-    
-    خروجی:
-        np.ndarray با مقادیر 0-255 (vesselness map)
+    Ellipse fit + bresh MOVAZI ba khat abi (partow valve):
+
+      1. Ellipse ro fit mikone
+      2. Gap bala-ye ellipse ra ta khat abi por mikone (naghie sabz ham hesab beshe)
+      3. Bresh az rooye khat abi KAJ (valve_a -> valve_b), na khat afoghi saaf
+         => labe-ye bala movazi ba khat abi mishe
+      4. clip_x: khat amodi - do atrium az ham joda mishe
+         keep_left=True  -> left atrium  (rast hazf)
+         keep_left=False -> right atrium (chap hazf)
+
+    Age kontor kam-e (<5 point) mask asli ro barmigardone.
     """
-    if sigmas is None:
-        sigmas = [1.0, 2.0, 3.0]
+    cnts, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if not cnts:
+        return mask
+    cnt = max(cnts, key=cv2.contourArea)
+    if len(cnt) < 5:
+        return mask
 
-    float_img = gray.astype(np.float64) / 255.0                      # نرمال‌سازی [0,1]
-    h, w = float_img.shape
-    vesselness = np.zeros((h, w), dtype=np.float64)
+    result = np.zeros_like(mask)
+    cv2.ellipse(result, cv2.fitEllipse(cnt), 1, -1)
 
-    for sigma in sigmas:
-        ksize = int(2 * round(4 * sigma) + 1)                        # اندازه کرنل Gauss
-        blur = cv2.GaussianBlur(float_img, (ksize, ksize), sigma, borderType=cv2.BORDER_REFLECT)
+    h, w = result.shape
+    ys, xs = np.mgrid[0:h, 0:w]
 
-        # مشتقات مرتبه اول و دوم
-        ix = cv2.Sobel(blur, cv2.CV_64F, 1, 0, ksize=3)
-        iy = cv2.Sobel(blur, cv2.CV_64F, 0, 1, ksize=3)
-        ixx = cv2.Sobel(ix, cv2.CV_64F, 1, 0, ksize=3)
-        ixy = cv2.Sobel(ix, cv2.CV_64F, 0, 1, ksize=3)
-        iyy = cv2.Sobel(iy, cv2.CV_64F, 0, 1, ksize=3)
+    # Khat abi kaj: cross product alamat-e samt-e har pixel ro midhe
+    dx, dy = valve_b[0] - valve_a[0], valve_b[1] - valve_a[1]
+    side = dx * (ys - valve_a[1]) - dy * (xs - valve_a[0])
+    # samt-e atrium = samti ke ellipse center toosh-e (paeen-e khat)
+    cy_e, cx_e = np.argwhere(result > 0).mean(axis=0)
+    ref_side = dx * (cy_e - valve_a[1]) - dy * (cx_e - valve_a[0])
+    below_line = (np.sign(side) == np.sign(ref_side))    # paeen-e khat abi kaj
 
-        # مقادیر ویژه Hessian
-        tmp = np.sqrt((ixx - iyy) ** 2 + 4 * ixy**2)
-        lambda1 = (ixx + iyy + tmp) / 2.0
-        lambda2 = (ixx + iyy - tmp) / 2.0
+    # Gap por kardan: har soton ke ellipse dare, az khat abi ta ellipse ro por kon
+    has_px = np.any(result > 0, axis=0)
+    cum    = np.cumsum(result, axis=0)
+    gap    = (cum == 0) & has_px & below_line            # faze khali bala-ye ellipse (paeen-e khat)
+    result = np.maximum(result, gap.astype(np.uint8))
 
-        # مرتب‌سازی: |lambda2| >= |lambda1|
-        mask = np.abs(lambda1) > np.abs(lambda2)
-        lbig = np.where(mask, lambda1, lambda2)
-        lsmall = np.where(mask, lambda2, lambda1)
-        lambda2 = lbig
-        lambda1 = lsmall
-
-        vessel = np.zeros_like(float_img)
-        ridge = lambda2 < 0                                            # فقط ridge ها
-        if np.any(ridge):
-            rb = np.abs(lambda1[ridge]) / (np.abs(lambda2[ridge]) + 1e-6)
-            s = np.sqrt(lambda1[ridge] ** 2 + lambda2[ridge] ** 2)
-            v = np.exp(-(rb**2) / (2 * beta**2)) * (1 - np.exp(-(s**2) / (2 * c**2)))
-            vessel[ridge] = v
-        vesselness = np.maximum(vesselness, vessel)                    # max over scales
-
-    # نرمال‌سازی به [0, 255]
-    if vesselness.max() > 0:
-        vesselness = (vesselness / vesselness.max() * 255).astype(np.uint8)
+    result[~below_line] = 0      # bala-ye khat abi kaj hazf
+    if keep_left:
+        result[:, clip_x:] = 0   # left atrium: rast hazf
     else:
-        vesselness = vesselness.astype(np.uint8)
-    return vesselness
+        result[:, :clip_x] = 0   # right atrium: chap hazf
+    return result
 
 
-def deform_line_to_edges(
-    img_gray: np.ndarray,
-    pt1: tuple[int, int],
-    pt2: tuple[int, int],
-    num_points: int = 30,
-    search_range: int = 15,
-    iterations: int = 10,
-) -> list[tuple[int, int]]:
-    """
-    تغییر شکل یک خط مستقیم به سمت لبه‌های تصویر (Active Contour ساده).
-    
-    منطق:
-      - خط اولیه بین pt1 و pt2 با num_points نقطه نمونه‌برداری می‌شود.
-      - در هر iteration، هر نقطه در جهت عمود بر خط حرکت می‌کند
-        به سمتی که گرادیان تصویر بیشینه باشد.
-    
-    ورودی:
-        img_gray    : تصویر grayscale
-        pt1, pt2    : نقاط ابتدا و انتهای خط
-        num_points  : تعداد نقاط نمونه‌برداری
-        search_range: شعاع جستجو برای هر نقطه
-        iterations  : تعداد تکرار
-    
-    خروجی:
-        لیست (x,y) نقاط تغییرشکل‌یافته
-    """
-    # نمونه‌برداری خط اولیه
-    x_vals = np.linspace(pt1[0], pt2[0], num_points).astype(np.int32)
-    y_vals = np.linspace(pt1[1], pt2[1], num_points).astype(np.int32)
-    points = list(zip(x_vals.tolist(), y_vals.tolist()))
-
-    # گرادیان تصویر
-    grad_x = cv2.Sobel(img_gray, cv2.CV_64F, 1, 0, ksize=3)
-    grad_y = cv2.Sobel(img_gray, cv2.CV_64F, 0, 1, ksize=3)
-    grad_mag = np.sqrt(grad_x**2 + grad_y**2)                        # اندازه گرادیان
-    h, w = img_gray.shape
-
-    for _ in range(iterations):
-        new_points = points.copy()
-        for i in range(1, len(points) - 1):                           # نقاط میانی (نه ابتدا/انتها)
-            px, py = points[i]
-            prev_pt = points[i - 1]
-            next_pt = points[i + 1]
-
-            # بردار جهت خط
-            dx = next_pt[0] - prev_pt[0]
-            dy = next_pt[1] - prev_pt[1]
-            length = math.hypot(dx, dy)
-            if length == 0:
-                continue
-
-            # بردار عمود (نرمال)
-            nx = -dy / length
-            ny = dx / length
-
-            # جستجوی بهترین موقعیت در راستای عمود
-            best_val = -1.0
-            best_off = 0
-            for off in range(-search_range, search_range + 1):
-                cx = int(px + nx * off)
-                cy = int(py + ny * off)
-                if 0 <= cx < w and 0 <= cy < h:
-                    val = float(grad_mag[cy, cx])
-                    if val > best_val:
-                        best_val = val
-                        best_off = off
-
-            new_points[i] = (int(px + nx * best_off), int(py + ny * best_off))
-        points = new_points
-    return points
-
-
-def get_seed_points_from_rays(
-    best_center: tuple[int, int],          # مرکز تخمینی قلب
-    best_rays: list[tuple[int, int]],      # ۴ نقطه انتهایی پرتوها (راست، پایین، چپ، بالا)
-    gray_img: np.ndarray,                  # تصویر grayscale
+def _get_seeds(
+    best_center: tuple[int, int],
+    best_rays: list[tuple[int, int]],
+    gray_img: np.ndarray,
 ) -> tuple[tuple[int, int], tuple[int, int]]:
     """
-    تخمین نقاط seed برای دهلیز چپ و راست بر اساس پرتوهای بهینه.
-    
-    منطق:
-      - دهلیز راست ≈ میانگین پرتوهای راست و پایین
-      - دهلیز چپ  ≈ میانگین پرتوهای چپ و پایین
-      - سپس refinement: در یک شعاع ۲۰ پیکسلی، تاریک‌ترین نقطه را پیدا می‌کند
-        (چون دهلیزها پر از خون هستند و تیره دیده می‌شوند)
-    
-    خروجی:
-        (left_seed, right_seed): مختصات نقاط شروع برای flood fill
+    Seed point baraye left/right atrium peida mikone.
+    Atrium por az khoon = tira -> tarin pixel ro dar yek radius 20px peida mikone.
+    Taghmini: left seed = miangine markaz + ray-chap + ray-paeen.
     """
     cx, cy = best_center
-    e_r, e_d, e_l, e_u = best_rays
+    e_r, e_d, e_l, _ = best_rays
 
-    # حدس اولیه برای دهلیز چپ (بین چپ و پایین)
-    guess_left_x = int((cx + e_l[0] + e_d[0]) / 3)
-    guess_left_y = int((cy + e_l[1] + e_d[1]) / 3)
+    guess_l = (int((cx + e_l[0] + e_d[0]) / 3), int((cy + e_l[1] + e_d[1]) / 3))
+    guess_r = (int((cx + e_r[0] + e_d[0]) / 3), int((cy + e_r[1] + e_d[1]) / 3))
 
-    # حدس اولیه برای دهلیز راست (بین راست و پایین)
-    guess_right_x = int((cx + e_r[0] + e_d[0]) / 3)
-    guess_right_y = int((cy + e_r[1] + e_d[1]) / 3)
+    def darkest_near(x: int, y: int, radius: int = 20) -> tuple[int, int]:
+        hh, ww = gray_img.shape
+        y0, y1 = max(0, y - radius), min(hh, y + radius + 1)
+        x0, x1 = max(0, x - radius), min(ww, x + radius + 1)
+        patch = gray_img[y0:y1, x0:x1]
+        dy, dx = np.unravel_index(np.argmin(patch), patch.shape)
+        return (x0 + int(dx), y0 + int(dy))
 
-    def refine_seed(x: int, y: int, img: np.ndarray, radius: int = 20) -> tuple[int, int]:
-        """پیدا کردن تاریک‌ترین نقطه در همسایگی"""
-        hh, ww = img.shape
-        min_val = 255
-        best_pt = (x, y)
-        for dy in range(-radius, radius + 1):
-            for dx in range(-radius, radius + 1):
-                nx, ny = x + dx, y + dy
-                if 0 <= nx < ww and 0 <= ny < hh:
-                    if img[ny, nx] < min_val:
-                        min_val = int(img[ny, nx])
-                        best_pt = (nx, ny)
-        return best_pt
-
-    return (
-        refine_seed(guess_left_x, guess_left_y, gray_img),     # seed چپ
-        refine_seed(guess_right_x, guess_right_y, gray_img)    # seed راست
-    )
+    return darkest_near(*guess_l), darkest_near(*guess_r)
 
 
-def find_chamber_mask_and_centroid(
-    seed: tuple[int, int],               # نقطه شروع
-    boundary_mask: np.ndarray,           # ماسک مرزها
-) -> tuple[np.ndarray | None, tuple[int, int] | None]:
+def _flood_fill_chamber(seed: tuple[int, int], boundary_mask: np.ndarray) -> np.ndarray | None:
     """
-    پیدا کردن ناحیه یک حفره با Flood Fill از نقطه seed.
-    
-    منطق:
-      - از seed شروع می‌کند و تمام پیکسل‌های متصل که مقدار ۰ دارند را
-        با ۱۲۸ پر می‌کند (در محدوده ماسک مرزها).
-      - مرکز جرم ناحیه پر شده محاسبه می‌شود.
-    
-    خروجی:
-        (mask, centroid): ماسک باینری ناحیه و مختصات مرکز جرم
-        یا (None, None) اگر flood fill موفق نبود
+    Az seed shoru mikone va tamam pixel-haye mottasel (value=0) ro ba 128 por mikone.
+    Divara (255) jologiresh ro migirand.
+    Agar chizi por nashod None bar migardone.
     """
-    flood_mask = boundary_mask.copy()
-    h, w = flood_mask.shape
-    mask_ff = np.zeros((h + 2, w + 2), np.uint8)                    # ماسک برای floodFill
-    cv2.floodFill(flood_mask, mask_ff, seed, 128)                   # پر کردن با ۱۲۸
-    chamber = (flood_mask == 128).astype(np.uint8)                   # ماسک باینری
-    m = cv2.moments(chamber)
-    if m["m00"] == 0:
-        return None, None
-    cx = int(m["m10"] / m["m00"])                                    # مرکز جرم X
-    cy = int(m["m01"] / m["m00"])                                    # مرکز جرم Y
-    return chamber, (cx, cy)
+    flood = boundary_mask.copy()
+    h, w = flood.shape
+    cv2.floodFill(flood, np.zeros((h + 2, w + 2), np.uint8), seed, 128)
+    chamber = (flood == 128).astype(np.uint8)
+    return chamber if cv2.countNonZero(chamber) > 0 else None
 
 
 def run_a4c_atrial_areas(
-    image_bgr: np.ndarray,                # تصویر BGR از فریم a4c
-    pixels_per_cm: float,                 # 28.6 (مقیاس تخمین‌زده‌شده)
+    image_bgr: np.ndarray,
+    pixels_per_cm: float,
     *,
-    exclusion_radius: int = 70,           # شعاع Exclusion اطراف مرکز
-    use_frangi: bool = False,             # آیا از فیلتر Frangi استفاده شود؟
-    use_active_contour: bool = True,      # آیا از Active Contour استفاده شود؟
+    exclusion_radius: int = 70,
     output_dir: str | os.PathLike[str] | None = None,
 ) -> dict[str, Any]:
     """
-    محاسبه مساحت دهلیز چپ و راست در نمای A4C.
-    
-    مراحل:
-      ۱) پیدا کردن مرکز و ۴ پرتو بهینه
-      ۲) آستانه‌گذاری و یافتن کانتورها
-      ۳) اتصال نقاط انتهایی نزدیک (bridge)
-      ۴) Active Contour برای بهبود مرزها
-      ۵) Flood Fill برای جداسازی دهلیزها
-      ۶) محاسبه مساحت به cm² و رسم overlay
-    
-    خروجی (مقادیر واقعی از لاگ):
-        {
-            "pixels_per_cm": 28.6,
-            "best_center": {"x": 306, "y": 253},
-            "areas_px": {"right_atrium": 9054, "left_atrium": 17384},
-            "areas_cm2": {
-                "right_atrium": 11.066555821800577,
-                "left_atrium": 21.252873001124748
-            },
-            "saved_paths": {
-                "overlay_png": "C:\\...\\a4c_atrial_overlay.png",
-                "areas_json": "C:\\...\\a4c_area_cm2.json"
-            }
-        }
+    Masahat left/right atrium ra dar nama A4C hesab mikone.
+
+    Marahel:
+      1. Markaz + 4 partow behine (ravshan tarin masir)
+      2. Threshold + morphological open -> pixel haye divar
+      3. Bridge zadan gap ha ta divara closed beshand
+      4. Morphological close + keshidan partow ha rooye mask
+      5. Flood fill har atrium az seed
+      6. Ellipse fit + bresh az bala (valve plane) -> shekl nahaii
+      7. Hesab masahat pixel va cm2
     """
     if pixels_per_cm <= 0:
         raise ValueError("pixels_per_cm must be positive.")
 
-    h, w = image_bgr.shape[:2]                                       # (507, 612)
+    h, w = image_bgr.shape[:2]
     gray = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2GRAY)
-    blur_rays = cv2.GaussianBlur(gray, (15, 15), 0)                 # برای پرتوها
+    # blur bala baraye partow ha - khat ha ravshan tar mishand
+    blur_rays = cv2.GaussianBlur(gray, (15, 15), 0)
 
+    # ---- Partow ha: markaz behine peida mikonim ----
+    # partow be samte ravshan tarin masir miره - divar haye qalb (sefid) ro dokhtar mikone
     def best_ray(cx: int, cy: int, angles: range, length: int) -> tuple[float, tuple[int, int]]:
-        """پیدا کردن بهترین پرتو در یک محدوده زاویه"""
-        maxv = -1.0
-        best_end = (cx, cy)
+        maxv, best_end = -1.0, (cx, cy)
         for a in angles:
             rad = math.radians(a)
             dx, dy = length * math.cos(rad), length * math.sin(rad)
@@ -287,188 +151,146 @@ def run_a4c_atrial_areas(
             valid = (xs >= 0) & (xs < w) & (ys >= 0) & (ys < h)
             if not np.any(valid):
                 continue
-            val = float(np.mean(blur_rays[ys[valid], xs[valid]]))   # میانگین روشنایی
+            val = float(np.mean(blur_rays[ys[valid], xs[valid]]))
             if val > maxv:
                 maxv = val
                 best_end = (int(cx + dx), int(cy + dy))
         return maxv, best_end
 
-    # جستجوی مرکز و پرتوهای بهینه
-    length = int(h * 0.33)                                           # طول پرتو ≈ یک‌سوم ارتفاع
-    best_center = (w // 2, h // 2)                                   # حدس اولیه: مرکز تصویر
-    best_score = -1.0
+    ray_len = int(h * 0.33)   # taghribn yek sevom ertefa - partow dakhel ghazf mimone
+    best_center = (w // 2, h // 2)
+    best_score  = -1.0
     best_rays: list[tuple[int, int]] = []
 
-    # جستجو در یک پنجره اطراف مرکز
+    # grid search dar 40-70% ertefa va 40-60% arz
     for cy in range(int(h * 0.4), int(h * 0.7), 5):
         for cx in range(int(w * 0.4), int(w * 0.6), 5):
-            s_r, e_r = best_ray(cx, cy, range(-30, 31, 2), length)   # راست
-            s_d, e_d = best_ray(cx, cy, range(60, 121, 2), length)   # پایین
-            s_l, e_l = best_ray(cx, cy, range(150, 211, 2), length)  # چپ
-            s_u, e_u = best_ray(cx, cy, range(240, 301, 2), length)  # بالا
+            s_r, e_r = best_ray(cx, cy, range(-30,  31, 2), ray_len)   # rast
+            s_d, e_d = best_ray(cx, cy, range( 60, 121, 2), ray_len)   # paeen
+            s_l, e_l = best_ray(cx, cy, range(150, 211, 2), ray_len)   # chap
+            s_u, e_u = best_ray(cx, cy, range(240, 301, 2), ray_len)   # bala
             tot = s_r + s_d + s_l + s_u
             if tot > best_score:
                 best_score = tot
                 best_center = (cx, cy)
-                best_rays = [e_r, e_d, e_l, e_u]
-    # best_center = (306, 253)
+                best_rays   = [e_r, e_d, e_l, e_u]
 
-    # ---- آستانه‌گذاری و morphological opening ----
+    # ---- Divar ha: threshold + morphological open ----
+    # threshold 75 divar haye echo (sefid) ro az khon (tira) joda mikone
     blur = cv2.GaussianBlur(gray, (7, 7), 0)
     _, thresh = cv2.threshold(blur, 75, 255, cv2.THRESH_BINARY)
     kernel_open = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
     cleaned = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel_open)
 
-    # (اختیاری) افزودن vesselness به ماسک
-    if use_frangi:
-        vesselness = frangi_vesselness(gray)
-        _, vessel_mask = cv2.threshold(vesselness, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-        cleaned = cv2.bitwise_or(cleaned, vessel_mask)
-
-    # ---- یافتن نقاط انتهایی کانتورها ----
+    # ---- Endpoint ha + bridge zadan gap ha ----
+    # kontor haye bozorg ro peida mikonim va 4 noghte-ye extreme har kontor ro bar midarim
     contours, _ = cv2.findContours(cleaned, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     endpoints: list[tuple[int, int]] = []
     for cnt in contours:
         if cv2.contourArea(cnt) > 200:
-            ext_left = tuple(cnt[cnt[:, :, 0].argmin()][0])
-            ext_right = tuple(cnt[cnt[:, :, 0].argmax()][0])
-            ext_top = tuple(cnt[cnt[:, :, 1].argmin()][0])
-            ext_bot = tuple(cnt[cnt[:, :, 1].argmax()][0])
-            endpoints.extend([ext_left, ext_right, ext_top, ext_bot])
+            endpoints.extend([
+                tuple(cnt[cnt[:, :, 0].argmin()][0]),  # chasb-tarin chap
+                tuple(cnt[cnt[:, :, 0].argmax()][0]),  # chasb-tarin rast
+                tuple(cnt[cnt[:, :, 1].argmin()][0]),  # chasb-tarin bala
+                tuple(cnt[cnt[:, :, 1].argmax()][0]),  # chasb-tarin paeen
+            ])
 
-    # ---- اتصال نقاط نزدیک (bridge) ----
-    bridged_walls = cleaned.copy()
-    max_gap = 80
-    min_gap = 20
-    bridge_pairs: list[tuple[tuple[int, int], tuple[int, int]]] = []
+    bridged = cleaned.copy()
     for i in range(len(endpoints)):
         for j in range(i + 1, len(endpoints)):
             pt1, pt2 = endpoints[i], endpoints[j]
-            dist1 = math.hypot(pt1[0] - best_center[0], pt1[1] - best_center[1])
-            dist2 = math.hypot(pt2[0] - best_center[0], pt2[1] - best_center[1])
-            mid = ((pt1[0] + pt2[0]) / 2, (pt1[1] + pt2[1]) / 2)
-            dist_mid = math.hypot(mid[0] - best_center[0], mid[1] - best_center[1])
-            if dist1 < exclusion_radius or dist2 < exclusion_radius or dist_mid < exclusion_radius:
-                continue                                             # نزدیک مرکز ← رد
+            mid = ((pt1[0] + pt2[0]) // 2, (pt1[1] + pt2[1]) // 2)
+            # nazdik be markaz = valve plane -> bridge nemizanim (ghaleb nadarad)
+            if any(
+                math.hypot(p[0] - best_center[0], p[1] - best_center[1]) < exclusion_radius
+                for p in (pt1, pt2, mid)
+            ):
+                continue
             d = math.hypot(pt1[0] - pt2[0], pt1[1] - pt2[1])
-            if min_gap < d < max_gap:
-                cv2.line(bridged_walls, pt1, pt2, 255, 3)           # پل زدن
-                bridge_pairs.append((pt1, pt2))
+            if 20 < d < 80:
+                cv2.line(bridged, pt1, pt2, 255, 3)
 
-    # ---- Active Contour (Snake) روی پل‌ها ----
-    if use_active_contour and bridge_pairs:
-        snake_walls = bridged_walls.copy()
-        for pt1, pt2 in bridge_pairs:
-            new_pts = deform_line_to_edges(
-                gray, pt1, pt2,
-                num_points=max(10, int(math.hypot(pt2[0] - pt1[0], pt2[1] - pt1[1]) // 3)),
-                search_range=15,
-                iterations=8,
-            )
-            for k in range(1, len(new_pts)):
-                cv2.line(snake_walls, new_pts[k - 1], new_pts[k], 255, 2)
-        bridged_walls = snake_walls
-
-    # ---- Morphological closing ----
+    # ---- Close + partow ha rooye mask ----
     kernel_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
-    closed_walls = cv2.morphologyEx(bridged_walls, cv2.MORPH_CLOSE, kernel_close)
-
-    # رسم پرتوها روی ماسک
+    closed = cv2.morphologyEx(bridged, cv2.MORPH_CLOSE, kernel_close)
     for ep in best_rays:
-        cv2.line(closed_walls, best_center, ep, 255, 3)
+        cv2.line(closed, best_center, ep, 255, 3)  # partow ha divare bein atrium va ventricle mishe
 
-    # ---- Flood Fill برای جداسازی دهلیزها ----
-    left_seed, right_seed = get_seed_points_from_rays(best_center, best_rays, blur_rays)
-    mask_l, _cent_l = find_chamber_mask_and_centroid(left_seed, closed_walls)
-    mask_r, _cent_r = find_chamber_mask_and_centroid(right_seed, closed_walls)
+    # ---- Flood fill ----
+    left_seed, right_seed = _get_seeds(best_center, best_rays, blur_rays)
+    raw_l = _flood_fill_chamber(left_seed,  closed)
+    raw_r = _flood_fill_chamber(right_seed, closed)
 
-    # ---- محاسبه مساحت‌ها ----
+    # ---- Ellipse fit + bresh movazi ba khat abi ----
+    # best_rays = [e_r, e_d, e_l, e_u]  (rast, paeen, chap, bala)
+    # khat abi valve: left atrium ba partow chap, right atrium ba partow rast bresh mikhore
+    # clip_x = khat amodi separator (best_center[0]) -> do atrium az ham joda mishe
+    e_r, _e_d, e_l, _e_u = best_rays
+    clip_x = best_center[0]
+    mask_l = _fit_and_clip_ellipse(raw_l, best_center, e_l, clip_x, keep_left=True)  if raw_l is not None else None
+    mask_r = _fit_and_clip_ellipse(raw_r, best_center, e_r, clip_x, keep_left=False) if raw_r is not None else None
+
+    # ---- Masahat ----
     areas_px: dict[str, int] = {}
     if mask_r is not None:
-        areas_px["right_atrium"] = int(np.sum(mask_r))               # 9054
+        areas_px["right_atrium"] = int(np.sum(mask_r))
     if mask_l is not None:
-        areas_px["left_atrium"] = int(np.sum(mask_l))                # 17384
+        areas_px["left_atrium"] = int(np.sum(mask_l))
 
-    scale = float(pixels_per_cm)                                      # 28.6
+    scale     = float(pixels_per_cm)
     areas_cm2 = {k: pixel_area_to_cm2(px, scale) for k, px in areas_px.items()}
-    # areas_cm2 = {
-    #     "right_atrium": 11.066555821800577,
-    #     "left_atrium": 21.252873001124748
-    # }
 
-    # ---- ساخت تصویر overlay ----
+    # ---- Overlay ----
     overlay = image_bgr.copy()
 
-    # نمایش ماسک دیوارها (سفید نیمه‌شفاف)
-    overlay[closed_walls == 255] = (
-        0.85 * overlay[closed_walls == 255] + 0.15 * np.array([255, 255, 255])
-    ).astype(np.uint8)
+    # divar ha ra kam rooshan mikone
+    overlay[closed == 255] = (0.85 * overlay[closed == 255] + 0.15 * 255).astype(np.uint8)
 
-    # رسم پرتوها
     for ep in best_rays:
-        cv2.line(overlay, best_center, ep, (255, 200, 0), 2)         # آبی فیروزه‌ای
+        cv2.line(overlay, best_center, ep, (255, 200, 0), 2)
 
-    def draw_chamber(mask: np.ndarray | None, color_fill: tuple[float, float, float], name: str) -> None:
-        """رسم یک دهلیز با رنگ مشخص و متن مساحت"""
+    def draw_chamber(mask: np.ndarray | None, color: tuple, name: str) -> None:
         if mask is None:
             return
-        # رنگ‌آمیزی ناحیه
-        overlay[mask == 1] = (
-            0.6 * overlay[mask == 1] + 0.4 * np.array(color_fill)
-        ).astype(np.uint8)
-        # کانتور
+        overlay[mask == 1] = (0.6 * overlay[mask == 1] + 0.4 * np.array(color)).astype(np.uint8)
         cnts, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        cv2.drawContours(overlay, cnts, -1, (0, 0, 255), 1)         # قرمز
-        # متن مساحت
-        cm2_val = areas_cm2.get(name, 0.0)
+        cv2.drawContours(overlay, cnts, -1, (0, 0, 255), 1)
         m = cv2.moments(mask)
         if m["m00"] != 0:
-            c_x = int(m["m10"] / m["m00"])
-            c_y = int(m["m01"] / m["m00"])
             cv2.putText(
-                overlay, f"{cm2_val:.1f} cm2",
-                (c_x - 30, c_y + 20), cv2.FONT_HERSHEY_SIMPLEX,
-                0.5, (255, 255, 255), 1, cv2.LINE_AA
+                overlay, f"{areas_cm2.get(name, 0.0):.1f} cm2",
+                (int(m["m10"] / m["m00"]) - 30, int(m["m01"] / m["m00"]) + 20),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1, cv2.LINE_AA,
             )
 
-    # رسم دهلیز راست (آبی) و چپ (قرمز تیره)
-    draw_chamber(mask_r, (0, 0, 200), "right_atrium")
-    draw_chamber(mask_l, (200, 0, 0), "left_atrium")
+    draw_chamber(mask_r, (0,   0, 200), "right_atrium")   # abi
+    draw_chamber(mask_l, (200, 0,   0), "left_atrium")    # ghermez tire
 
-    # نقاط seed
-    cv2.circle(overlay, right_seed, 4, (0, 255, 0), -1)              # سبز
-    cv2.circle(overlay, left_seed, 4, (0, 255, 0), -1)               # سبز
+    cv2.circle(overlay, right_seed, 4, (0, 255, 0), -1)
+    cv2.circle(overlay, left_seed,  4, (0, 255, 0), -1)
 
-    # دایره Exclusion
-    circle_overlay = overlay.copy()
-    cv2.circle(circle_overlay, best_center, exclusion_radius, (255, 255, 255), 1)
-    cv2.addWeighted(circle_overlay, 0.3, overlay, 0.7, 0, overlay)
+    # exclusion circle (valve plane area) - nime shafaf
+    circle_ov = overlay.copy()
+    cv2.circle(circle_ov, best_center, exclusion_radius, (255, 255, 255), 1)
+    cv2.addWeighted(circle_ov, 0.3, overlay, 0.7, 0, overlay)
 
-    # ---- ذخیره خروجی‌ها ----
+    # ---- Zakhire ----
     saved_paths: dict[str, str] = {}
     if output_dir is not None:
         out = Path(output_dir)
         out.mkdir(parents=True, exist_ok=True)
         overlay_path = out / "a4c_atrial_overlay.png"
-        json_path = out / "a4c_area_cm2.json"
-
+        json_path    = out / "a4c_area_cm2.json"
         cv2.imwrite(str(overlay_path), overlay)
-
-        payload = {
-            "pixels_per_cm": scale,
-            "areas_cm2": areas_cm2,
-            "areas_px": areas_px
-        }
-        with json_path.open("w", encoding="utf-8") as handle:
-            json.dump(payload, handle, indent=2, ensure_ascii=False)
-
+        with json_path.open("w", encoding="utf-8") as f:
+            json.dump({"pixels_per_cm": scale, "areas_cm2": areas_cm2, "areas_px": areas_px}, f, indent=2)
         saved_paths["overlay_png"] = str(overlay_path)
-        saved_paths["areas_json"] = str(json_path)
+        saved_paths["areas_json"]  = str(json_path)
 
     return {
         "pixels_per_cm": scale,
-        "best_center": {"x": int(best_center[0]), "y": int(best_center[1])},  # (306, 253)
-        "areas_px": areas_px,
-        "areas_cm2": areas_cm2,
-        "saved_paths": saved_paths,
+        "best_center":   {"x": int(best_center[0]), "y": int(best_center[1])},
+        "areas_px":      areas_px,
+        "areas_cm2":     areas_cm2,
+        "saved_paths":   saved_paths,
     }
