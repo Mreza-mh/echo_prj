@@ -1,6 +1,8 @@
 """
 Left Ventricle (LV) segmentation and area calculation (cm²).
-Uses a deep learning model (UnetPlusPlus) to segment the LV in A4C/A2C views.
+
+Uses a U-Net++ model (timm-efficientnet-b4 encoder) to segment the LV
+in A4C/A2C views. Entry point: `run_lv_segmentation`.
 """
 
 from __future__ import annotations
@@ -17,174 +19,232 @@ import segmentation_models_pytorch as smp
 
 from pipeline.measurement.scale import pixel_area_to_cm2
 
-# اندازه ورودی مدل U-Net++
+# ابعاد ورودی مدل (عرض، ارتفاع) — تصویر قبل از inference به این اندازه resize می‌شود
 MODEL_INPUT_SIZE = (256, 256)
 
-# آستانه برای تبدیل probability map به ماسک باینری
-THRESHOLD = 0.1
+# آستانه‌ی تبدیل خروجی sigmoid به ماسک باینری؛ مقدار پایین یعنی recall بالاتر
+PROB_THRESHOLD = 0.1
+
+# شفافیت لایه‌ی قرمز در تصویر overlay
+OVERLAY_ALPHA = 0.4
+
+OVERLAY_FILENAME = "lv_segmentation_overlay.png"
+AREA_JSON_FILENAME = "lv_area_cm2.json"
 
 
-def load_lv_model(model_path: str | os.PathLike, device: torch.device | str | None = None) -> torch.nn.Module:
+# ==============================================================================
+# بارگذاری مدل
+# ==============================================================================
+
+def _resolve_device(device: torch.device | str | None) -> torch.device:
+    """اگر device داده نشده باشد CUDA (در صورت وجود) وگرنه CPU برمی‌گرداند."""
+    if device is None:
+        return torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    return torch.device(device)
+
+
+def load_lv_model(
+    model_path: str | os.PathLike,
+    device: torch.device | str | None = None,
+) -> torch.nn.Module:
     """
-    بارگذاری مدل U-Net++ با encoder timm-efficientnet-b4.
-    
+    بارگذاری مدل U-Net++ از فایل checkpoint.
+
+    ورودی:
+        model_path: مسیر فایل وزن‌ها (best.pth)
+        device: مقصد اجرا؛ اگر None باشد خودکار انتخاب می‌شود
+
     خروجی:
-        مدل PyTorch در حالت eval
+        مدل PyTorch روی device مشخص‌شده و در حالت eval
     """
     model = smp.UnetPlusPlus(
         encoder_name="timm-efficientnet-b4",
-        encoder_weights=None,            # وزن‌های encoder از قبل آموزش ندیده
-        in_channels=1,                   # ورودی grayscale
-        classes=1,                       # یک کلاس خروجی (LV)
+        encoder_weights=None,   # وزن‌ها کامل از checkpoint می‌آیند، نه ImageNet
+        in_channels=1,          # ورودی grayscale
+        classes=1,              # تک‌کلاسه: فقط LV
     )
 
-    if device is None:
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    elif isinstance(device, str):
-        device = torch.device(device)
+    resolved_device = _resolve_device(device)
 
-    state_dict = torch.load(model_path, map_location=device)
-    if "model" in state_dict:
-        model.load_state_dict(state_dict["model"])
-    else:
-        model.load_state_dict(state_dict)
+    # checkpoint ممکن است خودِ state_dict باشد یا زیر کلید "model" ذخیره شده باشد
+    checkpoint = torch.load(model_path, map_location=resolved_device)
+    state_dict = checkpoint.get("model", checkpoint) if isinstance(checkpoint, dict) else checkpoint
+    model.load_state_dict(state_dict)
 
-    model.to(device)
+    model.to(resolved_device)
     model.eval()
     return model
 
 
-def preprocess_image(image_bgr: np.ndarray) -> torch.Tensor:
+# ==============================================================================
+# پیش‌پردازش → inference → پس‌پردازش ماسک
+# ==============================================================================
+
+def _preprocess_image(image_bgr: np.ndarray) -> torch.Tensor:
     """
-    پیش‌پردازش تصویر برای مدل LV:
-      ۱) تبدیل به grayscale
-      ۲) تغییر اندازه به ۲۵۶×۲۵۶
-      ۳) نرمال‌سازی: (pixel/255 - 0.5) / 0.5  → بازه [-1, 1]
-      ۴) افزودن ابعاد batch و channel
-    
+    آماده‌سازی تصویر برای مدل: grayscale، resize به ابعاد مدل،
+    و نرمال‌سازی به بازه‌ی [-1, 1].
+
     خروجی:
-        تنسور با shape (1, 1, 256, 256)
+        تنسور float32 با shape (1, 1, H, W)
     """
     image_gray = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2GRAY)
     image_resized = cv2.resize(image_gray, MODEL_INPUT_SIZE)
-    image_normalized = image_resized.astype(np.float32) / 255.0
-    image_normalized = (image_normalized - 0.5) / 0.5
-    image_tensor = torch.tensor(image_normalized).unsqueeze(0).unsqueeze(0)
-    return image_tensor.float()
+    image_normalized = (image_resized.astype(np.float32) / 255.0 - 0.5) / 0.5
+    return torch.from_numpy(image_normalized).unsqueeze(0).unsqueeze(0)
 
 
-def postprocess_mask(mask: np.ndarray) -> np.ndarray:
+def _predict_mask(model: torch.nn.Module, image_bgr: np.ndarray) -> np.ndarray:
     """
-    پس‌پردازش ماسک پیش‌بینی‌شده:
-      ۱) آستانه‌گذاری
-      ۲) Gaussian blur
-      ۳) morphological closing و opening
-      ۴) نگه‌داشتن فقط بزرگ‌ترین contour
+    اجرای inference و برگرداندن ماسک باینری (0/1) هم‌اندازه با تصویر ورودی.
+    """
+    device = next(model.parameters()).device
+    input_tensor = _preprocess_image(image_bgr).to(device)
+
+    with torch.no_grad():
+        probs = torch.sigmoid(model(input_tensor))
+
+    mask = (probs.cpu().numpy()[0, 0] > PROB_THRESHOLD).astype(np.uint8)
+
+    # برگرداندن ماسک به ابعاد اصلی تصویر
+    h, w = image_bgr.shape[:2]
+    return cv2.resize(mask, (w, h), interpolation=cv2.INTER_LINEAR)
+
+
+def _postprocess_mask(mask: np.ndarray) -> np.ndarray:
+    """
+    تمیزکاری ماسک: هموارسازی لبه‌ها، حذف نویز با عملیات مورفولوژیک،
+    و نگه‌داشتن فقط بزرگ‌ترین ناحیه‌ی پیوسته (خودِ LV).
+
+    خروجی:
+        ماسک uint8 با مقادیر 0/255
     """
     mask = (mask * 255).astype(np.uint8)
     mask = cv2.GaussianBlur(mask, (5, 5), 0)
     _, mask = cv2.threshold(mask, 127, 255, cv2.THRESH_BINARY)
+
     kernel = np.ones((5, 5), np.uint8)
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
     mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
 
+    # نواحی کوچک جدا از LV (نویز مدل) حذف می‌شوند
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     clean_mask = np.zeros_like(mask)
-    if len(contours) > 0:
+    if contours:
         largest = max(contours, key=cv2.contourArea)
         cv2.drawContours(clean_mask, [largest], -1, 255, thickness=cv2.FILLED)
     return clean_mask
 
 
-def create_overlay(original_image: np.ndarray, mask: np.ndarray, area_cm2: float) -> np.ndarray:
-    """
-    ساخت تصویر overlay:
-      - ناحیه LV با رنگ قرمز نیمه‌شفاف
-      - کانتور سبز
-      - متن مساحت
-    """
-    result = original_image.copy()
-    overlay = np.zeros_like(original_image)
-    overlay[:, :, 2] = 255                          # کانال قرمز
+# ==============================================================================
+# ساخت overlay و ذخیره‌سازی خروجی‌ها
+# ==============================================================================
 
-    alpha = 0.4
+def _create_overlay(image_bgr: np.ndarray, mask: np.ndarray, area_cm2: float) -> np.ndarray:
+    """
+    ساخت تصویر overlay برای نمایش نتیجه: ناحیه‌ی LV با قرمز نیمه‌شفاف،
+    کانتور سبز، و متن مساحت در گوشه‌ی تصویر.
+    """
+    result = image_bgr.copy()
+
+    red_layer = np.zeros_like(image_bgr)
+    red_layer[:, :, 2] = 255
     mask_bool = mask > 0
     if np.any(mask_bool):
-        result[mask_bool] = cv2.addWeighted(original_image, 1 - alpha, overlay, alpha, 0)[mask_bool]
+        blended = cv2.addWeighted(image_bgr, 1 - OVERLAY_ALPHA, red_layer, OVERLAY_ALPHA, 0)
+        result[mask_bool] = blended[mask_bool]
 
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cv2.drawContours(result, contours, -1, (0, 255, 0), 2)   # کانتور سبز
+    cv2.drawContours(result, contours, -1, (0, 255, 0), 2)
 
     text = f"LV Area: {area_cm2:.2f} cm2"
     cv2.putText(result, text, (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2, cv2.LINE_AA)
     return result
 
 
+def _save_outputs(
+    output_dir: str | os.PathLike,
+    overlay: np.ndarray,
+    pixels_per_cm: float,
+    area_px: int,
+    area_cm2: float,
+) -> dict[str, str]:
+    """ذخیره‌ی تصویر overlay و فایل JSON مساحت؛ مسیر فایل‌ها را برمی‌گرداند."""
+    out = Path(output_dir)
+    out.mkdir(parents=True, exist_ok=True)
+
+    overlay_path = out / OVERLAY_FILENAME
+    json_path = out / AREA_JSON_FILENAME
+
+    cv2.imwrite(str(overlay_path), overlay)
+
+    payload = {
+        "pixels_per_cm": pixels_per_cm,
+        "area_px": area_px,
+        "area_cm2": area_cm2,
+        "view": "a4c/a2c",
+    }
+    with open(json_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2)
+
+    return {
+        "overlay_png": str(overlay_path),
+        "area_json": str(json_path),
+    }
+
+
+# ==============================================================================
+# run_lv_segmentation — نقطه‌ی ورود این ماژول؛ processing.process_video فقط برای a4c/a2c صداش می‌زنه
+# ==============================================================================
+
 def run_lv_segmentation(
-    image_bgr: np.ndarray,               # تصویر BGR
-    pixels_per_cm: float,                # 28.6
-    model_path: str | os.PathLike,       # مسیر best.pth
+    image_bgr: np.ndarray,
+    pixels_per_cm: float,
+    model_path: str | os.PathLike,
     device: torch.device | str | None = None,
     output_dir: str | os.PathLike | None = None,
 ) -> dict[str, Any]:
     """
-    اجرای سگمنتیشن بطن چپ و محاسبه مساحت.
-    
-    خروجی (مقادیر واقعی از لاگ):
+    اجرای کامل سگمنتیشن بطن چپ و محاسبه‌ی مساحت آن.
+
+    ورودی:
+        image_bgr: فریم اکو (BGR) در نمای A4C یا A2C
+        pixels_per_cm: کالیبراسیون مقیاس تصویر
+        model_path: مسیر وزن‌های مدل (best.pth)
+        device: مقصد اجرای مدل؛ اگر None باشد خودکار انتخاب می‌شود
+        output_dir: اگر داده شود، overlay و JSON مساحت آنجا ذخیره می‌شوند
+
+    خروجی:
         {
-            "pixels_per_cm": 28.6,
-            "area_px": 28340,
-            "area_cm2": 34.63983568878674,
-            "saved_paths": {
-                "overlay_png": "C:\\...\\lv_segmentation_overlay.png",
-                "area_json": "C:\\...\\lv_area_cm2.json"
-            }
+            "pixels_per_cm": float,
+            "area_px": int,          # مساحت LV به پیکسل
+            "area_cm2": float,       # مساحت LV به سانتی‌متر مربع
+            "saved_paths": dict,     # مسیر فایل‌های ذخیره‌شده (خالی اگر output_dir نباشد)
         }
     """
     if pixels_per_cm <= 0:
         raise ValueError("pixels_per_cm must be positive.")
 
+    # --- مرحله ۱: می‌ره داخل load_lv_model و مدل U-Net++ رو از checkpoint لود می‌کنه (هر بار از صفر) ---
     model = load_lv_model(model_path, device)
-    actual_device = next(model.parameters()).device
-    input_tensor = preprocess_image(image_bgr).to(actual_device)      # (1, 1, 256, 256)
 
-    with torch.no_grad():
-        logits = model(input_tensor)                                   # (1, 1, 256, 256)
-        probs = torch.sigmoid(logits)                                  # [0, 1]
-        probs_np = probs.cpu().numpy()[0, 0]                          # (256, 256)
+    # --- مرحله ۲: پیش‌پردازش تصویر + inference → ماسک خام باینری هم‌اندازه با تصویر ورودی ---
+    raw_mask = _predict_mask(model, image_bgr)
 
-    mask_pred = (probs_np > THRESHOLD).astype(np.uint8)               # 0.1
+    # --- مرحله ۳: تمیزکاری ماسک (حذف نویز، نگه‌داشتن فقط بزرگ‌ترین ناحیه) ---
+    clean_mask = _postprocess_mask(raw_mask)
 
-    # تغییر اندازه به ابعاد اصلی تصویر
-    h, w = image_bgr.shape[:2]
-    mask_pred = cv2.resize(mask_pred, (w, h), interpolation=cv2.INTER_LINEAR)
+    # --- مرحله ۴: شمارش پیکسل‌های ماسک و تبدیل به cm² با pixel_area_to_cm2 ---
+    area_px = int(np.sum(clean_mask > 0))
+    area_cm2 = pixel_area_to_cm2(area_px, pixels_per_cm)
 
-    clean_mask = postprocess_mask(mask_pred)
-    area_px = int(np.sum(clean_mask > 0))                             # 28340
-    area_cm2 = pixel_area_to_cm2(area_px, pixels_per_cm)             # 34.639...
+    # --- مرحله ۵: ساخت تصویر overlay برای نمایش/دیباگ ---
+    overlay = _create_overlay(image_bgr, clean_mask, area_cm2)
 
-    overlay = create_overlay(image_bgr, clean_mask, area_cm2)
-
-    saved_paths = {}
+    # --- مرحله ۶ (آخر): اگه output_dir داده شده، overlay + JSON مساحت رو ذخیره می‌کنه ---
+    saved_paths: dict[str, str] = {}
     if output_dir:
-        out = Path(output_dir)
-        out.mkdir(parents=True, exist_ok=True)
-        overlay_path = out / "lv_segmentation_overlay.png"
-        json_path = out / "lv_area_cm2.json"
-
-        cv2.imwrite(str(overlay_path), overlay)
-
-        payload = {
-            "pixels_per_cm": pixels_per_cm,
-            "area_px": area_px,
-            "area_cm2": area_cm2,
-            "view": "a4c/a2c"
-        }
-        with open(json_path, "w", encoding="utf-8") as f:
-            json.dump(payload, f, indent=2)
-
-        saved_paths["overlay_png"] = str(overlay_path)
-        saved_paths["area_json"] = str(json_path)
+        saved_paths = _save_outputs(output_dir, overlay, pixels_per_cm, area_px, area_cm2)
 
     return {
         "pixels_per_cm": pixels_per_cm,

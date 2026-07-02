@@ -9,30 +9,38 @@ load_dotenv()
 
 
 def get_patient_config(patient_id: str | int) -> dict:
-    """دریافت کانفیگ بیمار از مونگو
-    
-    Args:
-        patient_id: user_id بیمار (عدد صحیح)
+    """
+    دریافت کانفیگ بیمار از MongoDB (collection: echo_pipeline.patient_profiles)
+    توسط main.py صدا زده می‌شه — همون اول کار، قبل از هر پردازش ویدیو یا ML.
+
+    ورودی:
+        patient_id: user_id بیمار (عدد صحیح، حتی اگه به‌صورت رشته پاس داده بشه)
+
+    خروجی:
+        دیکشنری اطلاعات بیمار (بدون _id, created_at, updated_at)
+
+    خطا:
+        ValueError اگه patient_id عدد نباشه یا بیماری با این user_id پیدا نشه
     """
     mongo_uri = os.getenv('MONGO_URI', 'mongodb://127.0.0.1:27017')
     client = MongoClient(mongo_uri)
     collection = client.echo_pipeline.patient_profiles
-    
-    # فقط با user_id جستجو می‌کنیم (نام فایل = user_id)
+
+    # فقط با user_id جستجو می‌کنیم (نه با _id مونگو) — چون نام پوشه‌ی ویدیو هم همین user_id هست
     try:
         user_id_int = int(patient_id)
         patient = collection.find_one({'user_id': user_id_int})
     except (ValueError, TypeError):
         patient = None
-    
+
     client.close()
-    
+
     if not patient:
         raise ValueError(f"بیمار با شناسه {patient_id} در مونگو یافت نشد")
-    
-    # حذف فیلدهای غیرضروری
+
+    # حذف فیلدهای داخلی مونگو که بقیه‌ی پایپ‌لاین بهشون نیازی نداره
     patient.pop('_id', None)
     patient.pop('created_at', None)
     patient.pop('updated_at', None)
-    
+
     return patient

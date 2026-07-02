@@ -74,6 +74,7 @@ class MLRiskPredictor:
         cv_model_file:  str = "cv_catboost",
         hd_scaler_file: str = "hd_scaler",
     ) -> None:
+        # فقط یک‌بار در main.get_ml_predictor ساخته می‌شه (سینگلتون) — همینجا مدل‌ها از دیسک لود می‌شن
         self.models_dir   = Path(models_dir)
         self._hd_model    = None
         self._cv_model    = None
@@ -300,11 +301,16 @@ class MLRiskPredictor:
     # ── Public API ────────────────────────────────────────────────────────────
 
     def predict(self, patient_data: dict[str, Any]) -> dict[str, Any]:
-        # in:  raw patient dict (age, sex/gender, height, weight, ap_hi/lo, ...)
-        # out: {hd_result, cv_result, combined_score, combined_prob, severity, risk_factors, bmi, confidence}
+        """
+        ورودی:  دیکشنری خام بیمار (age, sex/gender, height, weight, ap_hi/lo, ...)
+        خروجی:  {hd_result, cv_result, combined_score, combined_prob, severity, risk_factors, bmi, confidence}
+        تریس:   main.run_ml_analysis این تابع رو صدا می‌زنه؛ خودش دو مدل مستقل (HD و CV) رو اجرا و ترکیب می‌کنه
+        """
+        # --- مرحله ۱: پیش‌بینی مستقل با هر دو مدل ---
         hd = self._predict_hd(patient_data)
         cv = self._predict_cv(patient_data)
 
+        # --- مرحله ۲: ترکیب دو احتمال با میانگین وزنی بر اساس confidence هر مدل ---
         hd_conf, cv_conf = hd.get("confidence", 0.0), cv.get("confidence", 0.0)
         total_conf = hd_conf + cv_conf
         combined_prob = (
@@ -313,13 +319,16 @@ class MLRiskPredictor:
             (hd["probability"] + cv["probability"]) / 2
         )
 
+        # --- مرحله ۳: تعیین سطح شدت بر اساس آستانه‌های ثابت ---
         if   combined_prob >= 0.70: severity = "HIGH"
         elif combined_prob >= 0.45: severity = "MODERATE"
         else:                       severity = "LOW"
 
+        # --- مرحله ۴: می‌ره داخل _detect_risk_factors و روی فیچرهای مهندسی‌شده‌ی هر دو مدل قانون‌ها رو چک می‌کنه ---
         risk_factors = self._detect_risk_factors(hd.get("_engineered", {}), cv.get("_engineered", {}))
         bmi_val      = cv.get("_engineered", {}).get("bmi")
 
+        # فیچرهای مهندسی‌شده فقط داخلی بودن (برای risk_factors) — قبل از برگردوندن به main.py پاک می‌شن
         for r in (hd, cv):
             r.pop("_engineered", None)
 

@@ -6,7 +6,7 @@ from typing import Any
 import cv2
 
 from pipeline.classification import run_classification
-from pipeline.config import VIEW_PIPELINES
+from pipeline.config import DEFAULT_PIXELS_PER_CM, VIEW_PIPELINES
 from pipeline.events import extract_events
 from pipeline.measurement.a4c_volume import run_a4c_atrial_areas
 from pipeline.measurement.inference_2d import run_single_inference
@@ -23,9 +23,15 @@ from pipeline.results import (
 )
 
 
+# ==============================================================================
+# سازنده‌های سطر (row builders) — هر کدوم یک دیکشنری خروجی رو از یک منبع می‌سازن
+# ==============================================================================
+
 def build_measurement_fields(summary: dict[str, Any]) -> dict[str, Any]:
-    # in:  summary dict from run_single_inference
-    # out: 6 standard measurement fields
+    """
+    ورودی:  summary (dict خروجی run_single_inference)
+    خروجی:  ۶ فیلد استاندارد اندازه‌گیری (value/unit/text/pixel_length/length_cm/pixels_per_cm)
+    """
     return {
         "measurement_value": summary.get("measurement_value"),
         "measurement_unit":  summary.get("measurement_unit"),
@@ -42,8 +48,12 @@ def build_internal_row_base(
     classification_result: dict[str, Any],
     output_root: Path,
 ) -> dict[str, Any]:
-    # in:  video_path, session_paths, classification_result, output_root
-    # out: base dict shared by all measurement rows of this video
+    """
+    ورودی:  video_path, session_paths (مسیرهای ساخته‌شده توسط setup_video_session),
+            classification_result (خروجی run_classification), output_root
+    خروجی:  دیکشنری پایه‌ای که بین همه‌ی سطرهای اندازه‌گیری این ویدیو مشترکه
+            (اسم ویدیو، مسیر سشن، ویو تشخیص‌داده‌شده و ...)
+    """
     return {
         "video_name":             video_path.name,
         "video_path":             str(video_path),
@@ -57,8 +67,10 @@ def build_internal_row_base(
 
 
 def build_public_measurement_row(row: dict[str, Any]) -> dict[str, Any]:
-    # in:  full internal row
-    # out: public subset for frontend
+    """
+    ورودی:  یک internal row کامل (شامل فیلدهای داخلی مثل مسیر مطلق فایل‌ها)
+    خروجی:  زیرمجموعه‌ی «عمومی» همون row که برای فرانت امن/مناسبه (بدون مسیر دیسک داخلی)
+    """
     return {
         "event_name":               row.get("event_name"),
         "event_frame_number":       row.get("event_frame_number"),
@@ -75,26 +87,39 @@ def build_public_measurement_row(row: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+# ==============================================================================
+# process_video — قلب پایپ‌لاین: یک ویدیو ورودی می‌گیره و تمام مراحل رو روش اجرا می‌کنه
+# ==============================================================================
+
 def process_video(
     video_path: Path,
     output_root: Path,
     *,
-    device: str | None = None,
-    default_pixels_per_cm: float = 12.0,
     patient_config: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
-    # in:  video_path, output_root, optional device / scale / patient_config
-    # out: list[dict] — یک dict به ازای هر ترکیب (رویداد × مدل اندازه‌گیری)
+    """
+    ورودی:  video_path (مسیر فایل ویدیو), output_root (ریشه‌ی خروجی‌ها), patient_config اختیاری
+    خروجی:  list[dict] — یک سطر (row) به ازای هر ترکیب (رویداد قلبی × مدل اندازه‌گیری)
+            که هم در CSV نهایی ذخیره می‌شه و هم به main.py برگردونده می‌شه
+    """
 
+    # --------------------------------------------------------------------------
+    # مرحله ۱: طبقه‌بندی ویو (view classification) — تشخیص می‌ده ویدیو a4c/plax/... است
+    # --------------------------------------------------------------------------
     classification_result = run_classification(video_path)
     detected_view         = classification_result["prediction"]
 
+    # patient_id رو یا از patient_config می‌گیریم یا از اسم پوشه‌ی والد ویدیو استخراج می‌کنیم
     patient_id = patient_config.get("user_id") if patient_config else None
     if not patient_id:
         patient_id = video_path.parent.name if video_path.parent.name != "." else safe_name(video_path.stem)
 
+    # --------------------------------------------------------------------------
+    # مرحله ۲: می‌ره داخل pipeline.results و ساختار پوشه‌های این سشن (internal/public) رو می‌سازه
+    # --------------------------------------------------------------------------
     session_paths = setup_video_session(output_root, video_path, patient_id, classification_result)
 
+    # اگه ویو تشخیص‌داده‌شده هنوز در پایپ‌لاین سیم‌کشی نشده → یک ردیف "unsupported_view" ثبت و برمی‌گرده
     if detected_view not in VIEW_PIPELINES:
         unsupported_row = {
             "video_name": video_path.name,
@@ -113,42 +138,66 @@ def process_video(
         )
         return [unsupported_row]
 
+    # از این نقطه به بعد ویو پشتیبانی می‌شه؛ کانفیگ رویدادها/مدل‌های همون ویو رو برمی‌داریم
     pipeline_config = VIEW_PIPELINES[detected_view]
     required_events = pipeline_config["events"]
-    # a4c  → ["End Diastol", "End Sistol"]
-    # plax → ["End Diastol", "End Sistol", "LVOT"]
+    # مثال:  a4c  → ["End Diastol", "End Sistol"]
+    #        plax → ["End Diastol", "End Sistol", "LVOT"]
 
+    # --------------------------------------------------------------------------
+    # مرحله ۳: استخراج فریم‌های رویداد (End Diastole/Systole/LVOT) از روی سیگنال ECG
+    # --------------------------------------------------------------------------
     events_result = extract_events(video_path, session_paths["internal_events_dir"], required_events)
     row_base      = build_internal_row_base(video_path, session_paths, classification_result, output_root)
 
+    # کپی نمودار ECG (نقاط PQRST) به پوشه‌ی public برای نمایش به بیمار در فرانت
+    public_ecg_plot = copy_public_file(
+        Path(session_paths["internal_events_dir"]) / "ecg_plot.png",
+        Path(session_paths["public_events_dir"]) / "ecg_plot.png",
+    )
+
+    # --------------------------------------------------------------------------
+    # مرحله ۴: تشخیص مقیاس (pixels_per_cm) از روی فریم اول ویدیو — برای تبدیل پیکسل به سانتی‌متر
+    # --------------------------------------------------------------------------
     cap = cv2.VideoCapture(str(video_path))
     ret, original_frame = cap.read()
     cap.release()
 
     global_pixels_per_cm, global_scale_source = scale_module.estimate_pixels_per_cm_from_bgr(
-        original_frame, default_pixels_per_cm=float(default_pixels_per_cm)
+        original_frame, default_pixels_per_cm=DEFAULT_PIXELS_PER_CM
     )
+    scale_debug_path = Path(session_paths["internal_reports_dir"]) / "debug_scale_output.jpg"
     scale_module.visualize_scale_result(
         original_frame, global_pixels_per_cm, global_scale_source,
-        save_path=str(Path(session_paths["internal_reports_dir"]) / "debug_scale_output.jpg"),
+        save_path=str(scale_debug_path),
+    )
+    # کپی تصویر تشخیص خط‌کش (مقیاس) به پوشه‌ی public برای نمایش در فرانت
+    public_scale_debug = copy_public_file(
+        scale_debug_path,
+        Path(session_paths["public_measurements_dir"]).parent / "scale_debug.jpg",
     )
 
+    # --------------------------------------------------------------------------
+    # مرحله ۵: حلقه‌ی اصلی — برای هر رویداد قلبی (event) → برای هر مدل اندازه‌گیری اون رویداد → inference
+    # --------------------------------------------------------------------------
     internal_rows: list[dict] = []
     public_rows:   list[dict] = []
-    volume_context = None  # first a4c/a2c frame — reused for atrial/LV volume calculations
+    volume_context = None  # اولین فریم a4c/a2c — برای محاسبه‌ی حجم دهلیز/بطن دوباره استفاده می‌شه
 
     for event_name in required_events:
+        # --- ۵.۱: فریم مربوط به این رویداد رو از نتیجه‌ی extract_events برمی‌داریم ---
         frame_number = events_result["event_frames"].get(event_name)
         frame_path   = events_result["saved_frames"].get(event_name)
 
         if frame_number is None or not frame_path:
+            # فریم این رویداد پیدا نشد (مثلاً ECG قابل تشخیص نبود) → ردیف خطا ثبت و رد شو به رویداد بعدی
             internal_rows.append({**row_base, "event_name": event_name, "measurement_status": "missing_event_frame"})
             continue
 
+        # کپی فریم رویداد به پوشه‌ی public
         public_event_image = copy_public_file(
             frame_path,
             Path(session_paths["public_events_dir"]) / f"{safe_name(event_name)}.jpg",
-            output_root,
         )
 
         frame_bgr = cv2.imread(str(frame_path))
@@ -157,9 +206,11 @@ def process_video(
 
         segment_height, segment_width = frame_bgr.shape[:2]
 
+        # اولین فریم a4c/a2c رو برای مراحل بعدی (محاسبه‌ی حجم) نگه می‌داریم
         if detected_view in ("a4c", "a2c") and volume_context is None:
             volume_context = {"bgr": frame_bgr, "pixels_per_cm": float(global_pixels_per_cm)}
 
+        # --- ۵.۲: به ازای هر مدل اندازه‌گیری تعریف‌شده برای این رویداد ---
         for measurement_name in pipeline_config["event_models"].get(event_name, []):
             measurement_dir       = ensure_dir(
                 Path(session_paths["internal_measurements_dir"]) / safe_name(event_name) / measurement_name
@@ -167,11 +218,11 @@ def process_video(
             annotated_output_path = measurement_dir / f"{measurement_name}.jpg"
 
             try:
+                # می‌ره داخل pipeline.measurement.inference_2d و مدل YOLO مربوطه رو روی فریم اجرا می‌کنه
                 measurement_result = run_single_inference(
                     model_weights=measurement_name,
                     file_path=str(frame_path),
                     output_path=str(annotated_output_path),
-                    device=device,
                     pixels_per_cm=global_pixels_per_cm,
                     segment_width=segment_width,
                     segment_height=segment_height,
@@ -181,9 +232,9 @@ def process_video(
                 public_preview_image = copy_public_file(
                     measurement_result.get("preview_image"),
                     Path(session_paths["public_measurements_dir"]) / f"{safe_name(event_name)}_{measurement_name}.jpg",
-                    output_root,
                 )
 
+                # ردیف موفق: همه‌ی فیلدهای مربوط به این اندازه‌گیری
                 row = {
                     **row_base,
                     "event_name":          event_name,
@@ -209,6 +260,7 @@ def process_video(
                 }
 
             except Exception as exc:
+                # inference شکست خورد → ردیف خطا با پیام exception ثبت می‌شه (بقیه‌ی حلقه متوقف نمی‌شه)
                 row = {
                     **row_base,
                     "event_name":          event_name,
@@ -221,18 +273,20 @@ def process_video(
                     "measurement_message": str(exc),
                     "pixels_per_cm":       global_pixels_per_cm,
                     "scale_source":        global_scale_source,
-                    "device":              device,
                 }
 
             internal_rows.append(row)
             public_rows.append(build_public_measurement_row(row))
 
-    # حجم دهلیز و بطن — فقط a4c / a2c
+    # --------------------------------------------------------------------------
+    # مرحله ۶: محاسبه‌ی حجم دهلیز و بطن — فقط برای ویوهای a4c / a2c، با استفاده از volume_context
+    # --------------------------------------------------------------------------
     a4c_volume_report = None
     lv_volume_report  = None
 
     if volume_context is not None:
         if detected_view == "a4c":
+            # می‌ره داخل measurement.a4c_volume و مساحت دهلیز چپ/راست رو محاسبه می‌کنه
             a4c_volume_report = run_a4c_atrial_areas(
                 volume_context["bgr"],
                 float(volume_context["pixels_per_cm"]),
@@ -240,17 +294,20 @@ def process_video(
             )
 
         if detected_view in ("a4c", "a2c"):
+            # اگه وزن مدل سگمنتیشن LV موجود بود → می‌ره داخل measurement.lv_segmentation
             weights_path = Path(__file__).parent / "measurement" / "models" / "best.pth"
             if weights_path.exists():
                 lv_volume_report = run_lv_segmentation(
                     volume_context["bgr"],
                     float(volume_context["pixels_per_cm"]),
                     model_path=str(weights_path),
-                    device=device,
                     output_dir=str(Path(session_paths["internal_reports_dir"]) / "lv_volume"),
                 )
 
-    # attach atrial/LV areas to each row so fuzzy aggregation can read from pipeline_summary
+    # --------------------------------------------------------------------------
+    # مرحله ۷: مساحت‌های دهلیز/بطن رو به تمام سطرهای این ویدیو می‌چسبونیم
+    # تا بعداً aggregate_and_evaluate_fuzzy بتونه مستقیم از pipeline_summary.csv بخونتشون
+    # --------------------------------------------------------------------------
     la_area_cm2 = ra_area_cm2 = None
     if a4c_volume_report:
         areas_cm2   = a4c_volume_report.get("areas_cm2", {})
@@ -262,6 +319,9 @@ def process_video(
         row["a4c_right_atrium_area_cm2"] = ra_area_cm2
         row["lv_area_cm2"]               = lv_area_cm2
 
+    # --------------------------------------------------------------------------
+    # مرحله ۸ (آخر): می‌ره داخل pipeline.results و همه‌ی گزارش‌های این سشن (internal + public) رو ذخیره می‌کنه
+    # --------------------------------------------------------------------------
     save_reports(
         video_path=video_path,
         output_root=output_root,
@@ -274,6 +334,10 @@ def process_video(
         public_rows=public_rows,
         a4c_volume_report=a4c_volume_report,
         lv_volume_report=lv_volume_report,
+        extra_public_files={
+            "ecg_plot":    public_ecg_plot,       # نمودار PQRST سیگنال قلب
+            "scale_debug": public_scale_debug,    # تصویر تشخیص خط‌کش/مقیاس
+        },
     )
 
     return internal_rows

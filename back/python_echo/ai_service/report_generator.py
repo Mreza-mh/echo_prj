@@ -19,7 +19,9 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 
-# ─── Severity / Category mappings ────────────────────────────────────────────
+# ==============================================================================
+# نگاشت‌های شدت / دسته‌بندی
+# ==============================================================================
 _SEVERITY_META: Dict[str, Dict[str, str]] = {
     "LOW":      {"fa": "پایین",  "en": "Low",      "color": "#27ae60"},
     "MODERATE": {"fa": "متوسط", "en": "Moderate", "color": "#f39c12"},
@@ -43,9 +45,12 @@ _PARAM_LABELS_FA: Dict[str, str] = {
 }
 
 
-# ─── Utility helpers ─────────────────────────────────────────────────────────
+# ==============================================================================
+# توابع کمکی
+# ==============================================================================
 
 def _sev(label: str) -> Dict[str, str]:
+    # ورودی: "HIGH"/"low"/... → خروجی: {"fa", "en", "color"}؛ اگه ناشناخته بود MODERATE پیش‌فرضه
     return _SEVERITY_META.get(label.upper(), _SEVERITY_META["MODERATE"])
 
 
@@ -69,7 +74,7 @@ def _overall_severity(
     ml:    Optional[Dict[str, Any]],
     fuzzy: Optional[Dict[str, Any]],
 ) -> str:
-    """بدترین (بالاترین) ریسک بین ML و Fuzzy را برمی‌گرداند"""
+    """ورودی: نتیجه‌ی ML و Fuzzy (هرکدوم می‌تونن None باشن) | خروجی: بدترین (بالاترین) ریسک بین این دو"""
     order = {"LOW": 0, "MODERATE": 1, "HIGH": 2}
 
     ml_sev  = (ml or {}).get("severity", "MODERATE")
@@ -83,7 +88,7 @@ def _overall_score(
     ml:    Optional[Dict[str, Any]],
     fuzzy: Optional[Dict[str, Any]],
 ) -> float:
-    """میانگین امتیاز ML و Fuzzy"""
+    """ورودی: نتیجه‌ی ML و Fuzzy | خروجی: میانگین امتیازها؛ اگه هیچ‌کدوم موجود نبود، ۵۰ (خنثی) برمی‌گرده"""
     scores: List[float] = []
     if ml:
         scores.append(float(ml.get("combined_score", 50.0)))
@@ -167,7 +172,9 @@ def _extract_echo_measurements(rows: List[Dict[str, Any]]) -> List[Dict[str, Any
     return out
 
 
-# ─── Main builder ─────────────────────────────────────────────────────────────
+# ==============================================================================
+# build_final_report — نقطه‌ی ورود این ماژول؛ pipeline.results.generate_and_save_final_report صداش می‌زنه
+# ==============================================================================
 
 def build_final_report(
     patient_config: Dict[str, Any],
@@ -195,7 +202,7 @@ def build_final_report(
     visit_date = visit_date or now.strftime("%Y-%m-%d")
     echo_rows  = echo_rows or []
 
-    # ── Patient info ──────────────────────────────────────────────────────
+    # --- مرحله ۱: اطلاعات پایه‌ی بیمار رو از patient_config می‌کشه بیرون ---
     pid        = str(patient_config.get("user_id", patient_config.get("id", "N/A")))
     age        = patient_config.get("age", "N/A")
     gender_raw = patient_config.get("gender", patient_config.get("sex", ""))
@@ -203,7 +210,7 @@ def build_final_report(
     height     = patient_config.get("height")
     bmi        = (ml_result or {}).get("bmi")
 
-    # ── Risk assessment ───────────────────────────────────────────────────
+    # --- مرحله ۲: ترکیب ML و Fuzzy برای امتیاز/شدت کلی + توصیه‌ی بالینی متناسب ---
     sev        = _overall_severity(ml_result, fuzzy_result)
     score      = _overall_score(ml_result, fuzzy_result)
     sev_meta   = _sev(sev)
@@ -211,7 +218,7 @@ def build_final_report(
     echo_meas  = _extract_echo_measurements(echo_rows)
     risk_factors = (ml_result or {}).get("risk_factors", [])
 
-    # ── ML section ────────────────────────────────────────────────────────
+    # --- مرحله ۳: بخش ML گزارش — اگه ml_result نداشتیم (مثلاً مدل fail کرده)، available=False می‌مونه ---
     ml_section: Dict[str, Any] = {"available": False}
     if ml_result:
         hd = ml_result.get("hd_result", {})
@@ -240,7 +247,7 @@ def build_final_report(
             "overall_confidence": ml_result.get("confidence", 0.0),
         }
 
-    # ── Echo/Fuzzy section ────────────────────────────────────────────────
+    # --- مرحله ۴: بخش Echo/Fuzzy گزارش — اگه fuzzy_result نداشتیم، available=False می‌مونه ---
     echo_section: Dict[str, Any] = {"available": False}
     if fuzzy_result:
         fuzz_cat = fuzzy_result.get("category", "Unknown")
@@ -254,6 +261,8 @@ def build_final_report(
             "echo_measurements": echo_meas,
         }
 
+    # --- مرحله ۵ (آخر): ترکیب همه‌ی بخش‌ها + می‌ره داخل _build_doctor_report و _build_patient_report ---
+    # تا دو نسخه‌ی متنی (فنی برای پزشک، ساده برای بیمار) هم داخل همین دیکشنری تولید بشه
     report = {
         "meta": {
             "generated_at":   now.isoformat(),
@@ -291,7 +300,9 @@ def build_final_report(
     return report
 
 
-# ─── Doctor Report ────────────────────────────────────────────────────────────
+# ==============================================================================
+# ساخت متن گزارش نسخه‌ی پزشک (فنی، با تمام اعداد)
+# ==============================================================================
 
 def _build_doctor_report(
     patient_config: Dict,
@@ -412,7 +423,9 @@ def _build_doctor_report(
     return "\n".join(lines)
 
 
-# ─── Patient Report ───────────────────────────────────────────────────────────
+# ==============================================================================
+# ساخت متن گزارش نسخه‌ی بیمار (ساده، بدون جزئیات فنی)
+# ==============================================================================
 
 def _build_patient_report(
     patient_config: Dict,
@@ -493,7 +506,9 @@ def _build_patient_report(
     return "\n".join(lines)
 
 
-# ─── Save helper ──────────────────────────────────────────────────────────────
+# ==============================================================================
+# save_report — pipeline.results.generate_and_save_final_report بعد از build_final_report صداش می‌زنه
+# ==============================================================================
 
 def save_report(
     report:    Dict[str, Any],
@@ -502,32 +517,32 @@ def save_report(
     visit_date: str,
 ) -> Dict[str, str]:
     """
-    ذخیره گزارش نهایی در چند فرمت.
-
-    Returns: dict مسیرهای ذخیره‌شده
+    ورودی:  report کامل (خروجی build_final_report)، پوشه‌ی مقصد، patient_id، visit_date
+    خروجی:  دیکشنری مسیرهای ذخیره‌شده روی دیسک
+    تریس:   چهار فایل جدا می‌نویسه: JSON کامل، متن پزشک، متن بیمار، خلاصه‌ی ML
     """
     save_dir.mkdir(parents=True, exist_ok=True)
     saved: Dict[str, str] = {}
 
-    # JSON کامل
+    # --- JSON کامل (همه‌چیز، برای دیباگ/آرشیو) ---
     json_path = save_dir / "final_report.json"
     with json_path.open("w", encoding="utf-8") as f:
         json.dump(report, f, indent=2, ensure_ascii=False, default=str)
     saved["json"] = str(json_path)
 
-    # گزارش پزشک (txt)
+    # --- گزارش پزشک (txt فنی) ---
     dr_path = save_dir / "doctor_report.txt"
     with dr_path.open("w", encoding="utf-8") as f:
         f.write(report.get("doctor_report", ""))
     saved["doctor_txt"] = str(dr_path)
 
-    # گزارش بیمار (txt)
+    # --- گزارش بیمار (txt ساده) ---
     pt_path = save_dir / "patient_report.txt"
     with pt_path.open("w", encoding="utf-8") as f:
         f.write(report.get("patient_report", ""))
     saved["patient_txt"] = str(pt_path)
 
-    # خلاصه ML (json کوچک)
+    # --- خلاصه‌ی ML (json کوچک، برای مصرف سریع بدون پارس کل final_report.json) ---
     ml_path = save_dir / "ml_result.json"
     ml_summary = {
         "visit_date":   visit_date,

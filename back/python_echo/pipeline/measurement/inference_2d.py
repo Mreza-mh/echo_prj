@@ -16,7 +16,6 @@ _PROJECT_ROOT = _CURRENT.parent.parent
 # _PROJECT_ROOT = Path("C:/Users/.../")
 
 from pipeline.measurement.scale import length_cm_from_model_line
-from pipeline.measurement.segmentation import segmentation_to_coordinates
 
 # مسیر قدیمی وزن‌ها (برای سازگاری با نسخه‌های قبلی)
 _LEGACY_WEIGHTS = _PROJECT_ROOT / "measurements-main" / "Measurement" / "weights" / "2D_models"
@@ -34,6 +33,10 @@ SUPPORTED_MODEL_WEIGHTS = (
 # اندازه ورودی مدل DeepLabV3+
 MODEL_INPUT_SIZE = (640, 480)
 
+
+# ==============================================================================
+# بارگذاری مدل (device, weights, backbone)
+# ==============================================================================
 
 @dataclass
 class MeasurementRunner:
@@ -215,6 +218,10 @@ def load_measurement_runner(
     )
 
 
+# ==============================================================================
+# پیش‌پردازش تصویر ورودی → تنسور
+# ==============================================================================
+
 def load_image_frame(file_path: str | os.PathLike[str]) -> list[np.ndarray]:
     """
     خواندن یک تصویر و تغییر اندازه به 640x480.
@@ -256,6 +263,60 @@ def frames_to_tensor(frames: list[np.ndarray], device: str) -> torch.Tensor:
     # خروجی: (1, 3, 480, 640)
 
 
+# ==============================================================================
+# اجرای مدل و تبدیل خروجی segmentation به مختصات دو نقطه
+# ==============================================================================
+
+def segmentation_to_coordinates(
+    logits: torch.Tensor,                # (1, 2, 480, 640) — ۲ کانال، هر کدام probability map
+    normalize: bool = True,
+    order: str = "YX"
+) -> torch.Tensor:
+    """
+    تبدیل probability map حاصل از segmentation به مختصات نقاط کلیدی.
+
+    منطق (weighted centroid — مشابه مرکز جرم در فیزیک):
+        x_center = sum(x * p) / sum(p)
+        y_center = sum(y * p) / sum(p)
+
+    ورودی:
+        logits   : تنسور با shape (..., n_points, H, W) — بعد از sigmoid، مقادیر [0,1]
+        normalize: اگر True، مختصات در بازه [0,1] نرمال‌سازی می‌شوند
+        order    : "YX" → [y, x]  یا  "XY" → [x, y]
+
+    خروجی:
+        تنسور با shape (..., n_points, 2)
+        مثلاً: shape (1, 2, 2) = [[[158, 266], [299, 268]]]
+    """
+    # ساخت ماتریس‌های مختصات سطری و ستونی
+    predictions_rows, predictions_cols = torch.meshgrid(
+        torch.arange(logits.shape[-2], device=logits.device),   # [0, 1, ..., 479]  (H)
+        torch.arange(logits.shape[-1], device=logits.device),   # [0, 1, ..., 639]  (W)
+        indexing="ij",
+    )
+
+    # محاسبه weighted sum
+    predictions_rows = predictions_rows * logits                # y_weighted
+    predictions_cols = predictions_cols * logits                # x_weighted
+
+    # جمع در راستای H و W → centroid
+    predictions_rows = predictions_rows.sum(dim=(-2, -1)) / (logits.sum(dim=(-2, -1)) + 1e-8)
+    predictions_cols = predictions_cols.sum(dim=(-2, -1)) / (logits.sum(dim=(-2, -1)) + 1e-8)
+
+    # نرمال‌سازی (اختیاری)
+    if normalize:
+        predictions_rows = predictions_rows / logits.shape[-2]  # تقسیم بر H
+        predictions_cols = predictions_cols / logits.shape[-1]  # تقسیم بر W
+
+    # انتخاب ترتیب خروجی
+    if order == "YX":
+        return torch.stack([predictions_rows, predictions_cols], dim=-1)
+    if order == "XY":
+        return torch.stack([predictions_cols, predictions_rows], dim=-1)
+
+    raise ValueError(f"Invalid order: {order}")
+
+
 def forward_pass(runner: MeasurementRunner, inputs: torch.Tensor) -> torch.Tensor:
     """
     اجرای forward مدل و تبدیل logits به مختصات.
@@ -294,6 +355,10 @@ def predict_coordinates(runner: MeasurementRunner, input_tensor: torch.Tensor) -
         prediction = forward_pass(runner, input_tensor)
     return prediction.cpu().numpy()
 
+
+# ==============================================================================
+# ترسیم و ذخیره‌ی نتیجه (annotate + CSV)
+# ==============================================================================
 
 def compute_pixel_length(x1: int, y1: int, x2: int, y2: int) -> float:
     """
@@ -434,6 +499,11 @@ def write_annotated_image(
     return pd.DataFrame([row])
 
 
+# ==============================================================================
+# run_single_inference — نقطه‌ی ورود این ماژول؛ processing.process_video برای هر
+# ترکیب (رویداد × مدل) یک‌بار همینو صدا می‌زنه
+# ==============================================================================
+
 def run_single_inference(
     model_weights: str,                              # "rv_base"
     file_path: str | os.PathLike[str],               # ".../frame_0060.jpg"
@@ -491,19 +561,19 @@ def run_single_inference(
             }
         }
     """
-    # ۱) بارگذاری مدل
+    # --- مرحله ۱: می‌ره داخل load_measurement_runner و مدل مربوط به model_weights رو لود می‌کنه (هر بار از صفر) ---
     runner = load_measurement_runner(model_weights, weights_dir=weights_dir, device=device)
 
-    # ۲) خواندن تصویر
+    # --- مرحله ۲: خواندن فریم تصویر و resize به سایز ورودی مدل ---
     frames = load_image_frame(file_path)                            # [(480, 640, 3)]
 
-    # ۳) تبدیل به تنسور
+    # --- مرحله ۳: تبدیل فریم به تنسور PyTorch ---
     input_tensor = frames_to_tensor(frames, device=runner.device)   # (1, 3, 480, 640)
 
-    # ۴) پیش‌بینی مختصات
+    # --- مرحله ۴: اجرای forward pass مدل → مختصات دو نقطه‌ی خط اندازه‌گیری ---
     predictions = predict_coordinates(runner, input_tensor)         # (1, 2, 2)
 
-    # ۵) رسم و ذخیره تصویر حاشیه‌نویسی‌شده
+    # --- مرحله ۵: می‌ره داخل write_annotated_image → تصویر annotate شده رو می‌سازه و ذخیره می‌کنه ---
     dataframe = write_annotated_image(
         output_path, input_tensor, predictions,
         pixels_per_cm=pixels_per_cm,
@@ -512,7 +582,7 @@ def run_single_inference(
     )
     # dataframe: DataFrame یک‌سطره
 
-    # ۶) ذخیره CSV مختصات
+    # --- مرحله ۶ (آخر): ذخیره‌ی CSV کنار همون تصویر خروجی (همون اسم، پسوند csv) ---
     resolved_output = Path(output_path).expanduser().resolve()
     coordinates_csv = resolved_output.with_suffix(".csv")           # ".../rv_base.csv"
     dataframe.to_csv(coordinates_csv, index=False)

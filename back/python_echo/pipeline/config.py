@@ -3,17 +3,33 @@ from __future__ import annotations
 
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-RESULT_DIR = BASE_DIR / "result"
-CLASSIFIER_MODEL = BASE_DIR / "pipeline" / "models" / "mymodel_echocv_500-500-8_adam_16_0.9394.h5"
+# ==============================================================================
+# مسیرها
+# ==============================================================================
 
-MODEL_VIDEO_SIZE = (640, 480)
-DEFAULT_ONE_FRAME_REPEAT = 8
-DEFAULT_ONE_FRAME_FPS = 10
+BASE_DIR = Path(__file__).resolve().parent.parent
+RESULT_DIR = BASE_DIR / "result"                                                          # ریشه‌ی خروجی همه‌ی پردازش‌ها
+CLASSIFIER_MODEL = BASE_DIR / "pipeline" / "models" / "mymodel_echocv_500-500-8_adam_16_0.9394.h5"  # مدل طبقه‌بندی ویو
+
+# ==============================================================================
+# ثابت‌های پیش‌فرض پردازش ویدیو
+# ==============================================================================
+
+MODEL_VIDEO_SIZE = (640, 480)          # سایز ورودی مورد انتظار مدل طبقه‌بندی ویو
+DEFAULT_PIXELS_PER_CM = 12.0           # وقتی تشخیص خودکار مقیاس (scale) شکست بخوره از این مقدار fallback استفاده می‌شه
+DEFAULT_ONE_FRAME_REPEAT = 8           # تعداد تکرار فریم تکی برای ساخت ویدیوی یک‌فریمی
+DEFAULT_ONE_FRAME_FPS = 10             # fps ویدیوی یک‌فریمی ساخته‌شده
 
 SUPPORTED_CLASSIFIER_LABELS = frozenset(
     {"plax", "psax-av", "psax-mv", "psax-ap", "a2c", "a3c", "a4c", "a5c"}
 )
+
+# ==============================================================================
+# نقشه‌ی هر ویو به رویدادهای قلبی و مدل‌های اندازه‌گیری مربوطه
+# processing.process_video از این دیکشنری می‌خونه تا بفهمه بعد از تشخیص ویو،
+# دنبال کدوم رویدادها (events) بگرده و برای هر رویداد کدوم مدل‌های YOLO (event_models) رو اجرا کنه
+# اگه ویویی این‌جا نباشه، در process_video به‌عنوان "unsupported_view" علامت می‌خوره
+# ==============================================================================
 
 VIEW_PIPELINES: dict[str, dict[str, dict | list[str]]] = {
     "plax": {

@@ -21,12 +21,23 @@ INDEX_TO_LABEL: dict[int, str] = {v: k for k, v in LABELS.items()}
 
 
 def normalize_view_label(view_label: str) -> str:
-    # in: "A4C " → out: "a4c"
+    # ورودی: "A4C " → خروجی: "a4c"  (trim + lowercase)
     return str(view_label).strip().lower()
 
 
+# ==============================================================================
+# لود مدل طبقه‌بندی (TensorFlow/Keras) — فقط اولین بار سنگینه
+# ==============================================================================
+
 def load_classifier_model():
-    # out: (keras Model, CLASSIFIER_MODEL path)  — compile=False, SafeFlatten for legacy compat
+    """
+    خروجی: (keras Model, مسیر CLASSIFIER_MODEL)
+    تریس:  ۱) چک می‌کنه فایل وزن مدل موجوده
+           ۲) tensorflow رو import می‌کنه (lazy import — فقط وقتی واقعاً لازمه)
+           ۳) مدل رو با compile=False لود می‌کنه (سریع‌تر، چون فقط inference لازمه)
+           ۴) از SafeFlatten به‌جای Flatten استاندارد استفاده می‌کنه تا مدل‌های قدیمی
+              که لایه‌ی Flatten روی لیست ورودی صدا زده بودن هم لود بشن (سازگاری قدیمی)
+    """
     if not CLASSIFIER_MODEL.exists():
         raise FileNotFoundError(f"Classifier model not found: {CLASSIFIER_MODEL}")
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
@@ -52,8 +63,10 @@ def load_classifier_model():
 
 
 def preprocess_frame(frame: np.ndarray) -> np.ndarray:
-    # in:  BGR / grayscale / BGRA ndarray
-    # out: (224, 224, 3) float32 RGB
+    """
+    ورودی:  یک فریم ndarray به‌صورت BGR، grayscale یا BGRA
+    خروجی:  ndarray به شکل (224, 224, 3) float32 RGB — دقیقاً چیزی که مدل انتظار داره
+    """
     if frame.ndim == 2:
         frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
     elif frame.ndim == 3 and frame.shape[2] == 4:
@@ -62,12 +75,18 @@ def preprocess_frame(frame: np.ndarray) -> np.ndarray:
     return cv2.cvtColor(resized, cv2.COLOR_BGR2RGB).astype(np.float32)
 
 
+# ==============================================================================
+# نمونه‌برداری فریم از ویدیو
+# ==============================================================================
+
 def sample_video_frames(
     video_path:   str | os.PathLike[str],
     sample_count: int = 8,
 ) -> tuple[list[np.ndarray], list[int], int]:
-    # in:  video_path, sample_count (default 8)
-    # out: (frames, frame_indices, total_frames)  — uniformly spaced
+    """
+    ورودی:  video_path، تعداد فریم موردنیاز (پیش‌فرض ۸)
+    خروجی:  (frames, frame_indices, total_frames) — فریم‌ها با فاصله‌ی یکنواخت از کل طول ویدیو انتخاب می‌شن
+    """
     resolved = Path(video_path).expanduser().resolve()
     cap = cv2.VideoCapture(str(resolved))
     if not cap.isOpened():
@@ -78,6 +97,7 @@ def sample_video_frames(
         cap.release()
         raise ValueError(f"Video contains no frames: {resolved}")
 
+    # ایندکس‌های فریم رو با فاصله‌ی مساوی روی کل طول ویدیو پخش می‌کنیم (linspace) تا نمونه‌ی نماینده باشه
     indices = sorted(set(int(i) for i in np.linspace(0, total - 1, num=min(sample_count, total), dtype=int)))
     frames, frame_indices = [], []
     for idx in indices:
@@ -93,22 +113,33 @@ def sample_video_frames(
     return frames, frame_indices, total
 
 
+# ==============================================================================
+# اجرای طبقه‌بندی
+# ==============================================================================
+
 def classify_video(
     video_path:   str | os.PathLike[str],
     sample_count: int = 8,
 ) -> dict[str, Any]:
-    # in:  video_path, sample_count (default 8)
-    # out: {video_path, model_path, prediction, confidence, class_scores, frame_results, source}
+    """
+    ورودی:  video_path، تعداد فریم نمونه (پیش‌فرض ۸)
+    خروجی:  دیکشنری کامل نتیجه — prediction نهایی + confidence + امتیاز هر کلاس + نتیجه‌ی تک‌تک فریم‌ها
+    """
+    # --- مرحله ۱: لود مدل + نمونه‌برداری فریم از ویدیو ---
     model, model_path = load_classifier_model()
     frames, frame_indices, total_frames = sample_video_frames(video_path, sample_count=sample_count)
 
+    # --- مرحله ۲: پیش‌پردازش دسته‌ای فریم‌ها و اجرای predict روی کل batch یک‌جا ---
     batch         = np.asarray([preprocess_frame(f) for f in frames], dtype=np.float32)
     probabilities = np.asarray(model.predict(batch, verbose=0))
 
+    # --- مرحله ۳: نتیجه‌ی هر فریم به‌تنهایی (برای دیباگ/شفافیت) ---
     frame_results = [
         {"sample_index": i, "prediction": INDEX_TO_LABEL[int(np.argmax(p))], "confidence": float(np.max(p))}
         for i, p in enumerate(probabilities)
     ]
+
+    # --- مرحله ۴: میانگین‌گیری امتیاز هر کلاس روی همه‌ی فریم‌ها → رأی‌گیری نهایی برای کل ویدیو ---
     averaged_scores = {
         label: float(np.mean(probabilities[:, idx]))
         for idx, label in INDEX_TO_LABEL.items()
@@ -131,8 +162,12 @@ def classify_video(
 
 
 def run_classification(video_path: Path) -> dict[str, Any]:
-    # in:  video_path
-    # out: {prediction, confidence, class_scores, ...}  — raises if label unsupported
+    """
+    ورودی:  video_path
+    خروجی:  نتیجه‌ی classify_video با prediction نرمال‌شده (lowercase/trim)
+    تریس:   اولین چیزی که process_video صدا می‌زنه؛ اگه لیبل خروجی مدل جزو ویوهای پشتیبانی‌شده نباشه، خطا می‌ده
+            (این با "unsupported_view" در processing.py فرق داره — اونجا لیبل معتبره ولی pipeline براش تعریف نشده)
+    """
     result = classify_video(str(video_path))
     label  = normalize_view_label(result["prediction"])
     if label not in SUPPORTED_CLASSIFIER_LABELS:
