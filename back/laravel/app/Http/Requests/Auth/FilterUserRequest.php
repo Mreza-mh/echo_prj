@@ -32,8 +32,9 @@ class FilterUserRequest extends FormRequest
         return [
             'count_item' => 'nullable|integer',
             'is_paginate' => 'nullable|boolean',
-            'name' => 'nullable|string',
+            'name'   => 'nullable|string',
             'mobile' => 'nullable|string',
+            'id'     => 'nullable|integer|min:1',
         ];
     }
 }

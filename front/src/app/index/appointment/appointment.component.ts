@@ -73,6 +73,11 @@ export class AppointmentComponent implements OnInit {
   // Time slot to restore after lists finish loading
   private pendingSlotTime: string | null = null;
 
+  // مقدار query param رشته است ولی [value] گزینه‌ها عدد — مقایسه پیش‌فرض mat-select
+  // سخت‌گیرانه است و select خالی می‌ماند؛ این مقایسه هر دو را هم‌نوع می‌کند
+  compareIds = (a: unknown, b: unknown): boolean =>
+    a != null && b != null && String(a) === String(b);
+
   constructor(
     private indexHttpService: IndexHttpService,
     private panelHttpService: PanelHttpService,
@@ -167,9 +172,11 @@ export class AppointmentComponent implements OnInit {
         this.resourceList = resource.data || [];
 
         // Normalize staffId to match the exact value used in mat-option
+        // پارامتر URL ممکن است staff.id باشد یا organization_staff_id — هر دو را چک می‌کنیم
         if (this.staffId) {
           const found = this.staffList.find(
-            s => String(s.organization_staff_id ?? s.id) === String(this.staffId)
+            s => String(s.organization_staff_id ?? s.id) === String(this.staffId) ||
+                 String(s.id) === String(this.staffId)
           );
           if (found) this.staffId = String(found.organization_staff_id ?? found.id);
         }
@@ -177,7 +184,8 @@ export class AppointmentComponent implements OnInit {
         // Normalize serviceId
         if (this.organizationServicesId) {
           const found = this.serviceList.find(
-            s => String(s.organization_service_id ?? s.id) === String(this.organizationServicesId)
+            s => String(s.organization_service_id ?? s.id) === String(this.organizationServicesId) ||
+                 String(s.id) === String(this.organizationServicesId)
           );
           if (found) this.organizationServicesId = String(found.organization_service_id ?? found.id);
         }

@@ -28,10 +28,11 @@ export const routes: Routes = [
         path: 'resource',
         loadComponent: () => import('./resource/resource').then(m => m.ResourceComponent)
       },
-      {
-        path: 'status',
-        loadComponent: () => import('./status/status').then(m => m.StatusComponent)
-      },
+      // بخش status مشکل دارد و موقتاً از فرانت مخفی شده
+      // {
+      //   path: 'status',
+      //   loadComponent: () => import('./status/status').then(m => m.StatusComponent)
+      // },
       {
         path: 'expertise',
         loadComponent: () => import('./expertise/expertise').then(m => m.ExpertiseComponent)
@@ -43,7 +44,11 @@ export const routes: Routes = [
       {
         path: 'settings',
         loadComponent: () => import('./settings/settings.component').then(m => m.SettingsComponent)
-      }
+      },
+      {
+        path: 'vital-monitor',
+        loadComponent: () => import('./vital-monitor/vital-monitor.component').then(m => m.VitalMonitorComponent)
+      },
     ],
   },
 ];

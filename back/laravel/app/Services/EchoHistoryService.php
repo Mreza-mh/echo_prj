@@ -108,17 +108,22 @@ class EchoHistoryService
 
     private function findPatientDocument(string $patientId)
     {
-        $document = $this->findOne(['_id' => $patientId]);
-
-        if (!$document) {
-            $document = $this->findOne(['patient_info.id' => $patientId]);
+        // مقادیر Mongo ممکن است رشته‌ای یا عددی ذخیره شده باشند؛ هر دو نوع را امتحان می‌کنیم
+        $candidates = [$patientId];
+        if (ctype_digit($patientId)) {
+            $candidates[] = (int) $patientId;
         }
 
-        if (!$document) {
-            $document = $this->findOne(['patient_id' => $patientId]);
+        foreach (['_id', 'patient_info.id', 'patient_id'] as $field) {
+            foreach ($candidates as $candidate) {
+                $document = $this->findOne([$field => $candidate]);
+                if ($document) {
+                    return $document;
+                }
+            }
         }
 
-        return $document;
+        return null;
     }
 
     private function findOne(array $filter)

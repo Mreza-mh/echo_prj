@@ -8,7 +8,7 @@
 .org-details-container {
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  min-height: 100vh;
+  // min-height: 100vh;
   font-family: 'Samim', -apple-system, sans-serif;
   transition: background-color 0.3s ease, color 0.3s ease;
 
@@ -366,50 +366,67 @@
   }
 
   // ----------------------------------------------------------
-  // RESOURCES ACCORDION
+  // RESOURCES LIST
   // ----------------------------------------------------------
-  .premium-accordion {
-    ::ng-deep {
-      .mat-expansion-panel {
-        background: var(--bg-primary) !important;
-        border: 1px solid var(--border-color) !important;
-        border-radius: 1rem !important;
-        margin-bottom: 1rem !important;
+  .resource-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
 
-        .mat-expansion-panel-header {
-          height: 72px;
-          padding: 0 1.5rem !important;
-          &:hover { background: var(--hover-bg); }
+    .resource-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 1rem;
+      transition: background 0.2s ease, border-color 0.2s ease;
 
-          @include media-breakpoint-down(md) { height: 64px; padding: 0 1rem !important; }
-          @include media-breakpoint-down(sm) { height: 60px; padding: 0 0.75rem !important; }
-        }
-
-        .mat-panel-title {
-          color: var(--text-primary);
-          font-weight: 600;
-          font-size: 1rem;
-        }
-
-        .mat-panel-description {
-          color: var(--text-secondary);
-          font-size: 0.9rem;
-        }
+      &:hover {
+        background: var(--hover-bg);
+        border-color: var(--accent-color);
       }
+
+      @include media-breakpoint-down(sm) { padding: 0.75rem 1rem; }
     }
-  }
 
-  .resource-details {
-    padding: 1.5rem;
+    .resource-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-secondary);
+      color: var(--accent-color);
+      flex-shrink: 0;
+    }
 
-    .resource-image {
-      max-height: 250px;
-      overflow: hidden;
-      img {
-        max-width: 100%;
-        height: auto;
-        border-radius: 0.75rem;
-      }
+    .resource-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .resource-name {
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .resource-type {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+
+    .resource-thumb {
+      width: 56px;
+      height: 56px;
+      object-fit: cover;
+      border-radius: 0.75rem;
+      flex-shrink: 0;
     }
   }
 
@@ -427,22 +444,32 @@
     @include media-breakpoint-down(md) { margin-top: 2rem; }
   }
 
+  // رنگ‌ها از متغیرهای تم می‌آیند تا در حالت شب هم درست باشند (نه bg-white/text-muted بوت‌استرپ)
   .info-card {
-    mat-card {
-      height: 100%;
-      border: 1px solid var(--border-color) !important;
-      border-radius: 1.25rem !important;
+    height: 100%;
+    background: var(--bg-primary) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 1.25rem !important;
 
-      h2 {
-        font-size: 1.1rem;
-        @include media-breakpoint-down(md) { font-size: 1rem; }
-      }
-
-      p {
-        font-size: 0.95rem;
-        line-height: 1.65;
-      }
+    h2 {
+      font-size: 1.1rem;
+      color: var(--text-primary);
+      @include media-breakpoint-down(md) { font-size: 1rem; }
     }
+
+    p {
+      font-size: 0.95rem;
+      line-height: 1.65;
+    }
+  }
+
+  .info-text {
+    color: var(--text-secondary);
+  }
+
+  .accent-icon {
+    color: var(--accent-color);
   }
 
   .working-hours-list {

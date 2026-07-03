@@ -11,6 +11,7 @@ use App\Http\Controllers\StaffController;
 use App\Http\Controllers\StatusController;
 use App\Http\Controllers\AIChatController;
 use App\Http\Controllers\PatientReportController;
+use App\Http\Controllers\VitalController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -42,7 +43,7 @@ Route::group(['prefix' => 'service'], function () {
 });
 
 Route::group(['prefix' => 'staff'], function () {
-    Route::post('list', [StaffController::class, 'getStaffList'])->middleware('auth:api');
+    Route::post('list', [StaffController::class, 'getStaffList']);
     Route::get('{staff_id}', [StaffController::class, 'getStaff'])->middleware('auth:api');
     Route::post('add', [StaffController::class, 'addStaff'])->middleware('auth:api');
     Route::patch('edit/{staff_id}', [StaffController::class, 'editStaff'])->middleware('auth:api');
@@ -54,7 +55,7 @@ Route::group(['prefix' => 'staff-schedule'], function () {
 });
 
 Route::group(['prefix' => 'resource'], function () {
-    Route::post('list', [ResourceController::class, 'getResourceList'])->middleware('auth:api');
+    Route::post('list', [ResourceController::class, 'getResourceList']);
     Route::get('{resource_id}', [ResourceController::class, 'getResource'])->middleware('auth:api');
     Route::post('add', [ResourceController::class, 'addResource'])->middleware('auth:api');
     Route::patch('edit/{resource_id}', [ResourceController::class, 'editResource'])->middleware('auth:api');
@@ -114,6 +115,14 @@ Route::group(['prefix' => 'patient-report'], function () {
     
     // دریافت خلاصه وضعیت بیمار (برای داشبورد)
     Route::get('summary/{patient_id}', [PatientReportController::class, 'getPatientSummary'])->middleware('auth:api');
+});
+
+// Vital Signs (ESP32 + MAX30102)
+Route::group(['prefix' => 'vitals'], function () {
+    Route::post('start', [VitalController::class, 'startSession'])->middleware('auth:api');
+    Route::post('stop', [VitalController::class, 'stopSession'])->middleware('auth:api');
+    Route::get('live/{patient_id}', [VitalController::class, 'getLive'])->middleware('auth:api');
+    Route::patch('save/{patient_id}', [VitalController::class, 'saveToProfile'])->middleware('auth:api');
 });
 
 Route::get('/api-docs', function () {

@@ -5,7 +5,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTabsModule } from '@angular/material/tabs';
-import { MatExpansionModule } from '@angular/material/expansion';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -29,7 +28,6 @@ import { Observable } from 'rxjs';
     MatIconModule,
     MatProgressSpinnerModule,
     MatTabsModule,
-    MatExpansionModule,
     MatMenuModule,
     MatSelectModule,
     MatTooltipModule,

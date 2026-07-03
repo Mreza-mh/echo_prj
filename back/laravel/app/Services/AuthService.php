@@ -215,7 +215,7 @@ class AuthService
 
     public function getMe()
     {
-        $user = User::find(Auth::user()->id);
+        $user = User::with('staffs')->find(Auth::user()->id);
         if (is_null($user)) {
             throw new \ErrorException('کاربری یافت نشد');
         }
@@ -264,11 +264,15 @@ class AuthService
 
         $query = User::query();
 
-        if($request->filled('name')){
+        if ($request->filled('id')) {
+            $query->where('id', (int)$request->id);
+        }
+
+        if ($request->filled('name')) {
             $query->where('name', 'like', '%' . $request->name . '%');
         }
 
-        if($request->filled('mobile')){
+        if ($request->filled('mobile')) {
             $query->where('mobile', 'like', '%' . $request->mobile . '%');
         }
 

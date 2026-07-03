@@ -1,5 +1,7 @@
 <div class="dr-dash animate__animated animate__fadeIn">
-  @if (dashboardData && !isLoading) {
+  <!-- شرط نباید isLoading داشته باشد: با هر loadData تقویم از DOM حذف و از نو با
+       تاریخ امروز ساخته می‌شد و datesSet بازه را به امروز برمی‌گرداند -->
+  @if (dashboardData) {
     <!-- Command Header -->
     <div class="cmd-header">
       <div class="cmd-title">
@@ -48,7 +50,7 @@
             matInput
             [matDatepicker]="picker"
             [(ngModel)]="selectedDate"
-            (dateChange)="loadData()"
+            (dateChange)="onDatePickerChange()"
           />
           <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
           <mat-datepicker #picker></mat-datepicker>

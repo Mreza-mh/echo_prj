@@ -243,41 +243,18 @@
         <mat-spinner diameter="40"></mat-spinner>
       </div>
       <div class="resources-wrapper">
-        <mat-accordion class="premium-accordion" *ngIf="!isLoadingResources && resources.length > 0">
-          <mat-expansion-panel *ngFor="let resource of resources" class="mb-3 border-0 shadow-sm rounded-3">
-            <mat-expansion-panel-header>
-              <mat-panel-title class="fw-bold d-flex align-items-center gap-2">
-                <mat-icon class="text-primary">meeting_room</mat-icon>
-                {{ resource.resource_name || resource.name }}
-              </mat-panel-title>
-              <mat-panel-description *ngIf="resource.resource_type" class="d-none d-md-flex">
-                {{ resource.resource_type }}
-              </mat-panel-description>
-            </mat-expansion-panel-header>
-            
-            <div class="resource-details p-3">
-              <div class="row g-3">
-                <div class="col-md-8">
-                  <p class="text-muted">{{ resource.name || 'برای قلب' }}</p>
-                  <div class="d-flex flex-wrap gap-2 mt-3">
-                    <!-- <mat-chip-set>
-                      <mat-chip *ngIf="resource.capacity">
-                        <mat-icon matChipAvatar>groups</mat-icon>
-                        Capacity: {{ resource.capacity }}
-                      </mat-chip>
-                      <mat-chip [color]="resource.is_active ? 'primary' : 'warn'">
-                        {{ resource.is_active ? 'Available' : 'Unavailable' }}
-                      </mat-chip>
-                    </mat-chip-set> -->
-                  </div>
-                </div>
-                <div class="col-md-4" *ngIf="resource.image">
-                  <img [src]="resource.image" class="img-fluid rounded-3 shadow-sm" alt="Resource image">
-                </div>
-              </div>
+        <div class="resource-list" *ngIf="!isLoadingResources && resources.length > 0">
+          <div class="resource-item" *ngFor="let resource of resources">
+            <div class="resource-icon">
+              <mat-icon>meeting_room</mat-icon>
             </div>
-          </mat-expansion-panel>
-        </mat-accordion>
+            <div class="resource-info">
+              <span class="resource-name">{{ resource.resource_name || resource.name }}</span>
+              <span class="resource-type" *ngIf="resource.resource_type">{{ resource.resource_type }}</span>
+            </div>
+            <img *ngIf="resource.image" [src]="resource.image" class="resource-thumb" alt="Resource image">
+          </div>
+        </div>
         <div *ngIf="!isLoadingResources && resources.length === 0" class="empty-state text-center py-5">
           <mat-icon class="empty-icon">inventory_2</mat-icon>
           <p>{{ getTranslate('noResourcesFound') }}</p>
@@ -287,33 +264,33 @@
 
     <div class="row mt-5 g-4 mb-5">
       <div class="col-lg-8">
-        <mat-card class="border-0 shadow-sm p-4 rounded-4 bg-white">
+        <mat-card class="info-card border-0 shadow-sm p-4 rounded-4">
           <h2 class="h5 fw-bold mb-4 d-flex align-items-center gap-2">
-            <mat-icon class="text-primary">info</mat-icon>
+            <mat-icon class="accent-icon">info</mat-icon>
             {{ getTranslate('aboutUs') }}
           </h2>
-          <p class="text-muted lh-lg">
+          <p class="info-text lh-lg">
             {{ organization?.description || 'Acaree helps you manage your health services with ease. This organization is committed to providing high-quality healthcare services using modern technologies.' }}
           </p>
         </mat-card>
       </div>
       <div class="col-lg-4">
-        <mat-card class="border-0 shadow-sm p-4 rounded-4 bg-white">
+        <mat-card class="info-card border-0 shadow-sm p-4 rounded-4">
           <h2 class="h5 fw-bold mb-4 d-flex align-items-center gap-2">
-            <mat-icon class="text-primary">schedule</mat-icon>
+            <mat-icon class="accent-icon">schedule</mat-icon>
             {{ getTranslate('workingHoursHeader') }}
           </h2>
           <div class="working-hours-list">
-            <div class="d-flex justify-content-between py-2 border-bottom">
-              <span class="text-muted">{{ getTranslate('satToWed') }}</span>
+            <div class="d-flex justify-content-between py-2">
+              <span class="info-text">{{ getTranslate('satToWed') }}</span>
               <span class="fw-bold">08:00 - 20:00</span>
             </div>
-            <div class="d-flex justify-content-between py-2 border-bottom">
-              <span class="text-muted">{{ getTranslate('thursdays') }}</span>
+            <div class="d-flex justify-content-between py-2">
+              <span class="info-text">{{ getTranslate('thursdays') }}</span>
               <span class="fw-bold">08:00 - 14:00</span>
             </div>
             <div class="d-flex justify-content-between py-2">
-              <span class="text-muted">{{ getTranslate('friAndHolidays') }}</span>
+              <span class="info-text">{{ getTranslate('friAndHolidays') }}</span>
               <span class="text-danger">{{ getTranslate('closed') }}</span>
             </div>
           </div>

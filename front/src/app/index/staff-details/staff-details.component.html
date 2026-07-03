@@ -16,7 +16,7 @@
               </div>
             </div>
             <h1 class="h4 fw-bold mb-1">{{ staff.user?.name || staff.user_name }}</h1>
-            <p class="text-primary fw-medium mb-3">{{ staff.expertise?.title || staff.expertise_title || staff.role || getTranslation('expertise') }}</p>
+            <p class="text-primary fw-medium mb-3">{{ staff.expertise?.label || staff.expertise?.title || staff.expertise_title || staff.role || getTranslation('expertise') }}</p>
 
             <div class="d-flex justify-content-center gap-2 mb-2">
               <span class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">
@@ -30,7 +30,15 @@
               <span class="text-muted small d-block mb-1">{{ getTranslation('expertiseLabel') }}:</span>
               <div class="d-flex align-items-center gap-2">
                 <mat-icon class="text-primary fs-5">psychology</mat-icon>
-                <span class="fw-medium">{{ staff.expertise?.title || staff.expertise_title || getTranslation('expertise') }}</span>
+                <span class="fw-medium">{{ staff.expertise?.label || staff.expertise?.title || staff.expertise_title || getTranslation('expertise') }}</span>
+              </div>
+            </div>
+
+            <div class="info-item mb-3" *ngIf="staff.user?.email">
+              <span class="text-muted small d-block mb-1">{{ getTranslation('emailLabel') }}:</span>
+              <div class="d-flex align-items-center gap-2">
+                <mat-icon class="text-primary fs-5">mail</mat-icon>
+                <span class="fw-medium" dir="ltr">{{ staff.user.email }}</span>
               </div>
             </div>
 
@@ -72,17 +80,59 @@
         </mat-card>
 
         <mat-card class="content-card border-0 shadow-sm rounded-4 p-4">
-          <h2 class="h5 fw-bold mb-4 d-flex align-items-center gap-2">
-            <mat-icon class="text-primary">schedule</mat-icon>
-            {{ getTranslation('scheduleTitle') }}
-          </h2>
-          <div class="schedule-placeholder text-center py-5 rounded-4 border border-dashed">
-            <mat-icon class="text-muted mb-3" style="font-size: 48px; width: 48px; height: 48px;">event_available</mat-icon>
-            <p class="text-muted mb-4">{{ getTranslation('viewScheduleHint') }}</p>
-            <button mat-stroked-button color="primary" class="rounded-pill px-4" (click)="goToAppointment()">
-              {{ getTranslation('viewAppointmentCalendar') }}
-            </button>
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+            <h2 class="h5 fw-bold mb-0 d-flex align-items-center gap-2">
+              <mat-icon class="text-primary">schedule</mat-icon>
+              {{ getTranslation('scheduleTitle') }}
+            </h2>
+            <span *ngIf="workingDaysCount" class="badge bg-primary bg-opacity-10 text-primary rounded-pill px-3 py-2">
+              {{ workingDaysCount }} {{ getTranslation('workingDaysPerWeek') }}
+            </span>
           </div>
+
+          <ng-container *ngIf="staff.schedule?.length; else noSchedule">
+            <div class="schedule-list">
+              <div
+                *ngFor="let day of weekDays"
+                class="schedule-row d-flex align-items-center gap-3 rounded-3 px-3 py-2"
+                [class.is-today]="day.key === todayKey"
+                [class.is-off]="!getDaySlots(day.key).length"
+              >
+                <div class="day-name d-flex align-items-center gap-2">
+                  <span class="day-dot" [class.active]="getDaySlots(day.key).length"></span>
+                  <span class="fw-medium">{{ getTranslation(day.labelKey) }}</span>
+                  <span *ngIf="day.key === todayKey" class="today-badge">{{ getTranslation('today') }}</span>
+                </div>
+                <div class="day-slots d-flex flex-wrap gap-2 ms-auto">
+                  <ng-container *ngIf="getDaySlots(day.key).length; else dayOff">
+                    <span *ngFor="let slot of getDaySlots(day.key)" class="slot-chip" dir="ltr">
+                      {{ slot.start }} - {{ slot.end }}
+                    </span>
+                  </ng-container>
+                  <ng-template #dayOff>
+                    <span class="text-muted small">{{ getTranslation('closed') }}</span>
+                  </ng-template>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-center mt-4">
+              <button mat-flat-button color="primary" class="rounded-pill px-4" (click)="goToAppointment()">
+                {{ getTranslation('viewAppointmentCalendar') }}
+                <mat-icon>calendar_month</mat-icon>
+              </button>
+            </div>
+          </ng-container>
+
+          <ng-template #noSchedule>
+            <div class="schedule-placeholder text-center py-5 rounded-4 border border-dashed">
+              <mat-icon class="text-muted mb-3" style="font-size: 48px; width: 48px; height: 48px;">event_available</mat-icon>
+              <p class="text-muted mb-4">{{ getTranslation('viewScheduleHint') }}</p>
+              <button mat-stroked-button color="primary" class="rounded-pill px-4" (click)="goToAppointment()">
+                {{ getTranslation('viewAppointmentCalendar') }}
+              </button>
+            </div>
+          </ng-template>
         </mat-card>
       </div>
     </div>

@@ -466,7 +466,7 @@ class AppointmentService
         ];
     }
 
-    public function getCurrentAppointment()
+    public function getCurrentAppointment(?int $staffId = null)
     {
         $now = Carbon::now();
         $today = $now->format('Y-m-d');
@@ -479,6 +479,7 @@ class AppointmentService
             ->whereIn('status_id', $active_status_ids)
             ->where('start_time', '<=', $current_time)
             ->where('end_time', '>', $current_time)
+            ->when($staffId, fn($q) => $q->where('staff_id', $staffId))
             ->first();
 
         if (!$appointment) {

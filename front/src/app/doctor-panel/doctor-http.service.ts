@@ -17,8 +17,9 @@ export class DoctorHttpService {
     return this.authHttp.getMe();
   }
 
-  getCurrentAppointment(params?: any): Observable<any> {
-    return this.genericHttp.get('/appointment/get-current-appointment', params);
+  getCurrentAppointment(params?: { staff_id?: number | null }): Observable<any> {
+    const query = params?.staff_id != null ? `?staff_id=${params.staff_id}` : '';
+    return this.genericHttp.get(`/appointment/get-current-appointment${query}`);
   }
 
   getAppointmentDetails(id: string | number): Observable<any> {
@@ -48,7 +49,7 @@ export class DoctorHttpService {
     return this.http.get(environment.apiUrl + `/echo-history/file/${address}`, headers);
   }
 
-  getCalendarDashboard(data: { date: string; user_id?: number[]; resource_ids?: number[] }): Observable<any> {
+  getCalendarDashboard(data: { start_date: string; end_date?: string; staff_ids?: number[] }): Observable<any> {
     return this.genericHttp.post('/appointment/get-calendar-dashboard', data);
   }
 

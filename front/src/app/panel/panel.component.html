@@ -98,10 +98,13 @@
           <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('resources') }}</span>
         </a>
 
+        <!-- بخش status مشکل دارد و موقتاً از فرانت مخفی شده -->
+        <!--
         <a mat-list-item routerLink="/panel/status" routerLinkActive="active" (click)="closeSidenav()">
           <mat-icon matListItemIcon>rule</mat-icon>
           <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('status') }}</span>
         </a>
+        -->
 
         <a mat-list-item routerLink="/panel/expertise" routerLinkActive="active" (click)="closeSidenav()">
           <mat-icon matListItemIcon>psychology</mat-icon>
@@ -111,12 +114,20 @@
         <mat-divider></mat-divider>
         <div class="nav-section-title" *ngIf="!sidebarCollapsed">{{ getTranslation('operations') }}</div>
 
-        <a mat-list-item 
-           [routerLink]="['/panel/appointment']" 
-           routerLinkActive="active" 
+        <a mat-list-item
+           [routerLink]="['/panel/appointment']"
+           routerLinkActive="active"
            (click)="closeSidenav()">
           <mat-icon matListItemIcon>event_available</mat-icon>
           <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('appointments') }}</span>
+        </a>
+
+        <a mat-list-item
+           routerLink="/panel/vital-monitor"
+           routerLinkActive="active"
+           (click)="closeSidenav()">
+          <mat-icon matListItemIcon>monitor_heart</mat-icon>
+          <span matListItemTitle *ngIf="!sidebarCollapsed">پایش علائم حیاتی</span>
         </a>
 
         <mat-divider></mat-divider>

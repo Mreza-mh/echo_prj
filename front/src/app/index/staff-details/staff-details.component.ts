@@ -35,6 +35,31 @@ export class StaffDetailsComponent implements OnInit {
   staff: any = null;
   isLoading = false;
 
+  readonly weekDays: { key: string; labelKey: string }[] = [
+    { key: 'saturday', labelKey: 'sat' },
+    { key: 'sunday', labelKey: 'sun' },
+    { key: 'monday', labelKey: 'mon' },
+    { key: 'tuesday', labelKey: 'tue' },
+    { key: 'wednesday', labelKey: 'wed' },
+    { key: 'thursday', labelKey: 'thu' },
+    { key: 'friday', labelKey: 'fri' },
+  ];
+
+  // getDay(): 0=Sunday ... 6=Saturday
+  private readonly jsDayToKey = [
+    'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'
+  ];
+  readonly todayKey = this.jsDayToKey[new Date().getDay()];
+
+  getDaySlots(dayKey: string): { start: string; end: string }[] {
+    const day = (this.staff?.schedule || []).find((s: any) => s.day === dayKey);
+    return day?.slots || [];
+  }
+
+  get workingDaysCount(): number {
+    return (this.staff?.schedule || []).filter((d: any) => d.slots?.length).length;
+  }
+
   constructor(
     private route: ActivatedRoute,
     private indexHttpService: IndexHttpService,

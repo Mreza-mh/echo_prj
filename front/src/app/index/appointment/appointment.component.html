@@ -68,7 +68,7 @@
               {{ hasStaffParam ? 'تغییر پرسنل' : 'انتخاب پرسنل' }}
             </label>
             <mat-form-field appearance="outline" class="appt-mat-field">
-              <mat-select [(ngModel)]="staffId" (selectionChange)="onStaffChange()" placeholder="پرسنل مورد نظر را انتخاب کنید">
+              <mat-select [(ngModel)]="staffId" [compareWith]="compareIds" (selectionChange)="onStaffChange()" placeholder="پرسنل مورد نظر را انتخاب کنید">
                 <mat-option *ngFor="let staff of staffList" [value]="staff.organization_staff_id || staff.id">
                   <div class="staff-option">
                     <div class="staff-avatar">{{ (staff.user?.name || staff.name || 'P').charAt(0) }}</div>
@@ -88,7 +88,7 @@
               {{ hasServiceParam ? 'تغییر خدمت' : 'انتخاب خدمت' }}
             </label>
             <mat-form-field appearance="outline" class="appt-mat-field">
-              <mat-select [(ngModel)]="organizationServicesId" (selectionChange)="onServiceChange()" placeholder="نوع خدمت را انتخاب کنید">
+              <mat-select [(ngModel)]="organizationServicesId" [compareWith]="compareIds" (selectionChange)="onServiceChange()" placeholder="نوع خدمت را انتخاب کنید">
                 <mat-option *ngFor="let service of serviceList" [value]="service.organization_service_id || service.id">
                   {{ service?.title || service.name }}
                 </mat-option>
@@ -106,7 +106,7 @@
               انتخاب مشتری
             </label>
             <mat-form-field appearance="outline" class="appt-mat-field">
-              <mat-select [(ngModel)]="selectedUserId" placeholder="مشتری را انتخاب کنید">
+              <mat-select [(ngModel)]="selectedUserId" [compareWith]="compareIds" placeholder="مشتری را انتخاب کنید">
                 <mat-option *ngFor="let user of userList" [value]="user.id">
                   {{ user.name }}
                   <span class="user-phone" *ngIf="user.phone"> — {{ user.phone }}</span>

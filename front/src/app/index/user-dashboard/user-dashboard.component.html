@@ -205,45 +205,46 @@
 
                  @for (visit of getVisitList(selectedDate); track visit.view_instance) {
                    @if (visit.type === 'fuzzy_summary') {
-                     <!-- <div class="visit-summary summary-card mb-3">
+                     <div class="visit-summary summary-card mb-3">
                        <div class="summary-header">
                          <mat-icon>assessment</mat-icon>
-                         <h5>{{ getTranslation('fuzzySummary') || 'خلاصه تشخیصی' }}</h5>
+                         <h5>خلاصه تشخیصی</h5>
                        </div>
                        <div class="summary-content">
                          <div class="summary-item">
-                           <span class="label">{{ getTranslation('score') || 'امتیاز' }}:</span>
+                           <span class="label">امتیاز:</span>
                            <span class="value score">{{ visit.result.score | number:'1.1-1' }}</span>
                          </div>
                          <div class="summary-item">
-                           <span class="label">{{ getTranslation('category') || 'دسته‌بندی' }}:</span>
-                           <span class="value badge" 
+                           <span class="label">دسته‌بندی:</span>
+                           <span class="value badge"
                                  [class.badge-normal]="visit.result.category === 'Normal'"
                                  [class.badge-warn]="visit.result.category !== 'Normal'">
                              {{ visit.result.category }}
                            </span>
                          </div>
                          <div class="summary-item full-width">
-                           <span class="label">{{ getTranslation('text') || 'توضیحات' }}:</span>
+                           <span class="label">توضیحات:</span>
                            <span class="value">{{ visit.result.text }}</span>
                          </div>
                        </div>
-                       @if (visit.result.plots?.links) {
+                       @if (visit.result.plots?.links?.length) {
                          <div class="plots-gallery mt-3">
-                           <h6>{{ getTranslation('plots') || 'نمودارها' }}:</h6>
+                           <h6>نمودارهای تحلیل فازی:</h6>
                            <div class="gallery-grid">
                              @for (plot of visit.result.plots.links; track plot.url) {
                                <div class="gallery-item" (click)="viewEchoFile(plot.url); $event.stopPropagation()">
-                                 <img [src]="plot.url" alt="plot">
-                                 <div class="overlay">
-                                   <mat-icon>zoom_in</mat-icon>
+                                 <div class="gallery-img-wrap">
+                                   <img [src]="plot.url" alt="نمودار تحلیل فازی">
+                                   <div class="overlay"><mat-icon>zoom_in</mat-icon></div>
                                  </div>
+                                 <span class="gallery-caption">نمودار تحلیل فازی {{ $index + 1 }}</span>
                                </div>
                              }
                            </div>
                          </div>
                        }
-                     </div> -->
+                     </div>
                    } @else {
                      <div class="visit-summary visit-card mb-3">
                        <!-- <div class="visit-header">
@@ -340,6 +341,56 @@
                                      <div class="image-overlay"><mat-icon>zoom_in</mat-icon></div>
                                    </div>
                                  </div>
+                               </div>
+                             }
+                           </div>
+                         </div>
+                       }
+
+                       <!-- تصاویر تحلیلی: نمودار ECG، تشخیص مقیاس، سگمنتیشن دهلیزها و بطن چپ -->
+                       @if (visit.files?.ecg_plot_url || visit.files?.scale_debug_url ||
+                            visit.a4c_volume?.overlay_image_url || visit.lv_volume?.overlay_image_url) {
+                         <div class="plots-gallery mt-3">
+                           <h6>تصاویر تحلیلی:</h6>
+                           <div class="gallery-grid">
+                             @if (visit.files?.ecg_plot_url) {
+                               <div class="gallery-item"
+                                    (click)="viewEchoFile(visit.files.ecg_plot_url); $event.stopPropagation()">
+                                 <div class="gallery-img-wrap">
+                                   <img [src]="visit.files.ecg_plot_url" alt="نمودار ضربان قلب (PQRST)">
+                                   <div class="overlay"><mat-icon>zoom_in</mat-icon></div>
+                                 </div>
+                                 <span class="gallery-caption">نمودار ضربان قلب (PQRST)</span>
+                               </div>
+                             }
+                             @if (visit.files?.scale_debug_url) {
+                               <div class="gallery-item"
+                                    (click)="viewEchoFile(visit.files.scale_debug_url); $event.stopPropagation()">
+                                 <div class="gallery-img-wrap">
+                                   <img [src]="visit.files.scale_debug_url" alt="تشخیص مقیاس تصویر">
+                                   <div class="overlay"><mat-icon>zoom_in</mat-icon></div>
+                                 </div>
+                                 <span class="gallery-caption">تشخیص مقیاس تصویر</span>
+                               </div>
+                             }
+                             @if (visit.a4c_volume?.overlay_image_url) {
+                               <div class="gallery-item"
+                                    (click)="viewEchoFile(visit.a4c_volume.overlay_image_url); $event.stopPropagation()">
+                                 <div class="gallery-img-wrap">
+                                   <img [src]="visit.a4c_volume.overlay_image_url" alt="سگمنتیشن دهلیزها">
+                                   <div class="overlay"><mat-icon>zoom_in</mat-icon></div>
+                                 </div>
+                                 <span class="gallery-caption">سگمنتیشن دهلیزها</span>
+                               </div>
+                             }
+                             @if (visit.lv_volume?.overlay_image_url) {
+                               <div class="gallery-item"
+                                    (click)="viewEchoFile(visit.lv_volume.overlay_image_url); $event.stopPropagation()">
+                                 <div class="gallery-img-wrap">
+                                   <img [src]="visit.lv_volume.overlay_image_url" alt="سگمنتیشن بطن چپ">
+                                   <div class="overlay"><mat-icon>zoom_in</mat-icon></div>
+                                 </div>
+                                 <span class="gallery-caption">سگمنتیشن بطن چپ</span>
                                </div>
                              }
                            </div>

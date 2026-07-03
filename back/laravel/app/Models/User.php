@@ -24,6 +24,13 @@ class User extends Authenticatable
         'role'
     ];
 
+    protected $hidden = [
+        'password',
+        'remember_token',
+        'email_verification_code',
+        'email_verification_expires_at',
+    ];
+
     public function appointments(): HasMany
     {
         return $this->hasMany(Appointment::class, 'user_id'); // ← اصلاح شد

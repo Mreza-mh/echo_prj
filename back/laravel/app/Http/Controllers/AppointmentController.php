@@ -294,9 +294,9 @@ class AppointmentController
      *     )
      * )
      */
-    public function getCurrentAppointment()
+    public function getCurrentAppointment(\Illuminate\Http\Request $request)
     {
-        $result = $this->appointmentService->getCurrentAppointment();
+        $result = $this->appointmentService->getCurrentAppointment($request->staff_id);
         return ApiResponse::success($result['data'], $result['message']);
     }
 

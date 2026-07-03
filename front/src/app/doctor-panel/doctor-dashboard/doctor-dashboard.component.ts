@@ -63,6 +63,9 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
   allAppointments: any[] = [];
   isLoading = false;
 
+  private viewStart: Date = new Date();
+  private viewEnd: Date = new Date();
+
   calendarTitle = '';
   currentViewType = 'resourceTimelineDay';
 
@@ -77,9 +80,24 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
     initialView: 'resourceTimelineDay',
     headerToolbar: false,
     datesSet: (info) => {
+      // پایان بازه FullCalendar exclusive است — ۱ میلی‌ثانیه کم می‌کنیم تا آخرین روز واقعی به دست بیاید
+      const inclusiveEnd = new Date(info.end.getTime() - 1);
+
+      const sameRange =
+        this.viewStart.getTime() === info.start.getTime() &&
+        this.viewEnd.getTime() === inclusiveEnd.getTime() &&
+        this.currentViewType === info.view.type;
+
       this.currentViewType = info.view.type;
       this.calendarTitle   = info.view.title;
       this.cdr.detectChanges();
+
+      if (sameRange) return;
+
+      this.viewStart    = info.start;
+      this.viewEnd      = inclusiveEnd;
+      this.selectedDate = info.start;
+      this.loadData();
     },
     resourceAreaHeaderContent: 'پرسنل و منابع',
     resourceAreaWidth: '200px',
@@ -116,9 +134,14 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.doctorHttp.getCurrentUser().subscribe({
       next: (res: any) => {
-        if (res.success && res.data) {
-          this.staffId = res.data.id;
+        // getMe() اکنون رابطه staffs کاربر را هم برمی‌گرداند — شناسه‌ی واقعی Staff (نه User) لازم است
+        const staff = res.data?.staffs?.[0];
+        if (res.success && staff) {
+          this.staffId = staff.id;
           this.loadData();
+        } else {
+          this.isLoading = false;
+          this.toast.error('این کاربر به‌عنوان پرسنل ثبت نشده است');
         }
       },
       error: (err) => {
@@ -132,31 +155,33 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
   loadData(): void {
     if (this.staffId === null) return;
     this.isLoading = true;
-    const dateStr = format(this.selectedDate, 'yyyy-MM-dd');
+    const startStr = format(this.viewStart, 'yyyy-MM-dd');
+    const endStr   = format(this.viewEnd,   'yyyy-MM-dd');
 
-    this.doctorHttp.getCalendarDashboard({ date: dateStr, user_id: [this.staffId] }).subscribe({
-      next: (res: any) => {
-        if (res.success && res.data) {
-          this.dashboardData = res.data;
+    this.doctorHttp
+      .getCalendarDashboard({ start_date: startStr, end_date: endStr, staff_ids: [this.staffId] })
+      .subscribe({
+        next: (res: any) => {
+          if (res.success && res.data) {
+            this.dashboardData = res.data;
+            this.isLoading = false;
+            this.cdr.detectChanges();
+            this.updateCalendarData();
+            this.loadDoctorSpecificData();
+          }
+        },
+        error: (err) => {
+          console.error('Error fetching calendar dashboard:', err);
           this.isLoading = false;
-          this.cdr.detectChanges();
-          this.updateCalendarData();
-          this.loadDoctorSpecificData();
-        }
-      },
-      error: (err) => {
-        console.error('Error fetching calendar dashboard:', err);
-        this.isLoading = false;
-        this.toast.error('خطا در بارگذاری اطلاعات تقویم');
-      },
-    });
+          this.toast.error('خطا در بارگذاری اطلاعات تقویم');
+        },
+      });
   }
 
   private updateCalendarData(): void {
     if (!this.dashboardData) return;
 
     setTimeout(() => {
-      const calendarApi = this.calendarComponent?.getApi();
       const resources = this.dashboardData.timeline.map((staff: any) => ({
         id: String(staff.staff_id),
         title: staff.staff_name,
@@ -188,12 +213,13 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
         if (staff.appointments) {
           staff.appointments.forEach((app: any) => {
             this.allAppointments.push({ ...app, staff_name: staff.staff_name });
+            const appDate = ((app.date ?? this.dashboardData.date) as string).substring(0, 10);
             events.push({
               id: String(app.id),
               resourceId: String(staff.staff_id),
               title: `${app.customer_name} - ${app.service_name}`,
-              start: `${this.dashboardData.date}T${app.start}`,
-              end: `${this.dashboardData.date}T${app.end}`,
+              start: `${appDate}T${app.start}`,
+              end: `${appDate}T${app.end}`,
               backgroundColor: this.getStatusColor(app.status_title),
               borderColor: 'transparent',
               extendedProps: { ...app, staff_name: staff.staff_name },
@@ -221,9 +247,20 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
         slotMaxTime: slotMax === '01:00:00' ? '22:00:00' : slotMax,
       };
 
-      if (calendarApi) calendarApi.gotoDate(this.dashboardData.date);
       this.cdr.detectChanges();
     }, 0);
+  }
+
+  onDatePickerChange(): void {
+    const api = this.calendarComponent?.getApi();
+    if (api) {
+      api.gotoDate(this.selectedDate);
+      // datesSet callback فراخوانی می‌شود → viewStart/viewEnd به‌روزرسانی و loadData صدا زده می‌شود
+    } else {
+      this.viewStart = new Date(this.selectedDate);
+      this.viewEnd   = new Date(this.selectedDate);
+      this.loadData();
+    }
   }
 
   private loadDoctorSpecificData(): void {

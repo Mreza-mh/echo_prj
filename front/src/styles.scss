@@ -16,13 +16,22 @@ html {
       density: 0,
     )
   );
-}
 
+  // شعاع گوشه‌ی outline باید با border-radius پس‌زمینه‌ی .mat-mdc-text-field-wrapper (پایین‌تر) یکی باشد،
+  // وگرنه حاشیه‌ی outline از پس‌زمینه‌ی گردتر عقب می‌ماند و input ها ناهماهنگ/شکسته به‌نظر می‌رسند.
+  // مقدار حداکثر ۱۲px نگه داشته شده چون Material پدینگ کناره‌های outline را با فرمول
+  // max(16px, shape [+4px]) حساب می‌کند — بالاتر از ۱۲px پدینگ چپ/راست نامتقارن و بزرگ‌تر از ۱۶px می‌شود
+  --mat-form-field-outlined-container-shape: 12px;
+  --mat-form-field-filled-container-shape: 12px;
+}
+::ng-deep{
+  .mat-mdc-form-field-flex { padding: 0 0px !important; }
+}
 body {
   // ── CardioAI Palette — Light (Clinical Ocean) ──────────────────
   // Neutrals: cool slate-blue · Accents: cyan + indigo + teal
 
-  --bg-void:     #f2f6fb;
+  --bg-void:     #ffffff;
   --bg-deep:     #e6edf6;
   --bg-surface:  #ffffff;
   --bg-elevated: #f8fafd;
@@ -444,8 +453,7 @@ border:
 
 
 input,
-textarea,
-.mat-mdc-form-field {
+textarea {
 
 
 background:
@@ -469,7 +477,7 @@ var(--input-bg)!important;
 
 
 border-radius:
-14px!important;
+12px!important;
 
 
 }

@@ -410,36 +410,37 @@ $r-xl: 28px;
 
 
 // ── 6. HERO SECTION ─────────────────────────────────────────────────
-
-.hero-section {
-  @include section-pad;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  position: relative;
-
-  // ECG grid background (lighter for light mode)
-  &::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-image:
-      linear-gradient(var(--grid-line-color) 1px, transparent 1px),
-      linear-gradient(90deg, var(--grid-line-color) 1px, transparent 1px);
-    background-size: 48px 48px;
-    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
-    pointer-events: none;
-  }
-
-  .hero-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 80px;
+::ng-deep{
+  .hero-section {
+    @include section-pad;
+    min-height: 100vh !important;
+    display: flex;
     align-items: center;
-
-    @media (max-width: 900px) {
-      grid-template-columns: 1fr;
-      gap: 48px;
+    position: relative;
+    padding-top: 10px !important;
+    // ECG grid background (lighter for light mode)
+    &::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(var(--grid-line-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid-line-color) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+      pointer-events: none;
+    }
+  
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+  
+      @media (max-width: 900px) {
+        grid-template-columns: 1fr;
+        gap: 48px;
+      }
     }
   }
 }

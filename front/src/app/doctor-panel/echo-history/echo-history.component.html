@@ -1,6 +1,6 @@
-<div class="echo-history-container animate__animated animate__fadeIn">
+<div class="echo-history-container user-dashboard animate__animated animate__fadeIn">
 
-  <header class="page-header mb-4">
+  <header class="dashboard-header mb-4">
     <div class="d-flex justify-content-between align-items-center">
       <div>
         <h1 class="fw-bold mb-1">{{ getTranslation('echoHistoryTitle') }}</h1>
@@ -17,7 +17,7 @@
 
   <!-- Search -->
   <div class="search-form mb-4 d-flex gap-2">
-    <mat-form-field appearance="fill" class="w-100">
+    <mat-form-field appearance="outline" class="w-100 no-subscript">
       <mat-label>{{ getTranslation('patientNationalId') }}</mat-label>
       <input matInput type="number"
              [(ngModel)]="searchPatientId"
@@ -25,7 +25,7 @@
              placeholder="{{ getTranslation('enterPatientId') }}">
     </mat-form-field>
 
-    <button mat-raised-button color="primary" (click)="searchPatient()">
+    <button mat-raised-button color="primary" class="search-btn" (click)="searchPatient()">
       <mat-icon>search</mat-icon>
       {{ getTranslation('search') }}
     </button>
@@ -60,249 +60,364 @@
 
   } @else {
 
-    <!-- PATIENT INFO -->
-    <mat-card class="patient-info-card mb-4">
-      <mat-card-header>
-        <mat-card-title>
-          {{ getTranslation('patientInfo') }}
-        </mat-card-title>
-      </mat-card-header>
-
-      <mat-card-content>
-        <div class="row g-3">
-
-          <div class="col-md-3">
-            <div class="info-item">
-              <span class="label">{{ getTranslation('id') }}</span>
-              <span class="value">{{ patientInfo?.id }}</span>
-            </div>
-          </div>
-
-          <div class="col-md-3">
-            <div class="info-item">
-              <span class="label">{{ getTranslation('gender') }}</span>
-              <span class="value">{{ patientInfo?.gender }}</span>
-            </div>
-          </div>
-
-          <div class="col-md-3">
-            <div class="info-item">
-              <span class="label">{{ getTranslation('weight') }}</span>
-              <span class="value">{{ patientInfo?.weight }} kg</span>
-            </div>
-          </div>
-
-          <div class="col-md-3">
-            <div class="info-item">
-              <span class="label">{{ getTranslation('height') }}</span>
-              <span class="value">{{ patientInfo?.height }} cm</span>
-            </div>
-          </div>
-
+    <!-- 3D HEART VISUALIZATION -->
+    @if (heartVisualizationData) {
+      <div class="row mb-5">
+        <div class="col-12 p-0">
+          <mat-card class="heart-visualization-card">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon class="me-2">favorite</mat-icon>
+                {{ getTranslation('3dHeartVisualization') || 'مدل سه‌بعدی قلب' }}
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div style="height: 600px;">
+                <app-heart-visualization
+                  [patientData]="heartVisualizationData"
+                  modelPath="/assets/models/heart.glb">
+                </app-heart-visualization>
+              </div>
+            </mat-card-content>
+          </mat-card>
         </div>
-      </mat-card-content>
-    </mat-card>
-
-    <!-- DATE SELECT -->
-    @if (visitDates?.length) {
-      <mat-form-field appearance="fill" class="w-100 mb-4">
-        <mat-label>{{ getTranslation('selectDate') }}</mat-label>
-        <mat-select [(ngModel)]="selectedDate">
-          <mat-option *ngFor="let date of visitDates" [value]="date">
-            {{ date }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
+      </div>
     }
 
-    <div style="width: 680px; height: 520px;">
-      <app-heart-visualization [patientData]="echoData" ></app-heart-visualization>
-    </div>
+    <div class="row g-4">
 
-    <!-- VISITS -->
-    <div class="visits-list">
+      <!-- ECHO HISTORY - Full Width -->
+      <div class="col-12 p-0">
+        <mat-card class="echo-card mb-4">
+          <mat-card-header>
+            <mat-card-title>
+              <mat-icon>monitor_heart</mat-icon>
+              {{ getTranslation('yourEchoHistory') || 'تاریخچه اکوکاردیوگرافی' }}
+            </mat-card-title>
+          </mat-card-header>
 
-      @for (visit of getVisitList(selectedDate); track visit.view_instance) {
+          <mat-card-content>
 
-        <mat-expansion-panel class="visit-panel mb-3">
+            @if (patientInfo) {
+              <div class="patient-info-banner mb-3">
+                <div class="info-chip">
+                  <div class="info-chip-icon">
+                    <mat-icon>badge</mat-icon>
+                  </div>
+                  <span>
+                    <strong>{{ getTranslation('id') || 'شناسه' }}</strong>
+                    {{ patientInfo.id }}
+                  </span>
+                </div>
+                <div class="info-chip">
+                  <div class="info-chip-icon">
+                    @if (patientInfo.gender === 'female' || patientInfo.gender === 'F') {
+                      <mat-icon>female</mat-icon>
+                    } @else {
+                      <mat-icon>male</mat-icon>
+                    }
+                  </div>
+                  <span>
+                    <strong>{{ getTranslation('gender') || 'جنسیت' }}</strong>
+                    {{ patientInfo.gender === 'female' || patientInfo.gender === 'F' ? 'زن' : 'مرد' }}
+                  </span>
+                </div>
+                @if (patientInfo.age) {
+                  <div class="info-chip">
+                    <div class="info-chip-icon">
+                      <mat-icon>elderly</mat-icon>
+                    </div>
+                    <span>
+                      <strong>{{ getTranslation('age') || 'سن' }}</strong>
+                      {{ patientInfo.age }} سال
+                    </span>
+                  </div>
+                }
+                <div class="info-chip">
+                  <div class="info-chip-icon">
+                    <mat-icon>scale</mat-icon>
+                  </div>
+                  <span>
+                    <strong>{{ getTranslation('weight') || 'وزن' }}</strong>
+                    {{ patientInfo.weight_kg || patientInfo.weight || '—' }} kg
+                  </span>
+                </div>
+                <div class="info-chip">
+                  <div class="info-chip-icon">
+                    <mat-icon>straighten</mat-icon>
+                  </div>
+                  <span>
+                    <strong>{{ getTranslation('height') || 'قد' }}</strong>
+                    {{ patientInfo.height_cm || patientInfo.height || '—' }} cm
+                  </span>
+                </div>
+              </div>
+            }
 
-          <mat-expansion-panel-header>
+            <!-- LLM REPORT CARD -->
+            @if (hasLlmReport && llmReportText) {
+              <div class="rx-report-card mb-4">
 
-            <mat-panel-title>
-              {{ getTranslation('viewInstance') }}: {{ visit.view_instance }}
+                <!-- Prescription-style top strip -->
+                <div class="rx-header">
+                  <div class="rx-header-brand">
+                    <div class="rx-logo">
+                      <mat-icon>ecg_heart</mat-icon>
+                    </div>
+                    <div class="rx-brand-text">
+                      <span class="rx-clinic">Echo AI</span>
+                      <span class="rx-subtitle">گزارش تحلیل اکوکاردیوگرافی</span>
+                    </div>
 
-              @if (visit.detected_view && visit.detected_view !== visit.view_instance) {
-                <span class="text-muted">
-                  ({{ getTranslation('detected') }}: {{ visit.detected_view }})
-                </span>
+                    <div class="rx-actions">
+                      <button mat-icon-button class="rx-action-btn" (click)="viewFullHtmlReport()"
+                              matTooltip="مشاهده کامل گزارش">
+                        <mat-icon>open_in_new</mat-icon>
+                      </button>
+                      <button mat-icon-button class="rx-action-btn" (click)="downloadReportPdf()"
+                              matTooltip="دانلود PDF">
+                        <mat-icon>picture_as_pdf</mat-icon>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="rx-meta">
+                    <div class="rx-ai-badge">
+                      <mat-icon>auto_awesome</mat-icon>
+                      هوش مصنوعی
+                    </div>
+                    @if (llmReportData?.generated_at) {
+                      <span class="rx-date" dir="ltr">{{ llmReportData.generated_at | date:'yyyy/MM/dd' }}</span>
+                    }
+                  </div>
+                </div>
+
+                <!-- Decorative Rx symbol divider -->
+                <div class="rx-divider">
+                  <span class="rx-symbol">ai doki</span>
+                </div>
+
+                <!-- Prescription body -->
+                <div class="rx-body">
+                  <div class="rx-watermark">ECHO</div>
+                  @for (paragraph of llmReportText.split('\n\n'); track $index) {
+                    @if (paragraph.trim()) {
+                      <div class="rx-paragraph">
+                        <p class="rx-text">{{ paragraph }}</p>
+                      </div>
+                    }
+                  }
+                </div>
+
+                <!-- Bottom seal -->
+                <div class="rx-footer mx-auto">
+                  <div class="rx-seal mx-auto">
+                    <span>تولید شده توسط سیستم هوش مصنوعی </span>
+                    <mat-icon>verified</mat-icon>
+                  </div>
+                  <span class="rx-disclaimer mx-auto">این گزارش جنبه اطلاع‌رسانی دارد و جایگزین نظر پزشک نمی‌شود</span>
+                </div>
+
+              </div>
+            }
+
+            @if (visitDates.length > 0) {
+              <mat-form-field appearance="outline" class="w-100 mb-3">
+                <mat-label>{{ getTranslation('selectDate') || 'انتخاب تاریخ' }}</mat-label>
+                <mat-select [(ngModel)]="selectedDate" (ngModelChange)="onDateChange($event)">
+                  <mat-option *ngFor="let date of visitDates" [value]="date">
+                    {{ date }}
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            }
+
+            @if (selectedDate && getVisitList(selectedDate).length > 0) {
+
+              @for (visit of getVisitList(selectedDate); track visit.view_instance) {
+                @if (visit.type === 'fuzzy_summary') {
+                  <div class="visit-summary summary-card mb-3">
+                    <div class="summary-header">
+                      <mat-icon>assessment</mat-icon>
+                      <h5>خلاصه تشخیصی</h5>
+                    </div>
+                    <div class="summary-content">
+                      <div class="summary-item">
+                        <span class="label">امتیاز:</span>
+                        <span class="value score">{{ visit.result.score | number:'1.1-1' }}</span>
+                      </div>
+                      <div class="summary-item">
+                        <span class="label">دسته‌بندی:</span>
+                        <span class="value badge"
+                              [class.badge-normal]="visit.result.category === 'Normal'"
+                              [class.badge-warn]="visit.result.category !== 'Normal'">
+                          {{ visit.result.category }}
+                        </span>
+                      </div>
+                      <div class="summary-item full-width">
+                        <span class="label">توضیحات:</span>
+                        <span class="value">{{ visit.result.text }}</span>
+                      </div>
+                    </div>
+                    @if (visit.result.plots?.links?.length) {
+                      <div class="plots-gallery mt-3">
+                        <h6>نمودارهای تحلیل فازی:</h6>
+                        <div class="gallery-grid">
+                          @for (plot of visit.result.plots.links; track plot.url) {
+                            <div class="gallery-item" (click)="viewEchoFile(plot.url); $event.stopPropagation()">
+                              <div class="gallery-img-wrap">
+                                <img [src]="plot.url" alt="نمودار تحلیل فازی">
+                                <div class="overlay"><mat-icon>zoom_in</mat-icon></div>
+                              </div>
+                              <span class="gallery-caption">نمودار تحلیل فازی {{ $index + 1 }}</span>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                } @else {
+                  <div class="visit-summary visit-card mb-3">
+
+                    @if (visit.measurements?.length) {
+                      <div class="measurements-section mt-3">
+                        <div class="ms-header">
+                          <mat-icon>straighten</mat-icon>
+                          <span>{{ getTranslation('measurements') || 'اندازه‌گیری‌ها' }}</span>
+                        </div>
+
+                        <!-- Desktop table -->
+                        <div class="table-responsive ms-desktop">
+                          <table class="measurements-table">
+                            <thead>
+                              <tr>
+                                <th>رویداد</th>
+                                <th>اندازه‌گیری</th>
+                                <th>مقدار</th>
+                                <th>توضیحات</th>
+                                <th>تصاویر</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              @for (m of visit.measurements; track m.event_frame_number) {
+                                <tr>
+                                  <td><span class="event-badge">{{ m.event_name }}</span></td>
+                                  <td><strong>{{ m.measurement_name }}</strong></td>
+                                  <td><span class="value-highlight">{{ m.value | number:'1.2-2' }} {{ m.unit }}</span></td>
+                                  <td><small class="text-muted">{{ m.text }}</small></td>
+                                  <td>
+                                    <div class="ms-img-row">
+                                      <div class="image-preview"
+                                           (click)="viewEchoFile(m.event_frame_image_url, getMeasurementImages(m.event_frame_image_url, m.measurement_preview_image_url), 0); $event.stopPropagation()">
+                                        <img [src]="m.event_frame_image_url" alt="Event Frame">
+                                        <div class="image-overlay"><mat-icon>zoom_in</mat-icon></div>
+                                      </div>
+                                      <div class="image-preview"
+                                           (click)="viewEchoFile(m.measurement_preview_image_url, getMeasurementImages(m.event_frame_image_url, m.measurement_preview_image_url), 1); $event.stopPropagation()">
+                                        <img [src]="m.measurement_preview_image_url" alt="Measurement">
+                                        <div class="image-overlay"><mat-icon>zoom_in</mat-icon></div>
+                                      </div>
+                                    </div>
+                                  </td>
+                                </tr>
+                              }
+                            </tbody>
+                          </table>
+                        </div>
+
+                        <!-- Mobile cards -->
+                        <div class="ms-mobile">
+                          @for (m of visit.measurements; track m.event_frame_number) {
+                            <div class="ms-card">
+                              <div class="ms-card-top">
+                                <span class="event-badge">{{ m.event_name }}</span>
+                                <span class="value-highlight">{{ m.value | number:'1.2-2' }} {{ m.unit }}</span>
+                              </div>
+                              <div class="ms-card-name">{{ m.measurement_name }}</div>
+                              @if (m.text) {
+                                <div class="ms-card-desc">{{ m.text }}</div>
+                              }
+                              <div class="ms-card-images">
+                                <div class="image-preview"
+                                     (click)="viewEchoFile(m.event_frame_image_url, getMeasurementImages(m.event_frame_image_url, m.measurement_preview_image_url), 0); $event.stopPropagation()">
+                                  <img [src]="m.event_frame_image_url" alt="Event Frame">
+                                  <div class="image-overlay"><mat-icon>zoom_in</mat-icon></div>
+                                </div>
+                                <div class="image-preview"
+                                     (click)="viewEchoFile(m.measurement_preview_image_url, getMeasurementImages(m.event_frame_image_url, m.measurement_preview_image_url), 1); $event.stopPropagation()">
+                                  <img [src]="m.measurement_preview_image_url" alt="Measurement">
+                                  <div class="image-overlay"><mat-icon>zoom_in</mat-icon></div>
+                                </div>
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    }
+
+                    <!-- تصاویر تحلیلی: نمودار ECG، تشخیص مقیاس، سگمنتیشن دهلیزها و بطن چپ -->
+                    @if (visit.files?.ecg_plot_url || visit.files?.scale_debug_url ||
+                         visit.a4c_volume?.overlay_image_url || visit.lv_volume?.overlay_image_url) {
+                      <div class="plots-gallery mt-3">
+                        <h6>تصاویر تحلیلی:</h6>
+                        <div class="gallery-grid">
+                          @if (visit.files?.ecg_plot_url) {
+                            <div class="gallery-item"
+                                 (click)="viewEchoFile(visit.files.ecg_plot_url); $event.stopPropagation()">
+                              <div class="gallery-img-wrap">
+                                <img [src]="visit.files.ecg_plot_url" alt="نمودار ضربان قلب (PQRST)">
+                                <div class="overlay"><mat-icon>zoom_in</mat-icon></div>
+                              </div>
+                              <span class="gallery-caption">نمودار ضربان قلب (PQRST)</span>
+                            </div>
+                          }
+                          @if (visit.files?.scale_debug_url) {
+                            <div class="gallery-item"
+                                 (click)="viewEchoFile(visit.files.scale_debug_url); $event.stopPropagation()">
+                              <div class="gallery-img-wrap">
+                                <img [src]="visit.files.scale_debug_url" alt="تشخیص مقیاس تصویر">
+                                <div class="overlay"><mat-icon>zoom_in</mat-icon></div>
+                              </div>
+                              <span class="gallery-caption">تشخیص مقیاس تصویر</span>
+                            </div>
+                          }
+                          @if (visit.a4c_volume?.overlay_image_url) {
+                            <div class="gallery-item"
+                                 (click)="viewEchoFile(visit.a4c_volume.overlay_image_url); $event.stopPropagation()">
+                              <div class="gallery-img-wrap">
+                                <img [src]="visit.a4c_volume.overlay_image_url" alt="سگمنتیشن دهلیزها">
+                                <div class="overlay"><mat-icon>zoom_in</mat-icon></div>
+                              </div>
+                              <span class="gallery-caption">سگمنتیشن دهلیزها</span>
+                            </div>
+                          }
+                          @if (visit.lv_volume?.overlay_image_url) {
+                            <div class="gallery-item"
+                                 (click)="viewEchoFile(visit.lv_volume.overlay_image_url); $event.stopPropagation()">
+                              <div class="gallery-img-wrap">
+                                <img [src]="visit.lv_volume.overlay_image_url" alt="سگمنتیشن بطن چپ">
+                                <div class="overlay"><mat-icon>zoom_in</mat-icon></div>
+                              </div>
+                              <span class="gallery-caption">سگمنتیشن بطن چپ</span>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
               }
-            </mat-panel-title>
 
-            <mat-panel-description>
-              {{ getTranslation('video') }}: {{ visit.video_name }} |
-              {{ getTranslation('processedAt') }}: {{ visit.processed_at }}
-            </mat-panel-description>
+            } @else {
+              <div class="no-data-state">
+                <mat-icon>folder_open</mat-icon>
+                <p>{{ getTranslation('noVisitsForDate') || 'برای این تاریخ ویزیتی ثبت نشده است' }}</p>
+              </div>
+            }
 
-          </mat-expansion-panel-header>
-
-          <!-- PANEL BODY (FIXED) -->
-           <div class="p-3">
-           
-           @if (visit.type === 'fuzzy_summary') {
-             <div class="visit-summary mb-3 p-3 border rounded">
-               <h5>{{ getTranslation('fuzzySummary') }}</h5>
-               <div>
-                 <strong>{{ getTranslation('score') }}:</strong> {{ visit.result.score }}<br>
-                 <strong>{{ getTranslation('category') }}:</strong> {{ visit.result.category }}<br>
-                 <strong>{{ getTranslation('text') }}:</strong> {{ visit.result.text }}
-               </div>
-               @if (visit.result.plots?.links) {
-                 <div class="mt-3">
-                   <strong>{{ getTranslation('plots') }}:</strong>
-                   <div class="d-flex flex-wrap gap-2">
-                     @for (plot of visit.result.plots.links; track plot.url) {
-                       <div (click)="viewFile(plot.url); $event.stopPropagation()" class="cursor-pointer">
-                         <img [src]="plot.url" width="80" height="80" style="object-fit: cover;" alt="plot">
-                       </div>
-                     }
-                   </div>
-                 </div>
-               }
-             </div>
-           } @else {
-             <div class="visit-summary mb-3 p-3 border rounded">
-               <h5>
-                 {{ getTranslation('viewInstance') }}: {{ visit.view_instance }}
-               </h5>
-   
-               @if (visit.detected_view && visit.detected_view !== visit.view_instance) {
-                 <span class="text-muted">
-                   ({{ getTranslation('detected') }}: {{ visit.detected_view }})
-                 </span>
-               }
-   
-               <div>
-                 <strong>{{ getTranslation('video') }}:</strong> {{ visit.video_name }} |
-                 <strong>{{ getTranslation('processedAt') }}:</strong> {{ visit.processed_at }}
-               </div>
-   
-               @if (visit.measurements?.length) {
-                 <div class="mt-2">
-                   <strong>{{ getTranslation('measurements') }}:</strong>
-                   <table class="table table-sm table-hover">
-                     <thead>
-                       <tr>
-                         <th>{{ getTranslation('eventName') }}</th>
-                         <th>{{ getTranslation('measurementName') }}</th>
-                         <th>{{ getTranslation('value') }}</th>
-                         <th>{{ getTranslation('unit') }}</th>
-                         <th>{{ getTranslation('text') }}</th>
-                         <th>{{ getTranslation('frameImage') }}</th>
-                         <th>{{ getTranslation('previewImage') }}</th>
-                       </tr>
-                     </thead>
-                     <tbody>
-                       @for (m of visit.measurements; track m.event_frame_number) {
-                         <tr>
-                           <td>{{ m.event_name }}</td>
-                           <td>{{ m.measurement_name }}</td>
-                           <td>{{ m.value }}</td>
-                           <td>{{ m.unit }}</td>
-                           <td>{{ m.text }}</td>
-                           <td>
-                             <div (click)="viewFile(m.event_frame_image_url); $event.stopPropagation()" class="cursor-pointer">
-                               <img [src]="m.event_frame_image_url" width="40" height="40" style="object-fit: cover;">
-                             </div>
-                           </td>
-                           <td>
-                             <div (click)="viewFile(m.measurement_preview_image_url); $event.stopPropagation()" class="cursor-pointer">
-                               <img [src]="m.measurement_preview_image_url" width="40" height="40" style="object-fit: cover;">
-                             </div>
-                           </td>
-                         </tr>
-                       }
-                     </tbody>
-                   </table>
-                 </div>
-               }
-   
-               <!-- Volumes -->
-               @if (visit.a4c_volume || visit.lv_volume) {
-                 <div class="mb-3">
-                   <h4>{{ getTranslation('volumes') }}</h4>
-   
-                   @if (visit.a4c_volume) {
-                     <div>
-                       <strong>A4C</strong>
-                       RA: {{ visit.a4c_volume.areas_cm2?.right_atrium?.toFixed(2) }} cm²,
-                       LA: {{ visit.a4c_volume.areas_cm2?.left_atrium?.toFixed(2) }} cm²
-                     </div>
-                   }
-   
-                   @if (visit.lv_volume) {
-                     <div>
-                       <strong>LV</strong>
-                       {{ visit.lv_volume.area_cm2?.toFixed(2) }} cm²
-                     </div>
-                   }
-                 </div>
-               }
-   
-               <!-- Classification -->
-               @if (visit.classification) {
-                 <div class="mb-3">
-                   <h4>{{ getTranslation('classification') }}</h4>
-   
-                   <div>
-                     {{ visit.classification.video_name }} |
-                     {{ visit.classification.prediction }} |
-                     {{ (visit.classification.confidence * 100).toFixed(1) }}%
-                   </div>
-                 </div>
-               }
-   
-               <!-- FILES -->
-               @if (visit.files) {
-                 <div class="mb-3">
-                   <h4>{{ getTranslation('files') }}</h4>
-   
-                   <div class="d-flex flex-wrap gap-2">
-   
-                     @if (visit.files.classification_json_address) {
-                       <button mat-stroked-button (click)="viewFile(visit.files.classification_json_address)">
-                         JSON
-                       </button>
-                     }
-   
-                     @if (visit.files.result_json_address) {
-                       <button mat-stroked-button (click)="viewFile(visit.files.result_json_address)">
-                         Result
-                       </button>
-                     }
-   
-                     @if (visit.files.plots?.links?.length) {
-                       <button mat-stroked-button
-                               (click)="viewFile(visit.files.plots.links[0].address)">
-                         Plot
-                       </button>
-                     }
-   
-                   </div>
-                 </div>
-               }
-             </div>
-           }
-           </div>
-
-        </mat-expansion-panel>
-
-      }
-
-      @if (!getVisitList(selectedDate)?.length) {
-        <p class="text-muted text-center py-4">
-          {{ getTranslation('noVisitsForDate') }}
-        </p>
-      }
+          </mat-card-content>
+        </mat-card>
+      </div>
 
     </div>
   }
