@@ -82,10 +82,9 @@ class StaffService
         if ($staff == null) {
             throw new ErrorException('پرسنل وجود ندارد!');
         }
-
-        $staff = Staff::update([
-            'schedule' => $request->schedule,
-        ]);
+        $staff->fill([
+            'schedule'   => $request->schedule
+        ])->save();
 
         return [
             'message' => 'برنامه کاری با موفقیت افزوده شد',
