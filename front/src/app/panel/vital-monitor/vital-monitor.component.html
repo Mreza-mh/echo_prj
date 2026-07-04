@@ -6,8 +6,8 @@
       <mat-icon>monitor_heart</mat-icon>
     </div>
     <div class="vm-header__text">
-      <h2>پایش علائم حیاتی</h2>
-      <p>ضربان قلب · سنسور MAX30102</p>
+      <h2>{{ getTranslation('vitalMonitorTitle') }}</h2>
+      <p>{{ getTranslation('sensorInfo') }}</p>
     </div>
     @if (readings.length > 0) {
       <div class="conn-pill conn-pill--mqtt">
@@ -30,7 +30,7 @@
               type="text"
               [(ngModel)]="searchQuery"
               (input)="onSearchInput()"
-              placeholder="نام بیمار یا شناسه عددی..."
+              [placeholder]="getTranslation('vitalsPatientSearchPlaceholder')"
               autocomplete="off"
             />
             @if (searchQuery) {
@@ -39,7 +39,7 @@
               </button>
             }
           </div>
-          <p class="search-hint">حداقل ۲ کاراکتر — عدد = جستجو بر اساس شناسه</p>
+          <p class="search-hint">{{ getTranslation('minCharactersHint') }}</p>
 
           @if (patients.length > 0) {
             <div class="patient-dropdown">
@@ -55,7 +55,7 @@
           }
 
           @if (searchQuery.length >= 2 && patients.length === 0) {
-            <p class="search-empty">بیماری یافت نشد</p>
+            <p class="search-empty">{{ getTranslation('patientNotFoundVitals') }}</p>
           }
         </div>
       }
@@ -82,7 +82,7 @@
       <div class="ctrl-row">
         <div class="device-pill" [class.device-pill--active]="measuring">
           <span class="device-pill__dot"></span>
-          {{ measuring ? 'دستگاه در حال اندازه‌گیری' : 'آماده به اندازه‌گیری' }}
+          {{ measuring ? getTranslation('deviceMeasuring') : getTranslation('readyForMeasurement') }}
         </div>
 
         <div class="ctrl-actions">
@@ -93,12 +93,12 @@
             } @else {
               <mat-icon>play_arrow</mat-icon>
             }
-            شروع اندازه‌گیری
+            {{ getTranslation('startMeasurement') }}
           </button>
 
           <button class="btn-stop" (click)="stopMeasuring()" [disabled]="!measuring">
             <mat-icon>stop</mat-icon>
-            توقف دستی
+            {{ getTranslation('stopMeasurement') }}
           </button>
         </div>
       </div>
@@ -107,7 +107,7 @@
         <div class="countdown-wrap">
           <div class="countdown-info">
             <mat-icon>timer</mat-icon>
-            <span>توقف خودکار در <b>{{ countdown }}</b> ثانیه</span>
+            <span>{{ getTranslation('autoStopIn') }} <b>{{ countdown }}</b> {{ getTranslation('secondsLabel') }}</span>
             <span class="countdown-pct">{{ countdownPct.toFixed(0) }}٪</span>
           </div>
           <div class="countdown-rail">
@@ -131,7 +131,7 @@
         <div class="vital-dark__icon vital-dark__icon--red">
           <mat-icon [class.pulse-anim]="measuring && hasValidHr">favorite</mat-icon>
         </div>
-        <span class="vital-dark__label">ضربان قلب</span>
+        <span class="vital-dark__label">{{ getTranslation('heartRateLabel') }}</span>
         <div class="vital-dark__value">
           <span class="vital-dark__num" [class.vital-dark__num--red]="hasValidHr">
             {{ hasValidHr ? latestValidHr : '—' }}
@@ -140,7 +140,7 @@
         </div>
         <div class="vital-dark__status" [class.vital-dark__status--ok]="hasValidHr">
           <span class="vital-dark__dot"></span>
-          {{ hasValidHr ? 'سیگنال معتبر' : 'در حال کالیبراسیون...' }}
+          {{ hasValidHr ? getTranslation('validSignal') : getTranslation('calibrationInProgress') }}
         </div>
       </div>
 
@@ -151,8 +151,8 @@
       <div class="vm-card vm-card--chart">
         <div class="vm-card__head">
           <mat-icon>show_chart</mat-icon>
-          <span>روند زنده اندازه‌گیری‌ها</span>
-          <span class="vm-card__head-meta">{{ readings.length }} نمونه در این جلسه</span>
+          <span>{{ getTranslation('liveReadingTrend') }}</span>
+          <span class="vm-card__head-meta">{{ readings.length }} {{ getTranslation('samplesThisSession') }}</span>
         </div>
         <div class="vm-card__body">
 
@@ -161,13 +161,13 @@
             <div class="linechart linechart--hr">
               <div class="linechart__head">
                 <span class="linechart__title">
-                  <mat-icon>favorite</mat-icon> ضربان قلب
+                  <mat-icon>favorite</mat-icon> {{ getTranslation('heartRateLabel') }}
                 </span>
                 @if (hrStats; as s) {
                   <span class="linechart__stats">
-                    <b>{{ s.min }}</b> کمینه ·
-                    <b>{{ s.avg }}</b> میانگین ·
-                    <b>{{ s.max }}</b> بیشینه <small>bpm</small>
+                    <b>{{ s.min }}</b> {{ getTranslation('minimum') }} ·
+                    <b>{{ s.avg }}</b> {{ getTranslation('average') }} ·
+                    <b>{{ s.max }}</b> {{ getTranslation('maximum') }} <small>bpm</small>
                   </span>
                 }
               </div>
@@ -208,7 +208,7 @@
     <div class="vm-card vm-card--log">
       <div class="vm-card__head">
         <mat-icon>receipt_long</mat-icon>
-        <span>تاریخچه خوانده‌ها</span>
+        <span>{{ getTranslation('readingHistory') }}</span>
         <span class="log-count">{{ readings.length }}</span>
       </div>
       <div class="vm-card__body vm-card__body--flush">
@@ -216,7 +216,7 @@
         @if (readings.length === 0) {
           <div class="log-empty">
             <mat-icon>sensors</mat-icon>
-            <span>در انتظار دریافت داده از سنسور...</span>
+            <span>{{ getTranslation('waitingSensorData') }}</span>
           </div>
         }
 
@@ -224,9 +224,9 @@
         @if (readings.length > 0) {
           <div class="log-row log-row--header">
             <span>#</span>
-            <span>زمان</span>
-            <span>ضربان قلب</span>
-            <span>وضعیت</span>
+            <span>{{ getTranslation('timeColumn') }}</span>
+            <span>{{ getTranslation('heartRateLabel') }}</span>
+            <span>{{ getTranslation('statusColumn') }}</span>
           </div>
         }
 
@@ -248,9 +248,9 @@
 
             <span class="log-cell log-cell--badge">
               @if (r.valid_hr) {
-                <span class="badge badge--ok">معتبر</span>
+                <span class="badge badge--ok">{{ getTranslation('validBadge') }}</span>
               } @else {
-                <span class="badge badge--void">کالیبراسیون</span>
+                <span class="badge badge--void">{{ getTranslation('calibrationBadge') }}</span>
               }
             </span>
 
@@ -266,11 +266,11 @@
     <div class="save-bar">
       <div class="save-bar__text">
         <mat-icon>auto_graph</mat-icon>
-        <span>میانگین <b>{{ readings.length }}</b> اندازه‌گیری آماده ذخیره است</span>
+        <span>{{ getTranslation('average') }} <b>{{ readings.length }}</b> {{ getTranslation('readingsReadyToSave') }}</span>
       </div>
       <button class="btn-save" (click)="saveToProfile()">
         <mat-icon>save</mat-icon>
-        ذخیره در پروفایل بیمار
+        {{ getTranslation('saveToPatientProfile') }}
       </button>
     </div>
   }

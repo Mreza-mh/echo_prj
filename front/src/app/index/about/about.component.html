@@ -1,38 +1,20 @@
 <div class="about-page" [dir]="translationService.getCurrentLang() === 'fa' ? 'rtl' : 'ltr'">
-  <section class="hero-section">
-    <div class="container">
-      <div class="hero-content animate__animated animate__fadeIn">
-        <div class="d-inline-flex align-items-center gap-2 px-3 py-2 rounded-pill bg-white bg-opacity-10 mb-4">
-          <mat-icon class="text-warning">school</mat-icon>
-          <span class="text-white fw-medium">{{ getTranslation('bachelorProject') }}</span>
-        </div>
-        <h1 class="display-3 fw-bold mb-3">{{ getTranslation('projectTitle') }}</h1>
-        <p class="lead mb-4 opacity-75 mx-auto" style="max-width: 700px;">
-          {{ getTranslation('projectSubtitle') }}
-        </p>
-        <div class="hero-badges justify-content-center d-flex flex-wrap gap-2">
-          <span class="badge rounded-pill bg-light text-primary px-3 py-2 shadow-sm">
-            <mat-icon class="align-middle me-1 fs-6">memory</mat-icon> {{ getTranslation('badgeAI') }}
-          </span>
-          <span class="badge rounded-pill bg-light text-success px-3 py-2 shadow-sm">
-            <mat-icon class="align-middle me-1 fs-6">monitor_heart</mat-icon> {{ getTranslation('badgeEcho') }}
-          </span>
-          <span class="badge rounded-pill bg-light text-danger px-3 py-2 shadow-sm">
-            <mat-icon class="align-middle me-1 fs-6">psychology</mat-icon> {{ getTranslation('badgeFuzzy') }}
-          </span>
-        </div>
-      </div>
+  <section class="hero-section hero-image-only">
+    <div class="hero-frame">
+      <img src="images/aboutus.png" alt="EchoMind" class="hero-showcase-img">
+      <div class="hero-fade"></div>
     </div>
-    <div class="hero-shapes">
-      <div class="shape shape-1"></div>
-      <div class="shape shape-2"></div>
-      <div class="shape shape-3"></div>
+    <div class="scroll-cue">
+      <span class="scroll-cue-label">{{ translationService.getCurrentLang() === 'fa' ? 'اسکرول کنید' : 'Scroll' }}</span>
+      <span class="scroll-cue-icon">
+        <mat-icon>keyboard_arrow_down</mat-icon>
+      </span>
     </div>
   </section>
 
-  <section class="content-section py-5 mt-n5">
+  <section class="content-section py-5">
     <div class="container">
-      
+
       <div class="row mb-5 justify-content-center">
         <div class="col-lg-10">
           <div class="card story-card border-0 shadow-lg animate__animated animate__fadeInUp">
@@ -54,75 +36,93 @@
         <p class="text-secondary">{{ getTranslation('coreFeaturesSubtitle') }}</p>
       </div>
 
-      <div class="row g-4">
+      <div class="row g-4 feature-grid">
         <div class="col-md-6 col-lg-4">
-          <div class="card feature-card h-100 border-0 shadow-sm">
+          <div class="card feature-card h-100 border-0">
             <div class="card-body p-4">
               <div class="feature-icon bg-info bg-opacity-10 text-info mb-4">
                 <mat-icon>event_available</mat-icon>
               </div>
               <h4 class="fw-bold mb-3">{{ getTranslation('featPanelsTitle') }}</h4>
               <p class="text-secondary lh-base">{{ getTranslation('featPanelsDesc') }}</p>
+              <div class="feature-tags">
+                <span class="feature-tag" *ngFor="let tag of getTags('featPanelsTags')">{{ tag }}</span>
+              </div>
             </div>
           </div>
         </div>
 
         <div class="col-md-6 col-lg-4">
-          <div class="card feature-card h-100 border-0 shadow-sm">
+          <div class="card feature-card h-100 border-0">
             <div class="card-body p-4">
               <div class="feature-icon bg-danger bg-opacity-10 text-danger mb-4">
                 <mat-icon>troubleshoot</mat-icon>
               </div>
               <h4 class="fw-bold mb-3">{{ getTranslation('featEchoTitle') }}</h4>
               <p class="text-secondary lh-base">{{ getTranslation('featEchoDesc') }}</p>
+              <div class="feature-tags">
+                <span class="feature-tag" *ngFor="let tag of getTags('featEchoTags')">{{ tag }}</span>
+              </div>
             </div>
           </div>
         </div>
 
         <div class="col-md-6 col-lg-4">
-          <div class="card feature-card h-100 border-0 shadow-sm">
+          <div class="card feature-card h-100 border-0">
             <div class="card-body p-4">
               <div class="feature-icon bg-warning bg-opacity-10 text-warning mb-4">
                 <mat-icon>analytics</mat-icon>
               </div>
               <h4 class="fw-bold mb-3">{{ getTranslation('featFuzzyTitle') }}</h4>
               <p class="text-secondary lh-base">{{ getTranslation('featFuzzyDesc') }}</p>
+              <div class="feature-tags">
+                <span class="feature-tag" *ngFor="let tag of getTags('featFuzzyTags')">{{ tag }}</span>
+              </div>
             </div>
           </div>
         </div>
 
         <div class="col-md-6 col-lg-4">
-          <div class="card feature-card h-100 border-0 shadow-sm">
+          <div class="card feature-card h-100 border-0">
             <div class="card-body p-4">
               <div class="feature-icon bg-success bg-opacity-10 text-success mb-4">
                 <mat-icon>support_agent</mat-icon>
               </div>
               <h4 class="fw-bold mb-3">{{ getTranslation('featAssistantTitle') }}</h4>
               <p class="text-secondary lh-base">{{ getTranslation('featAssistantDesc') }}</p>
+              <div class="feature-tags">
+                <span class="feature-tag" *ngFor="let tag of getTags('featAssistantTags')">{{ tag }}</span>
+              </div>
             </div>
           </div>
         </div>
 
         <div class="col-md-6 col-lg-4">
-          <div class="card feature-card h-100 border-0 shadow-sm">
+          <div class="card feature-card h-100 border-0">
             <div class="card-body p-4">
               <div class="feature-icon bg-primary bg-opacity-10 text-primary mb-4">
                 <mat-icon>smart_button</mat-icon>
               </div>
               <h4 class="fw-bold mb-3">{{ getTranslation('featAiBookingTitle') }}</h4>
               <p class="text-secondary lh-base">{{ getTranslation('featAiBookingDesc') }}</p>
+              <div class="feature-tags">
+                <span class="feature-tag" *ngFor="let tag of getTags('featAiBookingTags')">{{ tag }}</span>
+              </div>
             </div>
           </div>
         </div>
 
         <div class="col-md-6 col-lg-4">
-          <div class="card feature-card h-100 border-0 shadow-sm">
+          <div class="card feature-card h-100 border-0">
             <div class="card-body p-4">
-              <div class="feature-icon bg-purple bg-opacity-10 text-purple mb-4" style="color: #6f42c1; background: #f3e8ff;">
+              <div class="feature-icon bg-purple mb-4">
                 <mat-icon>compare_arrows</mat-icon>
               </div>
               <h4 class="fw-bold mb-3">{{ getTranslation('featDataTitle') }}</h4>
               <p class="text-secondary lh-base">{{ getTranslation('featDataDesc') }}</p>
+              <div class="feature-tags">
+                <span class="feature-tag" *ngFor="let tag of getTags('featDataTags')">{{ tag }}</span>
+              </div>
             </div>
           </div>
         </div>

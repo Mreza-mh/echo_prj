@@ -4,8 +4,9 @@
 #  چه چیزهایی را بالا می‌آورد:
 #    ۱) MQTT Broker (Mosquitto در Docker)   → پورت 1883
 #    ۲) Kong API Gateway                     → فعلاً غیرفعال (کامنت شده)
-#    ۳) Laravel API                          → پورت 8000
-#    ۴) MQTT Listener (php artisan mqtt:listen)
+#    ۳) FAISS AI Service (uvicorn)           → پورت 9000
+#    ۴) Laravel API                          → پورت 8000
+#    ۵) MQTT Listener (php artisan mqtt:listen)
 #
 #  اجرا:   .\start.ps1
 #  توقف:   .\start.ps1 -Stop
@@ -50,7 +51,7 @@ if ($Stop) {
     }
 
     # پنجره‌های PowerShell که این اسکریپت باز کرده (بر اساس عنوان پنجره)
-    foreach ($title in @("echo:laravel", "echo:mqtt-listen")) {
+    foreach ($title in @("echo:faiss", "echo:laravel", "echo:mqtt-listen")) {
         $procs = Get-Process powershell -ErrorAction SilentlyContinue |
                  Where-Object { $_.MainWindowTitle -like "*$title*" }
         $procs | Stop-Process -Force -ErrorAction SilentlyContinue
@@ -73,6 +74,12 @@ catch { Fail "Docker Desktop ejra nist. Aval bazesh konid." }
 # PHP باید در PATH باشد (برای لاراول)
 try { $phpVer = (php --version 2>&1)[0]; Ok "PHP: $phpVer" }
 catch { Fail "PHP peyda nashod. Masire php.exe ra be PATH ezafe konid." }
+
+# Python/uvicorn باید در PATH باشد (برای سرویس FAISS)
+try { $pyVer = (python --version 2>&1)[0]; Ok "Python: $pyVer" }
+catch { Fail "Python peyda nashod. Masire python.exe ra be PATH ezafe konid." }
+
+$faissDir = Join-Path $ROOT "back\faiss"
 
 # فایل .env لاراول
 $laravelDir = Join-Path $ROOT "back\laravel"
@@ -144,7 +151,18 @@ if ($brokerState -eq "running") {
 Info "Kong Gateway: gheyre-faal (baraye faal-sazi marhale 2 ra uncomment konid)"
 
 # ══════════════════════════════════════════════════════════════
-#  مرحله ۳ — Laravel Backend
+#  مرحله ۳ — FAISS AI Service
+# ══════════════════════════════════════════════════════════════
+Step "Starting FAISS AI Service"
+
+Assert-PortFree 9000
+
+Open-Window "echo:faiss" $faissDir "python -m uvicorn faiss_api:app --port 9000"
+Start-Sleep 2
+Ok "FAISS API → http://localhost:9000"
+
+# ══════════════════════════════════════════════════════════════
+#  مرحله ۴ — Laravel Backend
 # ══════════════════════════════════════════════════════════════
 Step "Starting Laravel Backend"
 
@@ -163,7 +181,7 @@ Start-Sleep 2
 Ok "Laravel API → http://localhost:8000"
 
 # ══════════════════════════════════════════════════════════════
-#  مرحله ۴ — MQTT Listener (دریافت داده حسگرها از ESP32)
+#  مرحله ۵ — MQTT Listener (دریافت داده حسگرها از ESP32)
 # ══════════════════════════════════════════════════════════════
 Step "Starting MQTT Listener"
 
@@ -179,6 +197,7 @@ Write-Host "=======================================" -ForegroundColor Cyan
 Write-Host "  Echo project amade ast" -ForegroundColor Green
 Write-Host "=======================================" -ForegroundColor Cyan
 Write-Host "  MQTT Broker   :  localhost:1883" -ForegroundColor White
+Write-Host "  FAISS API     :  http://localhost:9000" -ForegroundColor White
 Write-Host "  Laravel API   :  http://localhost:8000" -ForegroundColor White
 Write-Host "  Kong          :  (gheyre-faal)" -ForegroundColor DarkGray
 Write-Host "=======================================" -ForegroundColor Cyan

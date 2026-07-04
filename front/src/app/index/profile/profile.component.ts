@@ -9,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthHTTPService } from '../../auth/auth-http.service';
 import { ToastService } from '../../@shared/services/toast/toast.service';
+import { TranslationService } from '../../@shared/services/translation.service';
 import { finalize } from 'rxjs/operators';
 
 @Component({
@@ -38,7 +39,8 @@ export class ProfileComponent implements OnInit {
     private fb: FormBuilder,
     private authHttpService: AuthHTTPService,
     private toastService: ToastService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private translationService: TranslationService
   ) {
     this.profileForm = this.fb.group({
       name: ['', Validators.required],
@@ -48,6 +50,10 @@ export class ProfileComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadProfile();
+  }
+
+  getDirection(): 'ltr' | 'rtl' {
+    return this.translationService.getDirection();
   }
 
   loadProfile(): void {

@@ -4,6 +4,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { TranslationService } from '../../@shared/services/translation.service';
+import { ThemeService } from '../../@shared/services/theme.service';
 
 @Component({
   selector: 'app-footer',
@@ -14,8 +15,13 @@ import { TranslationService } from '../../@shared/services/translation.service';
 })
 export class FooterComponent {
   private translationService = inject(TranslationService);
+  private themeService = inject(ThemeService);
 
   getTranslation(key: string): string {
     return this.translationService.getTranslation(key);
+  }
+
+  get isDarkMode(): boolean {
+    return this.themeService.getCurrentTheme();
   }
 }

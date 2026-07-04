@@ -16,4 +16,11 @@ export class AboutComponent {
   getTranslation(key: string): string {
     return this.translationService.getTranslation(key);
   }
+
+  getTags(key: string): string[] {
+    return this.getTranslation(key)
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter(Boolean);
+  }
 }

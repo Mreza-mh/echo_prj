@@ -45,6 +45,10 @@ export class AppointmentComponent implements OnInit {
     return this.translationService.getTranslation(key);
   }
 
+  getDirection(): 'ltr' | 'rtl' {
+    return this.translationService.getDirection();
+  }
+
   selectedDate: Date | null = new Date();
   availableSlots: any[] = [];
   selectedSlot: any = null;

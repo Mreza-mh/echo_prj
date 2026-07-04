@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { TranslationService } from '../../@shared/services/translation.service';
+import { ThemeService } from '../../@shared/services/theme.service';
 import { AuthService } from '../../auth/auth.service';
 import { AuthHTTPService } from '../../auth/auth-http.service';
 
@@ -27,6 +28,7 @@ export class HomeComponent implements OnInit {
   private authService = inject(AuthService);
   private authhttpService = inject(AuthHTTPService);
   private translationService = inject(TranslationService);
+  private themeService = inject(ThemeService);
   userRole: string | null = null;
   userName: string | null = null;
   
@@ -85,11 +87,11 @@ export class HomeComponent implements OnInit {
       features: ['Users & Auth', 'Appointments', 'Services', 'Audit Logs']
     },
     {
-      name: 'RabbitMQ',
-      icon: 'rss_feed',
-      category: 'Message Queue',
-      className: 'rabbitmq',
-      features: ['Async Processing', 'Video Pipeline', 'Email/SMS Queue']
+      name: 'MQTT · Mosquitto',
+      icon: 'sensors',
+      category: 'IoT Broker',
+      className: 'mqtt',
+      features: ['ESP32 Heart Rate Sensor', 'Pub/Sub Messaging', 'Real-time Vitals']
     }
   ];
 
@@ -118,6 +120,32 @@ export class HomeComponent implements OnInit {
 
   isRTL(): boolean {
     return this.translationService.getCurrentLang() === 'fa';
+  }
+
+  get isDarkMode(): boolean {
+    return this.themeService.getCurrentTheme();
+  }
+
+  // Architecture tree — on phones hover doesn't exist, so tapping a node
+  // opens its detail in a modal instead. Desktop keeps the hover panel.
+  treeModalOpen = false;
+  treeModalTitle = '';
+  treeModalTag = '';
+  treeModalHtml = '';
+
+  openTreeNode(event: Event): void {
+    if (typeof window === 'undefined' || window.innerWidth > 640) {
+      return; // desktop/tablet: the hover panel handles it
+    }
+    const nodeEl = event.currentTarget as HTMLElement;
+    this.treeModalTitle = nodeEl.querySelector('.node-label')?.textContent?.trim() || '';
+    this.treeModalTag = nodeEl.querySelector('.node-tag, .node-port')?.textContent?.trim() || '';
+    this.treeModalHtml = nodeEl.querySelector('.node-hover')?.innerHTML || '';
+    this.treeModalOpen = true;
+  }
+
+  closeTreeModal(): void {
+    this.treeModalOpen = false;
   }
 
   // Interactive architecture diagram methods

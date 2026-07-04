@@ -51,11 +51,8 @@
         </div>
 
         <div class="hero-visual">
-          <!-- placeholder: /images/hero/echo-screen.jpg -->
-          <div class="echo-placeholder" aria-label="نمای اکوکاردیوگرافی">
-            <span class="echo-icon">♥</span>
-            <p>{{ getTranslation('echoInfo') }}</p>
-            <small>echocardiography view</small>
+          <div class="echo-placeholder" [attr.aria-label]="getTranslation('echoInfo')">
+            <img [src]="isDarkMode ? '/images/landingecho.png' : '/images/lightlanding.png'" [alt]="getTranslation('echoInfo')" class="echo-image" />
           </div>
         </div>
 
@@ -183,17 +180,17 @@
           </div>
         </div>
 
-        <!-- RabbitMQ -->
+        <!-- MQTT / IoT -->
         <div class="tech-card" tabindex="0">
-          <div class="tech-icon icon-rabbit">MQ</div>
-          <h4>RabbitMQ</h4>
-          <span class="tech-tag">{{ getTranslation('messageQueue') }}</span>
+          <div class="tech-icon icon-mqtt">IoT</div>
+          <h4>MQTT · Mosquitto</h4>
+          <span class="tech-tag">پایش سخت‌افزاری</span>
           <div class="tech-hover">
             <ul>
-              <li>video_processing queue</li>
-              <li>email_sending queue</li>
-              <li>report_generation queue</li>
-              <li>Exponential Backoff Retry</li>
+              <li>Eclipse Mosquitto Broker — Port 1883</li>
+              <li>ESP32 + MAX30105 Pulse Sensor</li>
+              <li>devices/{{ '{' }}id{{ '}' }}/data · /cmd Topics</li>
+              <li>php-mqtt Listener Daemon</li>
             </ul>
           </div>
         </div>
@@ -210,14 +207,37 @@
         <span class="flow-arrow">→</span>
         <span class="flow-node">MySQL / MongoDB</span>
         <span class="flow-arrow">→</span>
-        <span class="flow-node">RabbitMQ</span>
-        <span class="flow-arrow">→</span>
         <span class="flow-node">{{ getTranslation('llm') }} Report</span>
+        <span class="flow-arrow">→</span>
+        <span class="flow-node">ESP32 / MQTT</span>
       </div>
 
     </div>
   </section>
 
+
+  <!-- ═══════════════════════════════════════════════════════
+       SECTION 2.5 — MICROSERVICES DIAGRAM (Simple Overview)
+  ═══════════════════════════════════════════════════════ -->
+  <section class="ms-diagram-section" id="microservices">
+    <div class="container">
+
+      <div class="section-header">
+        <span class="section-badge"><span class="ms-badge-dot"></span>معماری میکروسرویس‌ها</span>
+        <h2>نمای کلی <span class="gradient-text">Microservices</span></h2>
+        <p>جریان ساده درخواست از کاربر تا سرویس‌های داده و هوش مصنوعی</p>
+      </div>
+
+      <div class="ms-image-grid">
+        <div class="ms-image-card">
+          <img src="/images/microservice1.png" alt="نمای کلی معماری میکروسرویس‌ها">
+        </div>
+        <div class="ms-image-card">
+          <img src="/images/microservice2.png" alt="نمای کلی معماری میکروسرویس‌ها">
+        </div>
+      </div>
+    </div>
+  </section>
 
   <!-- ═══════════════════════════════════════════════════════
        SECTION 3 — SYSTEM ARCHITECTURE (Tree View)
@@ -236,7 +256,7 @@
         <div class="tree-root">
 
           <!-- ══ LAYER 0: کاربران ══ -->
-          <div class="tree-node root-node" tabindex="0">
+          <div class="tree-node root-node" tabindex="0" (click)="openTreeNode($event)">
             <svg class="node-svg" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="6" r="3.5" stroke="currentColor" stroke-width="1.5"/><path d="M2 17c0-4.418 3.582-7 8-7s8 2.582 8 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
             <span class="node-label">کاربران سیستم</span>
             <span class="node-tag">4 نقش</span>
@@ -252,7 +272,7 @@
           <div class="tree-children">
             <!-- ══ LAYER 1: Frontend ══ -->
             <div class="tree-branch">
-              <div class="tree-node frontend-node" tabindex="0">
+              <div class="tree-node frontend-node" tabindex="0" (click)="openTreeNode($event)">
                 <svg class="node-svg" viewBox="0 0 20 20" fill="none"><rect x="2" y="3" width="16" height="11" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 17h6M10 14v3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                 <span class="node-label">Angular 20 Frontend</span>
                 <span class="node-port">:4200</span>
@@ -269,7 +289,7 @@
               <div class="tree-children">
                 <!-- ══ LAYER 2: Kong Gateway ══ -->
                 <div class="tree-branch">
-                  <div class="tree-node gateway-node" tabindex="0">
+                  <div class="tree-node gateway-node" tabindex="0" (click)="openTreeNode($event)">
                     <svg class="node-svg" viewBox="0 0 20 20" fill="none"><path d="M3 10h14M10 3l7 7-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
                     <span class="node-label">Kong API Gateway</span>
                     <span class="node-port">:9098</span>
@@ -287,7 +307,7 @@
 
                     <!-- ══ BRANCH A: Laravel ══ -->
                     <div class="tree-branch">
-                      <div class="tree-node laravel-node" tabindex="0">
+                      <div class="tree-node laravel-node" tabindex="0" (click)="openTreeNode($event)">
                         <svg class="node-svg" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M10 6v4l3 2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                         <span class="node-label">Laravel 11 API</span>
                         <span class="node-port">:8000</span>
@@ -296,7 +316,7 @@
                           <div class="nh-row"><span class="nh-key">احراز هویت</span><span class="nh-val">Laravel Sanctum · RBAC · Multi-role</span></div>
                           <div class="nh-row"><span class="nh-key">نوبت‌دهی</span><span class="nh-val">ظرفیت · تقویم · تداخل · reminder SMS</span></div>
                           <div class="nh-row"><span class="nh-key">فایل‌ها</span><span class="nh-val">آپلود ویدیوی اکو · ذخیره در Object Storage</span></div>
-                          <div class="nh-row"><span class="nh-key">صف‌بندی</span><span class="nh-val">Job dispatch → RabbitMQ برای پردازش‌های سنگین</span></div>
+                          <div class="nh-row"><span class="nh-key">اشتراک داده</span><span class="nh-val">اتصال مستقیم به MongoDB مشترک با Python AI Engine</span></div>
                           <div class="nh-row"><span class="nh-key">اطلاع‌رسانی</span><span class="nh-val">Email (SMTP) · SMS · Notification center</span></div>
                           <div class="nh-row"><span class="nh-key">API</span><span class="nh-val">50+ RESTful endpoint · Resource Collections</span></div>
                         </div>
@@ -306,7 +326,7 @@
 
                         <!-- MySQL -->
                         <div class="tree-branch">
-                          <div class="tree-node db-node mysql-node" tabindex="0">
+                          <div class="tree-node db-node mysql-node" tabindex="0" (click)="openTreeNode($event)">
                             <svg class="node-svg" viewBox="0 0 20 20" fill="none"><ellipse cx="10" cy="6" rx="7" ry="3" stroke="currentColor" stroke-width="1.5"/><path d="M3 6v8c0 1.657 3.134 3 7 3s7-1.343 7-3V6" stroke="currentColor" stroke-width="1.5"/></svg>
                             <span class="node-label">MySQL 8.0</span>
                             <span class="node-tag">Relational DB</span>
@@ -321,26 +341,9 @@
                           </div>
                         </div>
 
-                        <!-- RabbitMQ -->
-                        <div class="tree-branch">
-                          <div class="tree-node db-node rabbitmq-node" tabindex="0">
-                            <svg class="node-svg" viewBox="0 0 20 20" fill="none"><path d="M4 10h12M4 6h12M4 14h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-                            <span class="node-label">RabbitMQ</span>
-                            <span class="node-tag">Message Queue</span>
-                            <div class="node-hover">
-                              <div class="nh-desc">جداسازی پردازش سنگین از درخواست کاربر — بدون بلاک شدن API</div>
-                              <div class="nh-row"><span class="nh-key">video_processing</span><span class="nh-val">ارسال ویدیو → Python AI Engine برای تحلیل</span></div>
-                              <div class="nh-row"><span class="nh-key">report_generation</span><span class="nh-val">درخواست گزارش LLM پس از تکمیل AI</span></div>
-                              <div class="nh-row"><span class="nh-key">email_sending</span><span class="nh-val">ارسال ایمیل بدون بلاک API</span></div>
-                              <div class="nh-row"><span class="nh-key">Retry</span><span class="nh-val">Exponential Backoff · Dead Letter Queue</span></div>
-                              <div class="nh-row"><span class="nh-key">Workers</span><span class="nh-val">Scalable Consumer Pool · Laravel Queue Worker</span></div>
-                            </div>
-                          </div>
-                        </div>
-
                         <!-- LLM -->
                         <div class="tree-branch">
-                          <div class="tree-node service-node llm-node" tabindex="0">
+                          <div class="tree-node service-node llm-node" tabindex="0" (click)="openTreeNode($event)">
                             <svg class="node-svg" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M7 10h6M7 7h3M7 13h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                             <span class="node-label">Arvan Cloud LLM</span>
                             <span class="node-tag">GPT-4o-mini</span>
@@ -355,12 +358,47 @@
                           </div>
                         </div>
 
+                        <!-- MQTT / IoT -->
+                        <div class="tree-branch">
+                          <div class="tree-node service-node mqtt-node" tabindex="0" (click)="openTreeNode($event)">
+                            <svg class="node-svg" viewBox="0 0 20 20" fill="none"><circle cx="4" cy="4" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="16" cy="4" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="16" r="2" stroke="currentColor" stroke-width="1.5"/><path d="M4 6v2a2 2 0 002 2h2M16 6v2a2 2 0 01-2 2h-2m-2 0v4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                            <span class="node-label">Mosquitto MQTT Broker</span>
+                            <span class="node-port">:1883</span>
+                            <div class="node-hover">
+                              <div class="nh-desc">پل ارتباطی بین دستگاه‌های سخت‌افزاری IoT و Laravel — پروتکل سبک pub/sub</div>
+                              <div class="nh-row"><span class="nh-key">Broker</span><span class="nh-val">Eclipse Mosquitto v2 · Docker Container</span></div>
+                              <div class="nh-row"><span class="nh-key">انتشار داده</span><span class="nh-val">Topic: devices/{{ '{' }}device_id{{ '}' }}/data</span></div>
+                              <div class="nh-row"><span class="nh-key">فرمان دستگاه</span><span class="nh-val">Topic: devices/{{ '{' }}device_id{{ '}' }}/cmd — start/stop</span></div>
+                              <div class="nh-row"><span class="nh-key">Listener</span><span class="nh-val">php artisan mqtt:listen · بسته php-mqtt/client</span></div>
+                              <div class="nh-row"><span class="nh-key">ذخیره</span><span class="nh-val">MongoDB · vital_readings + vital_sessions</span></div>
+                            </div>
+                          </div>
+
+                          <div class="tree-children">
+                            <div class="tree-branch">
+                              <div class="tree-node db-node esp32-node" tabindex="0" (click)="openTreeNode($event)">
+                                <svg class="node-svg" viewBox="0 0 20 20" fill="none"><rect x="4" y="4" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M7 4V2M13 4V2M7 18v-2M13 18v-2M4 7H2M4 13H2M18 7h-2M18 13h-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="10" r="2.5" stroke="currentColor" stroke-width="1.5"/></svg>
+                                <span class="node-label">ESP32 + MAX30105</span>
+                                <span class="node-tag">سنسور ضربان قلب</span>
+                                <div class="node-hover">
+                                  <div class="nh-desc">سخت‌افزار پایش زنده ضربان قلب بیمار در کنار تخت معاینه</div>
+                                  <div class="nh-row"><span class="nh-key">سنسور</span><span class="nh-val">MAX30105 پالس‌اکسیمتری · ارتباط I2C</span></div>
+                                  <div class="nh-row"><span class="nh-key">نمونه‌برداری</span><span class="nh-val">هر 20ms · میانگین متحرک روی 4 ضربان آخر</span></div>
+                                  <div class="nh-row"><span class="nh-key">ارسال داده</span><span class="nh-val">هر 2 ثانیه یک‌بار · حداکثر جلسه 150 ثانیه</span></div>
+                                  <div class="nh-row"><span class="nh-key">ایمنی</span><span class="nh-val">قطع خودکار در نبود انگشت یا قطع MQTT (20s)</span></div>
+                                  <div class="nh-row"><span class="nh-key">نمایش زنده</span><span class="nh-val">نمودار SVG هموارشده (Catmull-Rom) در پنل پزشک</span></div>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
                       </div>
                     </div>
 
                     <!-- ══ BRANCH B: Python AI ══ -->
                     <div class="tree-branch">
-                      <div class="tree-node python-node" tabindex="0">
+                      <div class="tree-node python-node" tabindex="0" (click)="openTreeNode($event)">
                         <svg class="node-svg" viewBox="0 0 20 20" fill="none"><path d="M10 2C6 2 5 4 5 6v2h5v1H4c-1.5 0-3 1-3 4s1.5 4 3 4h1v-2.5c0-1.5 1.2-2.5 3-2.5h4c1.5 0 2-1 2-2V6c0-2-1-4-4-4z" stroke="currentColor" stroke-width="1.3"/><circle cx="7.5" cy="5.5" r=".8" fill="currentColor"/><path d="M10 18c4 0 5-2 5-4v-2h-5v-1h6c1.5 0 3-1 3-4s-1.5-4-3-4h-1v2.5c0 1.5-1.2 2.5-3 2.5H8c-1.5 0-2 1-2 2v4c0 2 1 4 4 4z" stroke="currentColor" stroke-width="1.3"/><circle cx="12.5" cy="14.5" r=".8" fill="currentColor"/></svg>
                         <span class="node-label">Python AI Engine</span>
                         <span class="node-port">:5000</span>
@@ -379,7 +417,7 @@
 
                         <!-- MongoDB -->
                         <div class="tree-branch">
-                          <div class="tree-node db-node mongo-node" tabindex="0">
+                          <div class="tree-node db-node mongo-node" tabindex="0" (click)="openTreeNode($event)">
                             <svg class="node-svg" viewBox="0 0 20 20" fill="none"><path d="M10 2c0 0-5 4-5 9a5 5 0 0010 0C15 6 10 2 10 2z" stroke="currentColor" stroke-width="1.5"/><path d="M10 11v5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                             <span class="node-label">MongoDB</span>
                             <span class="node-tag">NoSQL Store</span>
@@ -396,7 +434,7 @@
 
                         <!-- Qdrant -->
                         <div class="tree-branch">
-                          <div class="tree-node service-node faiss-node" tabindex="0">
+                          <div class="tree-node service-node faiss-node" tabindex="0" (click)="openTreeNode($event)">
                             <svg class="node-svg" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/><circle cx="10" cy="10" r="7" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 2"/><path d="M10 3V1M10 19v-2M3 10H1M19 10h-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
                             <span class="node-label">Qdrant + FastAPI</span>
                             <span class="node-tag">Vector Search</span>
@@ -420,6 +458,22 @@
             </div>
           </div>
 
+        </div>
+      </div>
+
+      <!-- ─── Tree Node Detail Modal (mobile only) ─── -->
+      <div class="tree-modal-overlay" *ngIf="treeModalOpen" (click)="closeTreeModal()">
+        <div class="tree-modal" (click)="$event.stopPropagation()">
+          <div class="tree-modal-header">
+            <div class="tree-modal-heading">
+              <h3>{{ treeModalTitle }}</h3>
+              <span class="tree-modal-tag" *ngIf="treeModalTag">{{ treeModalTag }}</span>
+            </div>
+            <button type="button" class="tree-modal-close" (click)="closeTreeModal()" aria-label="بستن">
+              <mat-icon>close</mat-icon>
+            </button>
+          </div>
+          <div class="tree-modal-body" [innerHTML]="treeModalHtml"></div>
         </div>
       </div>
 
@@ -482,6 +536,8 @@
                     <div class="pr"><span class="pk">Clinical</span><span class="pv">ارسال به LLM همراه context اکو</span></div>
                     <div class="pr"><span class="pk">Support</span><span class="pv">پاسخ از Knowledge Base</span></div>
                     <div class="pr"><span class="pk">آستانه</span><span class="pv">Similarity ≥ ۰٫۶۰ · در غیر این صورت fallback به LLM</span></div>
+                    <div class="pr"><span class="pk">UI تعاملی</span><span class="pv">تگ‌های [UI:SELECT_STAFF/SERVICE/DATE/TIME] → رندر کارت انتخاب پزشک، سرویس، تاریخ و ساعت به‌جای تایپ آزاد</span></div>
+                    <div class="pr"><span class="pk">لاگ مکالمه</span><span class="pv">کانال اختصاصی ai_chat · ذخیره متن پاک‌شده از تگ‌ها</span></div>
                   </div>
                 </div>
               </div>
@@ -566,16 +622,16 @@
             <div class="sf-node accent has-pop" tabindex="0">
               <span class="sf-ic">📨</span>
               <div class="sf-main">
-                <strong>آپلود → صف پردازش</strong>
-                <small>Laravel فایل را ذخیره و Job به RabbitMQ می‌فرستد</small>
-                <div class="sf-tags"><span class="sf-tag">queue: video_processing</span></div>
+                <strong>آپلود → پردازش AI</strong>
+                <small>Laravel فایل ویدیو را ذخیره می‌کند و Python AI Engine آن را تحلیل می‌کند</small>
+                <div class="sf-tags"><span class="sf-tag">MongoDB مشترک</span></div>
                 <div class="sf-pop">
                   <div class="sf-pop-list">
                     <div class="pr"><span class="pk">مدیریت فایل</span><span class="pv">Laravel File Manager</span></div>
                     <div class="pr"><span class="pk">ذخیره</span><span class="pv">Object Storage (Arvan S3)</span></div>
-                    <div class="pr"><span class="pk">صف</span><span class="pv">Job dispatch → RabbitMQ · queue: video_processing</span></div>
-                    <div class="pr"><span class="pk">Worker</span><span class="pv">مصرف‌کننده Python AI Engine</span></div>
-                    <div class="pr"><span class="pk">مزیت</span><span class="pv">بدون بلاک‌شدن API · Exponential Backoff</span></div>
+                    <div class="pr"><span class="pk">اتصال دو سرویس</span><span class="pv">دیتابیس مشترک MongoDB — بدون فراخوانی مستقیم HTTP</span></div>
+                    <div class="pr"><span class="pk">پردازش</span><span class="pv">Python AI Engine ویدیو را می‌خواند و نتیجه را در MongoDB می‌نویسد</span></div>
+                    <div class="pr"><span class="pk">خواندن نتیجه</span><span class="pv">Laravel پس از تکمیل تحلیل، نتایج را از MongoDB می‌خواند</span></div>
                   </div>
                 </div>
               </div>
@@ -874,6 +930,87 @@
           </div>
         </div>
 
+        <div class="sf-down"><span>↓</span></div>
+
+        <!-- ══ PHASE 7 — Vital Monitoring Hardware (IoT) ══ -->
+        <div class="sf-phase p-vitals">
+          <div class="sf-rail">
+            <span class="sf-pnum">۷</span>
+            <div class="sf-ptitle">
+              <strong>پایش زنده ضربان قلب</strong>
+              <small>سخت‌افزار ESP32 · پروتکل MQTT · نمایش Real-time</small>
+            </div>
+          </div>
+          <div class="sf-body">
+
+            <div class="sf-node has-pop" tabindex="0">
+              <span class="sf-ic">💓</span>
+              <div class="sf-main">
+                <strong>ESP32 + MAX30105</strong>
+                <small>سنسور پالس‌اکسیمتری روی انگشت بیمار · ارتباط I2C</small>
+                <div class="sf-pop">
+                  <div class="sf-viz viz-ecg">
+                    <svg viewBox="0 0 240 48" preserveAspectRatio="none" aria-hidden="true">
+                      <polyline points="0,24 40,24 48,24 54,8 60,40 66,24 100,24 110,24 116,6 122,42 128,24 170,24 180,24 186,10 192,38 198,24 240,24"/>
+                    </svg>
+                    <span>سیگنال IR سنسور و تشخیص ضربان</span>
+                  </div>
+                  <div class="sf-pop-list">
+                    <div class="pr"><span class="pk">سنسور</span><span class="pv">MAX30105 · پالس‌اکسیمتری · I2C (SDA/SCL)</span></div>
+                    <div class="pr"><span class="pk">نمونه‌برداری</span><span class="pv">هر 20ms · تشخیص ضربان با checkForBeat()</span></div>
+                    <div class="pr"><span class="pk">میانگین‌گیری</span><span class="pv">میانگین متحرک روی 4 ضربان آخر (RATE_SIZE)</span></div>
+                    <div class="pr"><span class="pk">تشخیص انگشت</span><span class="pv">آستانه IR · بی‌اعتبار پس از 3.5s بدون ضربان</span></div>
+                    <div class="pr"><span class="pk">ایمنی جلسه</span><span class="pv">حداکثر 150 ثانیه · قطع خودکار در نبود MQTT (20s)</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <span class="sf-link">←</span>
+
+            <div class="sf-node accent has-pop" tabindex="0">
+              <span class="sf-ic">📡</span>
+              <div class="sf-main">
+                <strong>Mosquitto MQTT Broker</strong>
+                <small>Publish/Subscribe سبک — هر 2 ثانیه یک خوانش جدید</small>
+                <div class="sf-tags">
+                  <span class="sf-tag">devices/{{ '{' }}id{{ '}' }}/data</span>
+                  <span class="sf-tag">devices/{{ '{' }}id{{ '}' }}/cmd</span>
+                </div>
+                <div class="sf-pop">
+                  <div class="sf-viz viz-vector"><span>انتشار پیام روی توپیک دستگاه</span></div>
+                  <div class="sf-pop-list">
+                    <div class="pr"><span class="pk">Broker</span><span class="pv">Eclipse Mosquitto v2 · Docker · پورت 1883</span></div>
+                    <div class="pr"><span class="pk">داده ارسالی</span><span class="pv">patient_id · device_id · hr · valid_hr</span></div>
+                    <div class="pr"><span class="pk">فرمان دستگاه</span><span class="pv">start (با patient_id) / stop</span></div>
+                    <div class="pr"><span class="pk">Listener</span><span class="pv">php artisan mqtt:listen · php-mqtt/client</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <span class="sf-link">←</span>
+
+            <div class="sf-node has-pop" tabindex="0">
+              <span class="sf-ic">🩺</span>
+              <div class="sf-main">
+                <strong>پنل پزشک — نمودار زنده</strong>
+                <small>Laravel VitalController · ذخیره در MongoDB</small>
+                <div class="sf-tags"><span class="sf-tag store">→ MongoDB.vital_readings</span></div>
+                <div class="sf-pop">
+                  <div class="sf-pop-list">
+                    <div class="pr"><span class="pk">شروع/پایان</span><span class="pv">POST /vitals/start · /vitals/stop</span></div>
+                    <div class="pr"><span class="pk">نمایش زنده</span><span class="pv">GET /vitals/live/{{ '{' }}patient_id{{ '}' }} · Poll هر 2s</span></div>
+                    <div class="pr"><span class="pk">نمودار</span><span class="pv">SVG هموارشده با Catmull-Rom · شمارش معکوس 120s</span></div>
+                    <div class="pr"><span class="pk">ثبت نهایی</span><span class="pv">PATCH /vitals/save — میانگین 30 خوانش معتبر → فیلد thalach</span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
       </div>
 
       <!-- Communication Legend -->
@@ -886,7 +1023,7 @@
           </div>
           <div class="legend-item">
             <span class="legend-line async"></span>
-            <span>Asynchronous — RabbitMQ</span>
+            <span>Asynchronous — MQTT Pub/Sub</span>
           </div>
           <div class="legend-item">
             <span class="legend-line realtime"></span>

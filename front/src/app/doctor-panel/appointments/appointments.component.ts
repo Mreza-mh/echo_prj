@@ -8,6 +8,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatDividerModule } from '@angular/material/divider';
 import { DoctorHttpService } from '../doctor-http.service';
 import { ToastService } from '../../@shared/services/toast/toast.service';
+import { TranslationService } from '../../@shared/services/translation.service';
 
 @Component({
   selector: 'app-appointments',
@@ -27,6 +28,11 @@ import { ToastService } from '../../@shared/services/toast/toast.service';
 export class AppointmentsComponent implements OnInit {
   private doctorHttp = inject(DoctorHttpService);
   private toast = inject(ToastService);
+  private translationService = inject(TranslationService);
+
+  getTranslation(key: string): string {
+    return this.translationService.getTranslation(key);
+  }
 
   appointments: any[] = [];
   loading = true;
@@ -55,7 +61,7 @@ export class AppointmentsComponent implements OnInit {
       },
       error: (err: any) => {
         console.error('Error fetching appointments:', err);
-        this.error = 'خطا در دریافت لیست نوبت‌ها';
+        this.error = this.translationService.getTranslation('failedToLoadAppointments');
         this.loading = false;
       }
     });

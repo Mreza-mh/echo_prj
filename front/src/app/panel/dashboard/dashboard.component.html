@@ -6,37 +6,37 @@
       <div class="cmd-title">
         <div class="live-dot"></div>
         <div>
-          <h1>داشبورد نوبت‌ها</h1>
-          <p>مدیریت هوشمند زمان‌بندی</p>
+          <h1>{{ getTranslation('appointmentsDashboardTitle') }}</h1>
+          <p>{{ getTranslation('appointmentsDashboardSubtitle') }}</p>
         </div>
       </div>
 
       <div class="kpi-strip">
         <div class="kpi-item">
           <span class="kpi-num">{{ dashboardData.summary.total_appointments }}</span>
-          <span class="kpi-lbl">کل نوبت</span>
+          <span class="kpi-lbl">{{ getTranslation('totalAppointmentsShort') }}</span>
         </div>
         <span class="kpi-sep"></span>
         <div class="kpi-item confirmed">
           <span class="kpi-num">{{ dashboardData.summary.confirmed_count }}</span>
-          <span class="kpi-lbl">تایید شده</span>
+          <span class="kpi-lbl">{{ getTranslation('confirmedShort') }}</span>
         </div>
         <span class="kpi-sep"></span>
         <div class="kpi-item pending">
           <span class="kpi-num">{{ dashboardData.summary.pending_count }}</span>
-          <span class="kpi-lbl">در انتظار</span>
+          <span class="kpi-lbl">{{ getTranslation('pendingShort') }}</span>
         </div>
         <span class="kpi-sep"></span>
         <div class="kpi-item">
           <span class="kpi-num">{{ dashboardData.resource_usage?.length || 0 }}</span>
-          <span class="kpi-lbl">منابع فعال</span>
+          <span class="kpi-lbl">{{ getTranslation('activeResourcesShort') }}</span>
         </div>
       </div>
 
       <div class="cmd-actions">
         <button mat-flat-button (click)="onAddAppointment()" class="add-btn">
           <mat-icon>add</mat-icon>
-          نوبت جدید
+          {{ getTranslation('newAppointment') }}
         </button>
         <button mat-icon-button (click)="loadData()" [disabled]="isLoading" class="refresh-btn">
           <mat-icon [class.spinning]="isLoading">refresh</mat-icon>
@@ -51,7 +51,7 @@
       <!-- Desktop: filters inline -->
       <div class="rail-filters">
         <mat-form-field appearance="outline" class="filter-field no-subscript">
-          <mat-label>فیلتر پرسنل</mat-label>
+          <mat-label>{{ getTranslation('staffFilter') }}</mat-label>
           <mat-select [(ngModel)]="filterStaffIds" multiple (selectionChange)="loadData()">
             @for (staff of staffs; track staff.id) {
               <mat-option [value]="staff.id">
@@ -63,7 +63,7 @@
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="filter-field no-subscript">
-          <mat-label>فیلتر منابع</mat-label>
+          <mat-label>{{ getTranslation('resourceFilter') }}</mat-label>
           <mat-select [(ngModel)]="filterResourceIds" multiple (selectionChange)="loadData()">
             @for (res of resources; track res.id) {
               <mat-option [value]="res.id">{{ res.resource_name }}</mat-option>
@@ -101,11 +101,11 @@
             <mat-icon>chevron_right</mat-icon>
           </button>
         </div>
-        <button class="cal-today-btn" (click)="calendarToday()">امروز</button>
+        <button class="cal-today-btn" (click)="calendarToday()">{{ getTranslation('calendarTodayBtn') }}</button>
         <div class="cal-view-switch">
-          <button class="cvs-btn" [class.active]="currentViewType==='resourceTimelineDay'" (click)="setCalendarView('resourceTimelineDay')">روز</button>
-          <button class="cvs-btn" [class.active]="currentViewType==='timeGridWeek'" (click)="setCalendarView('timeGridWeek')">هفته</button>
-          <button class="cvs-btn" [class.active]="currentViewType==='dayGridMonth'" (click)="setCalendarView('dayGridMonth')">ماه</button>
+          <button class="cvs-btn" [class.active]="currentViewType==='resourceTimelineDay'" (click)="setCalendarView('resourceTimelineDay')">{{ getTranslation('calendarDayView') }}</button>
+          <button class="cvs-btn" [class.active]="currentViewType==='timeGridWeek'" (click)="setCalendarView('timeGridWeek')">{{ getTranslation('calendarWeekView') }}</button>
+          <button class="cvs-btn" [class.active]="currentViewType==='dayGridMonth'" (click)="setCalendarView('dayGridMonth')">{{ getTranslation('calendarMonthView') }}</button>
         </div>
       </div>
 
@@ -124,14 +124,14 @@
       <div class="filter-drawer" [class.open]="filterDrawerOpen">
         <div class="drawer-handle"></div>
         <div class="drawer-header">
-          <span class="drawer-title">فیلترها</span>
+          <span class="drawer-title">{{ getTranslation('filtersLabel') }}</span>
           <button class="drawer-close" (click)="filterDrawerOpen = false">
             <mat-icon>close</mat-icon>
           </button>
         </div>
         <div class="drawer-body">
           <mat-form-field appearance="outline" class="filter-field no-subscript drawer-field">
-            <mat-label>فیلتر پرسنل</mat-label>
+            <mat-label>{{ getTranslation('staffFilter') }}</mat-label>
             <mat-select [(ngModel)]="filterStaffIds" multiple (selectionChange)="loadData()">
               @for (staff of staffs; track staff.id) {
                 <mat-option [value]="staff.id">
@@ -142,7 +142,7 @@
             </mat-select>
           </mat-form-field>
           <mat-form-field appearance="outline" class="filter-field no-subscript drawer-field">
-            <mat-label>فیلتر منابع</mat-label>
+            <mat-label>{{ getTranslation('resourceFilter') }}</mat-label>
             <mat-select [(ngModel)]="filterResourceIds" multiple (selectionChange)="loadData()">
               @for (res of resources; track res.id) {
                 <mat-option [value]="res.id">{{ res.resource_name }}</mat-option>
@@ -150,22 +150,22 @@
             </mat-select>
           </mat-form-field>
           <div class="drawer-cal-nav">
-            <span class="drawer-section-label">ناوبری تقویم</span>
+            <span class="drawer-section-label">{{ getTranslation('calendarNavigation') }}</span>
             <div class="dcn-row">
               <button class="cal-nav-btn" (click)="calendarNext()"><mat-icon>chevron_left</mat-icon></button>
               <span class="cal-title">{{ calendarTitle }}</span>
               <button class="cal-nav-btn" (click)="calendarPrev()"><mat-icon>chevron_right</mat-icon></button>
             </div>
             <div class="dcn-views">
-              <button class="cvs-btn" [class.active]="currentViewType==='resourceTimelineDay'" (click)="setCalendarView('resourceTimelineDay'); filterDrawerOpen=false">روز</button>
-              <button class="cvs-btn" [class.active]="currentViewType==='timeGridWeek'" (click)="setCalendarView('timeGridWeek'); filterDrawerOpen=false">هفته</button>
-              <button class="cvs-btn" [class.active]="currentViewType==='dayGridMonth'" (click)="setCalendarView('dayGridMonth'); filterDrawerOpen=false">ماه</button>
+              <button class="cvs-btn" [class.active]="currentViewType==='resourceTimelineDay'" (click)="setCalendarView('resourceTimelineDay'); filterDrawerOpen=false">{{ getTranslation('calendarDayView') }}</button>
+              <button class="cvs-btn" [class.active]="currentViewType==='timeGridWeek'" (click)="setCalendarView('timeGridWeek'); filterDrawerOpen=false">{{ getTranslation('calendarWeekView') }}</button>
+              <button class="cvs-btn" [class.active]="currentViewType==='dayGridMonth'" (click)="setCalendarView('dayGridMonth'); filterDrawerOpen=false">{{ getTranslation('calendarMonthView') }}</button>
             </div>
           </div>
         </div>
         <div class="drawer-footer">
-          <button class="drawer-apply" (click)="filterDrawerOpen = false">اعمال</button>
-          <button class="drawer-reset" (click)="clearFilters()">پاک کردن</button>
+          <button class="drawer-apply" (click)="filterDrawerOpen = false">{{ getTranslation('applyLabel') }}</button>
+          <button class="drawer-reset" (click)="clearFilters()">{{ getTranslation('clearLabel') }}</button>
         </div>
       </div>
     }
@@ -181,7 +181,7 @@
         <div class="panel-head">
           <div class="panel-label">
             <span class="accent-bar"></span>
-            <span>وضعیت منابع</span>
+            <span>{{ getTranslation('resourceStatus') }}</span>
           </div>
         </div>
         <div class="res-list">
@@ -193,7 +193,7 @@
                   <span class="res-type">{{ res.resource_type }}</span>
                 </div>
                 <span class="res-badge" [class.busy]="res.usage?.length">
-                  {{ res.usage?.length ? 'مشغول' : 'آزاد' }}
+                  {{ res.usage?.length ? getTranslation('busyStatus') : getTranslation('freeStatus') }}
                 </span>
               </div>
               @for (usage of res.usage; track $index) {
@@ -213,23 +213,23 @@
         <div class="panel-head">
           <div class="panel-label">
             <span class="accent-bar"></span>
-            <span>لیست نوبت‌ها</span>
+            <span>{{ getTranslation('appointmentsListLabel') }}</span>
           </div>
-          <span class="count-badge">{{ filteredAppointments.length }} از {{ allAppointments.length }}</span>
+          <span class="count-badge">{{ filteredAppointments.length }} {{ getTranslation('ofSeparator') }} {{ allAppointments.length }}</span>
         </div>
 
         <div class="status-tabs">
           <button class="stab" [class.active]="statusFilter==='all'" (click)="statusFilter='all'">
-            همه <span class="stab-num">{{ statusCounts('all') }}</span>
+            {{ getTranslation('allStatusTab') }} <span class="stab-num">{{ statusCounts('all') }}</span>
           </button>
           <button class="stab confirmed" [class.active]="statusFilter==='confirmed'" (click)="statusFilter='confirmed'">
-            تایید شده <span class="stab-num">{{ statusCounts('confirmed') }}</span>
+            {{ getTranslation('confirmedStatusTab') }} <span class="stab-num">{{ statusCounts('confirmed') }}</span>
           </button>
           <button class="stab pending" [class.active]="statusFilter==='pending'" (click)="statusFilter='pending'">
-            در انتظار <span class="stab-num">{{ statusCounts('pending') }}</span>
+            {{ getTranslation('pendingStatusTab') }} <span class="stab-num">{{ statusCounts('pending') }}</span>
           </button>
           <button class="stab cancelled" [class.active]="statusFilter==='cancelled'" (click)="statusFilter='cancelled'">
-            لغو شده <span class="stab-num">{{ statusCounts('cancelled') }}</span>
+            {{ getTranslation('cancelledStatusTab') }} <span class="stab-num">{{ statusCounts('cancelled') }}</span>
           </button>
         </div>
 
@@ -239,7 +239,7 @@
               <div class="date-group-header">
                 <span class="dgh-dot"></span>
                 <span class="dgh-date">{{ group.date | date:'EEEE،  d MMMM y' }}</span>
-                <span class="dgh-count">{{ group.items.length }} نوبت</span>
+                <span class="dgh-count">{{ group.items.length }} {{ getTranslation('appointmentCount') }}</span>
               </div>
             }
             @for (app of group.items; track app.id) {
@@ -263,7 +263,7 @@
           @if (filteredAppointments.length === 0) {
             <div class="empty-state">
               <mat-icon>event_available</mat-icon>
-              <span>نوبتی یافت نشد</span>
+              <span>{{ getTranslation('appointmentsNotFound') }}</span>
             </div>
           }
         </div>
@@ -280,11 +280,11 @@
       <div class="panel-head">
         <div class="panel-label">
           <span class="accent-bar"></span>
-          <span>نمای زمان‌بندی پرسنل</span>
+          <span>{{ getTranslation('staffTimelineView') }}</span>
         </div>
         <div class="drag-hint">
           <mat-icon>drag_indicator</mat-icon>
-          برای جابجایی نوبت بکشید
+          {{ getTranslation('dragToMoveHint') }}
         </div>
       </div>
 
@@ -299,7 +299,7 @@
   } @else {
     <div class="dash-loading">
       <mat-spinner diameter="44"></mat-spinner>
-      <p>در حال بارگذاری...</p>
+      <p>{{ getTranslation('loadingEllipsis') }}</p>
     </div>
   }
 </div>

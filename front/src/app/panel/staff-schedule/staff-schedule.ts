@@ -58,7 +58,7 @@ export class StaffScheduleComponent implements OnInit {
                       start_time: slot.start,
                       end_time: slot.end,
                       id: record.id,
-                      name: record.name, 
+                      name: record.name,
                       expertise_name: record.expertise_name,
                       user_id: record.user_id,
                       expertise_id: record.expertise_id,
@@ -66,6 +66,20 @@ export class StaffScheduleComponent implements OnInit {
                       expertise: record.expertise,
                       schedule_id: record.id,
                     });
+                  });
+                } else if (daySchedule.day) {
+                  flattenedData.push({
+                    day: daySchedule.day,
+                    start_time: daySchedule.start_time,
+                    end_time: daySchedule.end_time,
+                    id: record.id,
+                    name: record.name,
+                    expertise_name: record.expertise_name,
+                    user_id: record.user_id,
+                    expertise_id: record.expertise_id,
+                    user: record.user,
+                    expertise: record.expertise,
+                    schedule_id: record.id,
                   });
                 }
               });

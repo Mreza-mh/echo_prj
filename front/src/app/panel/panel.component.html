@@ -29,28 +29,29 @@
         <mat-icon>{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</mat-icon>
       </button>
 
-      <button mat-icon-button (click)="toggleLanguage()" [matTooltip]="getTranslation('toggleLanguage')">
-        <mat-icon>language</mat-icon>
+      <button mat-button class="lang-switcher-btn" [matMenuTriggerFor]="langMenu" [matTooltip]="getTranslation('toggleLanguage')">
+        <span class="lang-flag">{{ translationService.getCurrentLang() === 'fa' ? '🇮🇷' : '🇬🇧' }}</span>
+        <span class="lang-code">{{ translationService.getCurrentLang() === 'fa' ? 'فا' : 'EN' }}</span>
+        <mat-icon class="lang-caret">arrow_drop_down</mat-icon>
       </button>
-
-      <button mat-icon-button [matMenuTriggerFor]="userMenu">
-        <mat-icon>account_circle</mat-icon>
-      </button>
-      <mat-menu #userMenu="matMenu">
-        <div class="user-menu-header" *ngIf="currentUser$ | async as user">
-          <div class="user-name">{{ user.name }}</div>
-          <div class="user-mobile">{{ user.mobile }}</div>
-        </div>
-        <mat-divider></mat-divider>
-        <button mat-menu-item routerLink="/panel/settings">
-          <mat-icon>settings</mat-icon>
-          <span>{{ getTranslation('settings') }}</span>
+      <mat-menu #langMenu="matMenu" class="lang-dropdown-menu">
+        <button mat-menu-item (click)="translationService.setLanguage('fa')" [class.active-lang]="translationService.getCurrentLang() === 'fa'">
+          <span class="lang-flag">🇮🇷</span>
+          <span>فارسی</span>
         </button>
-        <button mat-menu-item (click)="logout()">
-          <mat-icon>logout</mat-icon>
-          <span>{{ getTranslation('logout') }}</span>
+        <button mat-menu-item (click)="translationService.setLanguage('en')" [class.active-lang]="translationService.getCurrentLang() === 'en'">
+          <span class="lang-flag">🇬🇧</span>
+          <span>English</span>
         </button>
       </mat-menu>
+
+      <button mat-icon-button routerLink="/" [matTooltip]="getTranslation('home')">
+        <mat-icon>home</mat-icon>
+      </button>
+
+      <button mat-icon-button (click)="logout()" [matTooltip]="getTranslation('logout')">
+        <mat-icon>logout</mat-icon>
+      </button>
     </div>
   </mat-toolbar>
 
@@ -127,7 +128,7 @@
            routerLinkActive="active"
            (click)="closeSidenav()">
           <mat-icon matListItemIcon>monitor_heart</mat-icon>
-          <span matListItemTitle *ngIf="!sidebarCollapsed">پایش علائم حیاتی</span>
+          <span matListItemTitle *ngIf="!sidebarCollapsed">{{ getTranslation('vitalMonitorTitle') }}</span>
         </a>
 
         <mat-divider></mat-divider>
@@ -143,7 +144,7 @@
                 {{ getTranslation('welcomeTo') }} {{ activeOrg.name }}
               </h1>
               <p class="welcome-subtext" *ngIf="currentUser$ | async as user">
-                خوش آمدید، <strong>{{ user.name }}</strong>! شما در حال مدیریت منابع این سازمان هستید.
+                {{ getTranslation('welcomeGreeting') }} <strong>{{ user.name }}</strong>! {{ getTranslation('managingOrgResources') }}
               </p>
             </div>
             <div class="org-badge-large" *ngIf="activeOrg.business_type">

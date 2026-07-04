@@ -1,12 +1,12 @@
-<div class="ai-assistant-wrapper" [class.open]="isOpen()">
-  <div class="chat-window" *ngIf="isOpen()">
+<div class="ai-assistant-wrapper" [class.open]="isOpen">
+  <div class="chat-window" *ngIf="isOpen">
     <div class="chat-header">
       <div class="d-flex align-items-center gap-2">
         <div class="ai-avatar">
-          <mat-icon>smart_toy</mat-icon>
+          <img src="images/lightlogo.png" alt="EchoMind">
         </div>
         <div>
-          <h3 class="m-0">دستیار هوشمند آکاری</h3>
+          <h3 class="m-0">دستیار هوشمند اکومایند</h3>
           <span class="status-online">آنلاین</span>
         </div>
       </div>
@@ -16,9 +16,9 @@
     </div>
 
     <div class="chat-messages" #scrollMe [scrollTop]="scrollMe.scrollHeight">
-      <div *ngFor="let msg of messages()" [class]="'message-bubble ' + msg.role">
+      <div *ngFor="let msg of messages" [class]="'message-bubble ' + msg.role">
         <div class="avatar" *ngIf="msg.role === 'assistant'">
-          <mat-icon>smart_toy</mat-icon>
+          <img src="images/lightlogo.png" class="" alt="EchoMind">
         </div>
         <div class="bubble-wrapper">
           <div class="bubble-content" [innerHTML]="formatMessage(msg)"></div>
@@ -75,7 +75,7 @@
                 </mat-card-content>
                 <mat-divider></mat-divider>
                 <mat-card-actions align="end">
-                  <button mat-button color="warn" (click)="userInput = 'لغو فرآیند'; sendMessage()">انصراف</button>
+                  <button mat-button color="warn" (click)="cancelBooking()">انصراف</button>
                   <button mat-raised-button color="primary" (click)="confirmBooking(msg.ui.data)">تایید و ثبت نهایی</button>
                 </mat-card-actions>
               </mat-card>
@@ -90,9 +90,9 @@
         </div>
       </div>
       
-      <div class="message-bubble assistant loading" *ngIf="isLoading()">
+      <div class="message-bubble assistant loading" *ngIf="isLoading">
         <div class="avatar">
-          <mat-icon>smart_toy</mat-icon>
+          <img src="images/lightlogo.png" alt="EchoMind">
         </div>
         <div class="bubble-wrapper">
           <div class="bubble-content">
@@ -110,15 +110,15 @@
                [(ngModel)]="userInput" 
                (keyup.enter)="sendMessage()" 
                placeholder="سوال خود را بپرسید...">
-        <button mat-icon-button matSuffix (click)="sendMessage()" [disabled]="isLoading() || !userInput.trim()">
+        <button mat-icon-button matSuffix (click)="sendMessage()" [disabled]="isLoading || !userInput.trim()">
           <mat-icon>send</mat-icon>
         </button>
       </mat-form-field>
     </div>
   </div>
 
-  <button class="floating-btn" (click)="toggleChat()" [class.active]="isOpen()">
-    <mat-icon>{{ isOpen() ? 'close' : 'chat' }}</mat-icon>
-    <span class="btn-label" *ngIf="!isOpen()">نوبت‌دهی هوشمند</span>
+  <button class="floating-btn" (click)="toggleChat()" [class.active]="isOpen">
+    <mat-icon>{{ isOpen ? 'close' : 'chat' }}</mat-icon>
+    <span class="btn-label" *ngIf="!isOpen">نوبت‌دهی هوشمند</span>
   </button>
 </div>

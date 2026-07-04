@@ -35,8 +35,44 @@
     display: flex;
     align-items: center;
     gap: 8px;
+
+    .lang-switcher-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 0 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border-color);
+      min-width: unset;
+      line-height: normal;
+      height: 36px;
+      color: var(--text-primary) !important;
+      transition: background-color 0.2s ease, border-color 0.2s ease;
+
+      &:hover {
+        background-color: var(--bg-secondary);
+        border-color: var(--primary-color, currentColor);
+      }
+
+      .lang-flag {
+        font-size: 1.1rem;
+        line-height: 1;
+      }
+
+      .lang-code {
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+      }
+
+      .lang-caret {
+        margin-left: -4px;
+        opacity: 0.7;
+      }
+    }
   }
 }
+
 
 .user-menu-header {
   padding: 16px;

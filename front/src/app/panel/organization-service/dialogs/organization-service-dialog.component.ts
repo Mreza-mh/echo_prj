@@ -45,7 +45,7 @@ export interface OrganizationServiceDialogData {
 
         <div class="sd-field-label">{{ getTranslation('duration') }}</div>
         <mat-form-field appearance="outline" class="sd-mat-field">
-          <input matInput type="date" formControlName="exact_duration" />
+          <input matInput type="time" step="1" formControlName="exact_duration" />
           <mat-error *ngIf="serviceForm.get('exact_duration')?.hasError('required')">
             {{ getTranslation('durationRequired') || 'تاریخ الزامی است' }}
           </mat-error>
@@ -116,11 +116,14 @@ export class OrganizationServiceDialogComponent implements OnInit {
     });
 
     if (this.mode === 'edit' && data.orgService) {
-      let duration = data.orgService.exact_duration;
-      if (duration?.includes('T')) duration = duration.split('T')[0];
-      else if (duration?.includes(' ')) duration = duration.split(' ')[0];
+      const duration = data.orgService.duration || data.orgService.exact_duration || '';
       this.serviceTitle = data.orgService.title || data.orgService.service_title || '';
-      this.serviceForm.patchValue({ service_id: data.orgService.service_id, title: this.serviceTitle, exact_duration: duration, organization_price: data.orgService.organization_price });
+      this.serviceForm.patchValue({
+        service_id: data.orgService.service_id,
+        title: this.serviceTitle,
+        exact_duration: duration,
+        organization_price: data.orgService.price ?? data.orgService.organization_price,
+      });
     }
   }
 
@@ -137,8 +140,13 @@ export class OrganizationServiceDialogComponent implements OnInit {
   onSubmit(): void {
     if (this.serviceForm.valid) {
       const v = this.serviceForm.value;
-      this.dialogRef.close({ title: v.title, duration: v.exact_duration, price: v.organization_price });
+      this.dialogRef.close({ title: v.title, duration: this.formatDuration(v.exact_duration), price: v.organization_price });
     }
+  }
+
+  private formatDuration(time: string): string {
+    if (!time) return '';
+    return time.split(':').length === 2 ? `${time}:00` : time;
   }
 
   onCancel(): void { this.dialogRef.close(); }

@@ -35,7 +35,8 @@ $tech-colors: (
   mongo:    var(--mongo-color),
   mysql:    var(--mysql-color),
   qdrant:   var(--qdrant-color),
-  rabbit:   var(--rabbit-color),
+  mqtt:     var(--mqtt-color),
+  llm:      var(--purple),
 );
 
 // Text
@@ -318,6 +319,48 @@ $r-xl: 28px;
   @include text-glow;
 }
 
+.ms-image-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ms-image-card {
+  @include glass;
+  border-radius: $r-xl;
+  overflow: hidden;
+  position: relative;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: $r-xl;
+    background: var(--glass-rim-gradient);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  img {
+    display: block;
+    width: 100%;
+    height: auto;
+    transition: transform 0.5s ease;
+  }
+
+  &:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--glass-shadow-md);
+
+    img { transform: scale(1.03); }
+  }
+}
+
 // Text utilities
 .gradient-text  { @include gradient-text($cyan, $purple); }
 .text-accent    { @include gradient-text($mint, $cyan); }
@@ -548,11 +591,9 @@ $r-xl: 28px;
 .echo-placeholder {
   @include glass-bright;
   border-radius: $r-xl;
-  aspect-ratio: 4/3;
+  aspect-ratio: 3/4;
   @include flex-center;
-  flex-direction: column;
-  gap: 12px;
-  animation: float 7s ease-in-out infinite;
+  // animation: float 20s ease-in-out infinite;
   position: relative;
   overflow: hidden;
   box-shadow: var(--echo-box-shadow);
@@ -565,25 +606,14 @@ $r-xl: 28px;
     height: 2px;
     background: var(--scan-line-gradient);
     animation: scan-line 3.5s ease-in-out infinite;
+    z-index: 1;
   }
 
-  .echo-icon {
-    font-size: 3.5rem;
-    filter: var(--echo-icon-filter);
-    animation: pulse-dot 1.2s ease-in-out infinite;
-  }
-
-  p {
-    color: $text-muted;
-    font-size: 0.9rem;
-    margin: 0;
-  }
-
-  small {
-    font-family: $font-mono;
-    font-size: 0.68rem;
-    color: $text-ghost;
-    letter-spacing: 0.08em;
+  .echo-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
 }
 
@@ -603,7 +633,7 @@ $r-xl: 28px;
 
   @media (max-width: 1100px) { grid-template-columns: repeat(3, 1fr); }
   @media (max-width: 700px)  { grid-template-columns: repeat(2, 1fr); }
-  @media (max-width: 460px)  { grid-template-columns: 1fr; }
+  @media (max-width: 460px)  { grid-template-columns: repeat(2, 1fr); }
 }
 
 .tech-card {
@@ -732,9 +762,13 @@ $r-xl: 28px;
 .arch-tree {
   padding: 40px;
   border-radius: $r-xl;
-
-  @media (max-width: 768px) { padding: 24px 16px; overflow-x: auto; }
+  width: 100%;
+  @media (max-width: 768px) { padding: 20px 14px; }
+  @media (max-width: 640px) { padding: 14px 8px; }
 }
+
+// Nothing in this section may ever push past the phone frame.
+.architecture-section { overflow-x: clip; }
 
 // Tree structural elements
 .tree-root { position: relative; }
@@ -756,12 +790,58 @@ $r-xl: 28px;
     background: linear-gradient(180deg, color-mix(in srgb, var(--cyan) 50%, transparent), color-mix(in srgb, var(--cyan) 10%, transparent));
   }
 
-  &.tree-dual  { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-  &.tree-triple { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  &.tree-dual, &.tree-triple, &.tree-quad {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+
+    > .tree-branch {
+      flex: 1 1 0;
+      min-width: 0;
+      transition: flex-grow $t-slow;
+    }
+
+    // The column being explored grows so its open panel has room to
+    // breathe, and sibling columns give way.
+    > .tree-branch:has(.tree-node:hover),
+    > .tree-branch:has(.tree-node:focus-within) {
+      flex-grow: 2.4;
+    }
+  }
 
   @media (max-width: 900px) {
-    &.tree-dual   { grid-template-columns: 1fr; }
-    &.tree-triple { grid-template-columns: 1fr; }
+    &.tree-dual, &.tree-triple, &.tree-quad {
+      flex-direction: column;
+      align-items: stretch;
+
+      > .tree-branch { flex: unset; }
+    }
+  }
+
+  // On narrow screens the indentation compounds across 4-5 nested levels
+  // and starts pushing nodes off-screen — flatten the indent and drop
+  // the connector lines so every level stays full-width and legible.
+  @media (max-width: 640px) {
+    padding-right: 8px;
+    margin-right: 2px;
+  }
+
+  // The deepest level — containers whose branches hold no further
+  // children — is where the accumulated indent hurts most, so it gets
+  // a much smaller step than the levels above it.
+  &:not(:has(.tree-children)) {
+    padding-right: 20px;
+    margin-right: 12px;
+
+    > .tree-branch::before { right: -20px; width: 20px; }
+    > .tree-branch::after  { right: -24px; }
+
+    @media (max-width: 640px) {
+      padding-right: 4px;
+      margin-right: 0;
+
+      > .tree-branch::before { right: -4px; width: 4px; }
+    }
   }
 }
 
@@ -791,6 +871,13 @@ $r-xl: 28px;
     background: $cyan;
     box-shadow: 0 0 8px color-mix(in srgb, var(--cyan) 60%, transparent);
   }
+
+  @media (max-width: 640px) {
+    margin-top: 10px;
+
+    &::before { right: -8px; width: 8px; }
+    &::after { display: none; } // the dot hangs outside its box — drop it
+  }
 }
 
 // Tree node cards
@@ -817,6 +904,8 @@ $r-xl: 28px;
     font-size: 0.88rem;
     color: $text-bright;
     flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   .node-port {
@@ -848,24 +937,24 @@ $r-xl: 28px;
     transition:  opacity $t-base;
   }
 
-  // Hover panel
+  // Hover panel — expands in place under the node title
   .node-hover {
     max-height: 0;
     overflow:   hidden;
     opacity:    0;
     width:      100%;
     transition: max-height $t-slow, opacity $t-base 0.05s, padding $t-base;
-    font-size:  0.78rem;
+    font-size:  0.8rem;
     color:      $text-muted;
-    line-height: 1.6;
+    line-height: 1.65;
     padding:    0;
   }
 
   // Hover panel rows
   .nh-desc {
-    font-size:     .75rem;
+    font-size:     .78rem;
     color:         $text-primary;
-    line-height:   1.5;
+    line-height:   1.55;
     padding-bottom: 8px;
     border-bottom: 1px solid $border;
     margin-bottom: 6px;
@@ -874,27 +963,31 @@ $r-xl: 28px;
 
   .nh-row {
     display:   flex;
-    gap:       6px;
-    padding:   2px 0;
-    font-size: .74rem;
+    flex-wrap: wrap;
+    gap:       4px 6px;
+    padding:   4px 0;
+    font-size: .78rem;
   }
 
   .nh-key {
     color:       $cyan;
     font-weight: 600;
-    white-space: nowrap;
     flex-shrink: 0;
-    min-width:   70px;
 
     &::after { content: ':'; }
   }
 
   .nh-val {
     color: $text-muted;
-    line-height: 1.5;
+    line-height: 1.55;
+    // Long values wrap onto their own full-width line instead of being
+    // squeezed into the leftover space next to the key.
+    flex: 1 1 200px;
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
-  &:hover, &:focus {
+  &:hover, &:focus, &:focus-within {
     border-color: color-mix(in srgb, var(--accent, var(--cyan)) 30%, transparent);
     transform:    translateX(-4px);
     background:   var(--surface-muted);
@@ -902,12 +995,190 @@ $r-xl: 28px;
     .node-svg { opacity: 1; }
 
     .node-hover {
-      max-height: 400px;
+      max-height: 600px;
       opacity:    1;
       padding-top: 12px;
       border-top: 1px solid $border;
       margin-top: 10px;
     }
+  }
+
+  // On phones the in-place panel is disabled entirely — tapping a node
+  // opens the detail modal instead, so nothing can overflow the tree.
+  // Layout switches to a two-row grid: icon + title on top, tag/port
+  // pill on its own line underneath instead of crowding the title.
+  @media (max-width: 640px) {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    padding: 9px 10px;
+    gap: 4px 8px;
+    border-radius: $r-sm;
+
+    .node-label { font-size: 0.76rem; }
+
+    .node-port, .node-tag {
+      grid-column: 2;
+      justify-self: start;
+    }
+
+    .node-port  { font-size: 0.58rem; padding: 1px 6px; }
+    .node-tag   { font-size: 0.56rem; padding: 1px 6px; }
+    .node-svg   { width: 14px; height: 14px; }
+
+    // Content is shown in the modal on phones; hiding this also avoids a
+    // phantom grid row under the pill.
+    .node-hover { display: none; }
+
+    &:hover, &:focus, &:focus-within { transform: none; }
+  }
+}
+
+// ─── Node-detail modal (mobile only — desktop uses the hover panel) ───
+.tree-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: color-mix(in srgb, #000 55%, transparent);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: tree-modal-fade $t-base;
+}
+
+.tree-modal {
+  @include glass-bright;
+  width: 100%;
+  max-width: 560px;
+  max-height: 82vh;
+  border-radius: $r-lg;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: tree-modal-rise $t-slow;
+}
+
+.tree-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid $border;
+  flex-shrink: 0;
+
+  .tree-modal-heading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    min-width: 0;
+
+    h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: $text-bright;
+      margin: 0;
+    }
+  }
+
+  .tree-modal-tag {
+    font-family: $font-mono;
+    font-size: 0.68rem;
+    color: $cyan;
+    background: $cyan-dim;
+    border: 1px solid color-mix(in srgb, var(--cyan) 20%, transparent);
+    border-radius: 100px;
+    padding: 2px 10px;
+  }
+
+  .tree-modal-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: none;
+    background: var(--surface-muted);
+    color: $text-muted;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background $t-base, color $t-base;
+
+    mat-icon { font-size: 18px; width: 18px; height: 18px; }
+
+    &:hover { background: $cyan-dim; color: $cyan; }
+  }
+}
+
+.tree-modal-body {
+  padding: 16px 20px 20px;
+  overflow-y: auto;
+  font-size: 0.88rem;
+  color: $text-muted;
+  line-height: 1.7;
+
+  .nh-desc {
+    font-size:     .85rem;
+    color:         $text-primary;
+    line-height:   1.6;
+    padding-bottom: 10px;
+    border-bottom: 1px solid $border;
+    margin-bottom: 8px;
+    font-style:    italic;
+  }
+
+  .nh-row {
+    display:   flex;
+    flex-wrap: wrap;
+    gap:       4px 6px;
+    padding:   5px 0;
+    font-size: .84rem;
+  }
+
+  .nh-key {
+    color:       $cyan;
+    font-weight: 600;
+    flex-shrink: 0;
+
+    &::after { content: ':'; }
+  }
+
+  .nh-val {
+    color: $text-muted;
+    line-height: 1.6;
+    flex: 1 1 200px;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+@keyframes tree-modal-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes tree-modal-rise {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+// Bottom-layer cards (databases / services) sit in narrow columns, so
+// they stack vertically — icon above title above pill — for more room.
+// Phones keep the compact grid rows from the media block above.
+.tree-node.db-node, .tree-node.service-node {
+  @media (min-width: 641px) {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 6px;
+
+    .node-svg   { width: 24px; height: 24px; }
+    .node-label { flex: unset; }
+    .node-hover { text-align: start; }
   }
 }
 
@@ -919,9 +1190,10 @@ $r-xl: 28px;
 .python-node   { --accent: var(--yellow);        border-color: color-mix(in srgb, var(--accent) 20%, transparent); &:hover { @include accent-glow(0.6); } }
 .mysql-node    { --accent: var(--mysql-color);   border-color: color-mix(in srgb, var(--accent) 20%, transparent); &:hover { @include accent-glow(0.6); } }
 .mongo-node    { --accent: var(--mongo-color);   border-color: color-mix(in srgb, var(--accent) 20%, transparent); &:hover { @include accent-glow(0.6); } }
-.rabbitmq-node { --accent: var(--rabbit-color);  border-color: color-mix(in srgb, var(--accent) 20%, transparent); &:hover { @include accent-glow(0.6); } }
 .llm-node      { --accent: var(--purple);        border-color: color-mix(in srgb, var(--accent) 20%, transparent); &:hover { @include accent-glow(0.6); } }
 .faiss-node    { --accent: var(--cyan);          border-color: color-mix(in srgb, var(--accent) 20%, transparent); &:hover { @include accent-glow(0.6); } }
+.mqtt-node     { --accent: var(--mqtt-color);    border-color: color-mix(in srgb, var(--accent) 20%, transparent); &:hover { @include accent-glow(0.6); } }
+.esp32-node    { --accent: var(--orange);        border-color: color-mix(in srgb, var(--accent) 20%, transparent); &:hover { @include accent-glow(0.6); } }
 
 // ── COMPLETE SYSTEM FLOW ─────────────────────────────────────────────
 
@@ -990,7 +1262,7 @@ $r-xl: 28px;
     opacity:    1;
     transform:  rotate(180deg);
     background: $cyan;
-    color:      #fff;
+    color:      var(--btn-on-primary);
     box-shadow: 0 0 0 4px color-mix(in srgb, var(--cyan) 12%, transparent);
   }
 }
@@ -1110,10 +1382,10 @@ $r-xl: 28px;
   &.viz-chat      { background: linear-gradient(135deg, color-mix(in srgb, var(--cyan) 8%, var(--surface-muted)), var(--surface-muted)); }
   &.viz-vector    { background: radial-gradient(circle at 30% 40%, color-mix(in srgb, var(--purple) 22%, transparent) 0 2px, transparent 3px), radial-gradient(circle at 60% 65%, color-mix(in srgb, var(--cyan) 22%, transparent) 0 2px, transparent 3px), radial-gradient(circle at 75% 30%, color-mix(in srgb, var(--mint) 22%, transparent) 0 2px, transparent 3px), radial-gradient(circle at 45% 75%, color-mix(in srgb, var(--cyan) 18%, transparent) 0 2px, transparent 3px), var(--surface-muted); }
   &.viz-form      { background: repeating-linear-gradient(180deg, transparent 0 18px, color-mix(in srgb, var(--cyan) 5%, transparent) 18px 20px), var(--surface-muted); }
-  &.viz-echo      { background: radial-gradient(ellipse 60% 80% at 50% 100%, color-mix(in srgb, var(--cyan) 14%, transparent), transparent 70%), #0b1220; > span { color: #9fb3c8; } }
+  &.viz-echo      { background: radial-gradient(ellipse 60% 80% at 50% 100%, color-mix(in srgb, var(--cyan) 14%, transparent), transparent 70%), var(--bg-void); > span { color: color-mix(in srgb, var(--cyan) 55%, var(--text-ghost)); } }
   &.viz-ruler     { background: repeating-linear-gradient(90deg, transparent 0 14px, color-mix(in srgb, var(--cyan) 16%, transparent) 14px 15px), var(--surface-muted); }
   &.viz-annot     { background: linear-gradient(135deg, color-mix(in srgb, var(--mint) 8%, var(--surface-muted)), var(--surface-muted)); }
-  &.viz-mask      { background: radial-gradient(ellipse 45% 60% at 50% 50%, color-mix(in srgb, var(--purple) 30%, transparent), transparent 70%), #0b1220; > span { color: #c4b5fd; } }
+  &.viz-mask      { background: radial-gradient(ellipse 45% 60% at 50% 50%, color-mix(in srgb, var(--purple) 30%, transparent), transparent 70%), var(--bg-void); > span { color: color-mix(in srgb, var(--purple) 55%, var(--text-ghost)); } }
   &.viz-report    { background: repeating-linear-gradient(180deg, transparent 0 10px, color-mix(in srgb, var(--text-ghost) 12%, transparent) 10px 12px), var(--surface-muted); }
 }
 
@@ -1205,7 +1477,7 @@ $r-xl: 28px;
     height:          46px;
     border-radius:   13px;
     background:      linear-gradient(150deg, $cyan, color-mix(in srgb, var(--cyan) 55%, var(--purple)));
-    color:           #fff;
+    color:           var(--btn-on-primary);
     font-size:       1.15rem;
     font-weight:     800;
     display:         flex;
@@ -1440,7 +1712,7 @@ $r-xl: 28px;
     height:          42px;
     border-radius:   50%;
     background:      linear-gradient(150deg, $cyan, color-mix(in srgb, var(--cyan) 55%, var(--purple)));
-    color:           #fff;
+    color:           var(--btn-on-primary);
     font-size:       1rem;
     font-weight:     800;
     display:         flex;
@@ -2786,14 +3058,7 @@ $r-xl: 28px;
 
 // ── 16. RESPONSIVE ───────────────────────────────────────────────────
 
-@media (max-width: 1100px) {
-  .tree-children.tree-triple { grid-template-columns: 1fr 1fr; }
-}
-
 @media (max-width: 900px) {
-  .arch-tree { min-width: 640px; }
-  .architecture-section .container { overflow-x: auto; }
-
   .journey-step {
     grid-template-columns: 44px 1fr;
     gap: 0;

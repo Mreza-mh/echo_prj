@@ -6,7 +6,7 @@
 
       <div class="col-lg-4 col-md-6">
         <div class="footer-brand mb-4">
-          <span class="brand-name">Aca<span class="accent">ree</span></span>
+          <img class="footer-logo" [src]="isDarkMode ? 'images/darktxt-removebg-preview.png' : 'images/lighttxt-removebg-preview.png'" alt="EchoMind">
         </div>
         <p class="brand-desc mb-4">{{ getTranslation('footerDesc') }}</p>
         <div class="social-links d-flex gap-2">
@@ -39,7 +39,7 @@
           </li>
           <li>
             <mat-icon class="contact-icon">email</mat-icon>
-            <span class="text-lowercase">info@acaree.com</span>
+            <span class="text-lowercase">info@echomind.com</span>
           </li>
         </ul>
       </div>

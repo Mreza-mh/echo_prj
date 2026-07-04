@@ -24,81 +24,107 @@ html {
   --mat-form-field-outlined-container-shape: 12px;
   --mat-form-field-filled-container-shape: 12px;
 }
-::ng-deep{
-  .mat-mdc-form-field-flex { padding: 0 0px !important; }
+::ng-deep {
+  .mat-mdc-form-field-flex {
+    padding: 0 0px !important;
+  }
+
+  .lang-dropdown-menu {
+    .mat-mdc-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      .lang-flag {
+        font-size: 1.15rem;
+        line-height: 1;
+      }
+    }
+
+    .active-lang {
+      font-weight: 600;
+      background-color: var(--bg-secondary, rgba(0, 0, 0, 0.04));
+    }
+  }
 }
 body {
   // ── CardioAI Palette — Light (Clinical Ocean) ──────────────────
   // Neutrals: cool slate-blue · Accents: cyan + indigo + teal
 
-  --bg-void:     #ffffff;
-  --bg-deep:     #e6edf6;
-  --bg-surface:  #ffffff;
+  --bg-void: #ffffff;
+  --bg-deep: #e6edf6;
+  --bg-surface: #ffffff;
   --bg-elevated: #f8fafd;
-  --bg-hover:    #eef3f9;
+  --bg-hover: #eef3f9;
 
   // Brand accents
-  --cyan:        #0b8fc7;
-  --cyan-dim:    rgba(11, 143, 199, 0.10);
-  --cyan-glow:   rgba(11, 143, 199, 0.22);
+  --cyan: #0b8fc7;
+  --cyan-dim: rgba(11, 143, 199, 0.1);
+  --cyan-glow: rgba(11, 143, 199, 0.22);
 
-  --purple:      #6366f1;
-  --purple-dim:  rgba(99, 102, 241, 0.10);
+  --purple: #6366f1;
+  --purple-dim: rgba(99, 102, 241, 0.1);
 
-  --mint:        #0d9488;
-  --mint-dim:    rgba(13, 148, 136, 0.10);
+  --mint: #0d9488;
+  --mint-dim: rgba(13, 148, 136, 0.1);
 
-  --orange:      #ea580c;
-  --orange-dim:  rgba(234, 88, 12, 0.10);
+  --orange: #ea580c;
+  --orange-dim: rgba(234, 88, 12, 0.1);
 
-  --red:         #e11d48;
-  --red-dim:     rgba(225, 29, 72, 0.10);
+  --red: #e11d48;
+  --red-dim: rgba(225, 29, 72, 0.1);
 
-  --yellow:      #ca8a04;
+  --yellow: #ca8a04;
 
   // Tech stack (brand-accurate)
   --angular-color: #dd0031;
   --laravel-color: #ff4433;
-  --python-color:  #3776ab;
-  --kong-color:    #00a0d1;
-  --mongo-color:   #13aa52;
-  --mysql-color:   #4479a1;
-  --qdrant-color:  #6366f1;
-  --rabbit-color:  #ea580c;
+  --python-color: #3776ab;
+  --kong-color: #00a0d1;
+  --mongo-color: #13aa52;
+  --mysql-color: #4479a1;
+  --qdrant-color: #6366f1;
+  --rabbit-color: #ea580c;
+  --mqtt-color: #660066;
 
   // Typography
-  --text-bright:  #0c1222;
+  --text-bright: #0c1222;
   --text-primary: #1a2332;
-  --text-muted:   #5b6b82;
-  --text-ghost:   #8b9bb5;
+  --text-muted: #5b6b82;
+  --text-ghost: #8b9bb5;
 
   // Borders & elevation
-  --border:       rgba(12, 38, 66, 0.09);
+  --border: rgba(12, 38, 66, 0.09);
   --border-hover: rgba(11, 143, 199, 0.32);
-  --border-glow:  rgba(11, 143, 199, 0.48);
-  --card-shadow:  0 16px 40px rgba(12, 38, 66, 0.07);
+  --border-glow: rgba(11, 143, 199, 0.48);
+  --card-shadow: 0 16px 40px rgba(12, 38, 66, 0.07);
 
   // Glass & inputs
-  --glass-bg:     rgba(255, 255, 255, 0.78);
+  --glass-bg: rgba(255, 255, 255, 0.78);
   --glass-border: rgba(255, 255, 255, 0.65);
-  --input-bg:     #f4f7fb;
+  --input-bg: #f4f7fb;
 
   // Semantic aliases (shared components)
-  --accent-color:    var(--cyan);
-  --success-color:   var(--mint);
-  --error-color:     var(--red);
-  --warning-color:   var(--yellow);
-  --bg-primary:      var(--bg-surface);
-  --bg-secondary:    var(--bg-elevated);
-  --bg-page:         var(--bg-void);
-  --border-color:    var(--border);
-  --text-secondary:  var(--text-muted);
-  --hover-bg:        var(--bg-hover);
-  --active-bg:       var(--cyan-dim);
-  --shadow:          rgba(12, 38, 66, 0.10);
+  --accent-color: var(--cyan);
+  --success-color: var(--mint);
+  --error-color: var(--red);
+  --warning-color: var(--yellow);
+  --bg-primary: var(--bg-surface);
+  --bg-secondary: var(--bg-elevated);
+  --bg-page: var(--bg-void);
+  --border-color: var(--border);
+  --text-secondary: var(--text-muted);
+  --hover-bg: var(--bg-hover);
+  --active-bg: var(--cyan-dim);
+  --shadow: rgba(12, 38, 66, 0.1);
 
   // Landing page — semantic tokens
-  --landing-gradient: linear-gradient(180deg, var(--bg-void) 0%, var(--bg-surface) 50%, var(--bg-void) 100%);
+  --landing-gradient: linear-gradient(
+    180deg,
+    var(--bg-void) 0%,
+    var(--bg-surface) 50%,
+    var(--bg-void) 100%
+  );
   --section-gradient: linear-gradient(180deg, var(--bg-void), var(--bg-surface), var(--bg-void));
   --ambient-purple: color-mix(in srgb, var(--purple) 7%, transparent);
   --ambient-cyan: color-mix(in srgb, var(--cyan) 7%, transparent);
@@ -118,8 +144,18 @@ body {
   --panel-feature-hover: color-mix(in srgb, var(--cyan) 5%, transparent);
   --panel-icon-bg: color-mix(in srgb, var(--cyan) 6%, transparent);
   --panel-grid: color-mix(in srgb, var(--text-primary) 2%, transparent);
-  --scan-line-gradient: linear-gradient(90deg, transparent, color-mix(in srgb, var(--cyan) 28%, transparent), transparent);
-  --glass-rim-gradient: linear-gradient(135deg, color-mix(in srgb, var(--cyan) 5%, transparent) 0%, transparent 50%, color-mix(in srgb, var(--purple) 4%, transparent) 100%);
+  --scan-line-gradient: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, white, transparent),
+    transparent
+  );
+  --glass-rim-gradient: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--cyan) 5%, transparent) 0%,
+    transparent 50%,
+    color-mix(in srgb, var(--purple) 4%, transparent) 100%
+  );
   --echo-box-shadow: 0 8px 32px color-mix(in srgb, var(--cyan) 7%, transparent);
   --echo-icon-filter: drop-shadow(0 0 12px color-mix(in srgb, var(--red) 28%, transparent));
   --glass-border-accent: color-mix(in srgb, var(--cyan) 11%, transparent);
@@ -129,80 +165,82 @@ body {
 [data-theme='dark'] {
   color-scheme: dark;
 
-  // ── CardioAI Palette — Dark (Deep Space Clinical) ──────────────
-  // Neutrals: navy slate · Accents: sky cyan + soft indigo + teal
+  // ── CardioAI Palette — Dark (Clinical Slate) ────────────────────
+  // Neutrals: neutral charcoal-gray (low saturation) with gentle elevation steps
+  // Accents: one cyan family leads; purple/mint desaturated to support it
 
-  --bg-void:     #171c22;
-  --bg-deep:     #081018;
-  --bg-surface:  #171c22;
-  --bg-elevated: #14283a;
-  --bg-hover:    #1c2d42;
+  --bg-void: #232629;
+  --bg-deep: #16181b;
+  --bg-surface: #232629;
+  --bg-elevated: #2b2e32;
+  --bg-hover: #34383d;
 
-  --cyan:        #5cc0eb;
-  --cyan-dim:    rgba(56, 189, 248, 0.12);
-  --cyan-glow:   rgba(56, 189, 248, 0.22);
+  --cyan: #62b3e0;
+  --cyan-dim: rgba(98, 179, 224, 0.14);
+  --cyan-glow: rgba(98, 179, 224, 0.24);
 
-  --purple:      #818cf8;
-  --purple-dim:  rgba(129, 140, 248, 0.12);
+  --purple: #9ba3d4;
+  --purple-dim: rgba(155, 163, 212, 0.12);
 
-  --mint:        #2dd4bf;
-  --mint-dim:    rgba(45, 212, 191, 0.12);
+  --mint: #5cbfad;
+  --mint-dim: rgba(92, 191, 173, 0.12);
 
-  --orange:      #fb923c;
-  --orange-dim:  rgba(251, 146, 60, 0.12);
+  --orange: #e0996b;
+  --orange-dim: rgba(224, 153, 107, 0.12);
 
-  --red:         #fb7185;
-  --red-dim:     rgba(251, 113, 133, 0.12);
+  --red: #e08a95;
+  --red-dim: rgba(224, 138, 149, 0.12);
 
-  --yellow:      #facc15;
+  --yellow: #dcbe5c;
 
-  --angular-color: #f43f5e;
-  --laravel-color: #fb7185;
-  --python-color:  #60a5fa;
-  --kong-color:    #22d3ee;
-  --mongo-color:   #34d399;
-  --mysql-color:   #60a5fa;
-  --qdrant-color:  #818cf8;
-  --rabbit-color:  #fb923c;
+  --angular-color: #e56e83;
+  --laravel-color: #e08a95;
+  --python-color: #6ea3d4;
+  --kong-color: #62b3c6;
+  --mongo-color: #5cbfa0;
+  --mysql-color: #6ea3d4;
+  --qdrant-color: #9ba3d4;
+  --rabbit-color: #e0996b;
+  --mqtt-color: #b199d6;
 
-  --text-bright:  #f1f5f9;
-  --text-primary: #c8d4e4;
-  --text-muted:   #7f94ad;
-  --text-ghost:   #4a5f78;
+  --text-bright: #f7f7f8;
+  --text-primary: #d6d7db;
+  --text-muted: #a3a6ae;
+  --text-ghost: #6b6e76;
 
-  --border:       rgba(56, 189, 248, 0.10);
-  --border-hover: rgba(56, 189, 248, 0.28);
-  --border-glow:  rgba(56, 189, 248, 0.45);
-  --card-shadow:  0 20px 50px rgba(0, 0, 0, 0.42);
+  --border: rgba(180, 183, 190, 0.13);
+  --border-hover: rgba(98, 179, 224, 0.32);
+  --border-glow: rgba(98, 179, 224, 0.5);
+  --card-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
 
-  --glass-bg:     rgba(14, 23, 36, 0.72);
+  --glass-bg: rgba(35, 38, 41, 0.78);
   --glass-border: rgba(255, 255, 255, 0.07);
-  --input-bg:     #0a121c;
+  --input-bg: #1d1f22;
 
-  --accent-color:    var(--cyan);
-  --success-color:   var(--mint);
-  --error-color:     var(--red);
-  --warning-color:   var(--yellow);
-  --bg-primary:      var(--bg-surface);
-  --bg-secondary:    var(--bg-elevated);
-  --bg-page:         var(--bg-void);
-  --border-color:    var(--border);
-  --text-secondary:  var(--text-muted);
-  --hover-bg:        var(--bg-hover);
-  --active-bg:       var(--cyan-dim);
-  --shadow:          rgba(0, 0, 0, 0.45);
-  --btn-on-primary:  #ffffff;
+  --accent-color: var(--cyan);
+  --success-color: var(--mint);
+  --error-color: var(--red);
+  --warning-color: var(--yellow);
+  --bg-primary: var(--bg-surface);
+  --bg-secondary: var(--bg-elevated);
+  --bg-page: var(--bg-void);
+  --border-color: var(--border);
+  --text-secondary: var(--text-muted);
+  --hover-bg: var(--bg-hover);
+  --active-bg: var(--cyan-dim);
+  --shadow: rgba(0, 0, 0, 0.35);
+  --btn-on-primary: #ffffff;
 
-  --orb-opacity: 0.26;
-  --btn-shine: color-mix(in srgb, var(--text-bright) 7%, transparent);
-  --hover-card-shadow: 0 12px 40px color-mix(in srgb, #000 38%, transparent);
-  --glass-bg-bright: color-mix(in srgb, var(--bg-elevated) 86%, transparent);
-  --stat-pill-bg: color-mix(in srgb, var(--bg-elevated) 82%, transparent);
-  --node-port-bg: color-mix(in srgb, var(--bg-elevated) 42%, transparent);
+  --orb-opacity: 0.14;
+  --btn-shine: color-mix(in srgb, var(--text-bright) 6%, transparent);
+  --hover-card-shadow: 0 12px 32px color-mix(in srgb, #000 30%, transparent);
+  --glass-bg-bright: color-mix(in srgb, var(--bg-elevated) 88%, transparent);
+  --stat-pill-bg: color-mix(in srgb, var(--bg-elevated) 84%, transparent);
+  --node-port-bg: color-mix(in srgb, var(--bg-elevated) 45%, transparent);
   --panel-feature-hover: color-mix(in srgb, var(--cyan) 6%, transparent);
   --panel-icon-bg: color-mix(in srgb, var(--cyan) 8%, transparent);
-  --ambient-purple: color-mix(in srgb, var(--purple) 9%, transparent);
-  --ambient-cyan: color-mix(in srgb, var(--cyan) 9%, transparent);
+  --ambient-purple: color-mix(in srgb, var(--purple) 7%, transparent);
+  --ambient-cyan: color-mix(in srgb, var(--cyan) 7%, transparent);
 }
 html,
 body {
@@ -211,12 +249,12 @@ body {
 body {
   margin: 0;
   font-family: 'Samim', Roboto, 'Helvetica Neue', sans-serif;
-  
+
   &.rtl {
     direction: rtl;
     text-align: right;
   }
-  
+
   &.ltr {
     direction: ltr;
     text-align: left;
@@ -225,10 +263,20 @@ body {
 
 // Global RTL Utilities
 [dir='rtl'] {
-  .ms-auto { margin-right: auto !important; margin-left: 0 !important; }
-  .me-auto { margin-left: auto !important; margin-right: 0 !important; }
-  .text-end { text-align: left !important; }
-  .text-start { text-align: right !important; }
+  .ms-auto {
+    margin-right: auto !important;
+    margin-left: 0 !important;
+  }
+  .me-auto {
+    margin-left: auto !important;
+    margin-right: 0 !important;
+  }
+  .text-end {
+    text-align: left !important;
+  }
+  .text-start {
+    text-align: right !important;
+  }
 }
 
 // Snackbar styles
@@ -256,7 +304,7 @@ body {
 
 .mat-mdc-menu-item {
   color: var(--text-primary) !important;
-  
+
   .mat-icon {
     color: var(--text-secondary) !important;
   }
@@ -268,7 +316,7 @@ body {
   &.active {
     background-color: var(--active-bg) !important;
     color: var(--accent-color) !important;
-    
+
     .mat-icon {
       color: var(--accent-color) !important;
     }
@@ -340,16 +388,21 @@ body {
 }
 
 // نرم‌تر کردن انیمیشن‌های هاور روی دکمه‌ها و منوها
-.mat-mdc-menu-item, 
+.mat-mdc-menu-item,
 button {
-  transition: background-color 0.2s ease, color 0.2s ease, transform 0.1s ease !important;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.1s ease !important;
 }
 
 // استایل جذاب‌تر برای دیالوگ (فرم بیمار)
 .patient-form-dialog {
   .mat-mdc-dialog-surface {
     border-radius: 16px !important; // لبه‌های گردتر و مدرن‌تر
-    box-shadow: 0 20px 25px -5px var(--shadow), 0 8px 10px -6px var(--shadow) !important;
+    box-shadow:
+      0 20px 25px -5px var(--shadow),
+      0 8px 10px -6px var(--shadow) !important;
   }
 }
 
@@ -357,258 +410,120 @@ button {
 // GLOBAL UI POLISH
 // ========================================
 
-
 * {
-  box-sizing:border-box;
+  box-sizing: border-box;
 }
-
-
 
 body {
   background: var(--bg-void);
   color: var(--text-primary);
-  transition: background 0.35s ease, color 0.35s ease;
+  transition:
+    background 0.35s ease,
+    color 0.35s ease;
 }
-
-
 
 // Cards
 
 .mat-mdc-card,
 .card {
+  background: var(--bg-surface);
 
+  border: 1px solid var(--border);
 
-background:
-var(--bg-surface);
+  box-shadow: var(--card-shadow);
 
+  border-radius: 20px;
 
-border:
+  transition:
+    transform 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease;
 
-1px solid var(--border);
-
-
-box-shadow:
-var(--card-shadow);
-
-
-
-border-radius:
-20px;
-
-
-transition:
-transform .25s ease,
-border-color .25s ease,
-box-shadow .25s ease;
-
-
-
-&:hover {
-
-
-border-color:
-var(--border-hover);
-
-
-
+  &:hover {
+    border-color: var(--border-hover);
+  }
 }
-
-}
-
-
-
-
 
 // Glass components
 
-
 .glass {
+  background: var(--glass-bg);
 
+  backdrop-filter: blur(18px);
 
-background:
-var(--glass-bg);
+  -webkit-backdrop-filter: blur(18px);
 
-
-backdrop-filter:
-blur(18px);
-
-
--webkit-backdrop-filter:
-blur(18px);
-
-
-
-border:
-
-1px solid var(--glass-border);
-
-
-
+  border: 1px solid var(--glass-border);
 }
-
-
-
 
 // Inputs
 
-
 input,
 textarea {
+  background: var(--input-bg);
 
-
-background:
-var(--input-bg);
-
-
-color:
-var(--text-primary);
-
-
-
+  color: var(--text-primary);
 }
-
-
 
 .mat-mdc-text-field-wrapper {
+  background: var(--input-bg) !important;
 
-
-background:
-var(--input-bg)!important;
-
-
-border-radius:
-12px!important;
-
-
+  border-radius: 12px !important;
 }
 
-
-
-
 // Buttons
-
 
 button,
 .mat-mdc-button,
 .mat-mdc-raised-button {
-
-
-transition:
-
-all .2s ease;
-
-
-
+  transition: all 0.2s ease;
 }
-
-
 
 button:hover {
-
-
-transform:
-translateY(-1px);
-
-
+  transform: translateY(-1px);
 }
-
-
-
 
 // Dialog
 
-
 .mat-mdc-dialog-surface {
+  background: var(--bg-surface) !important;
 
+  border: 1px solid var(--border);
 
-background:
-var(--bg-surface)!important;
+  border-radius: 20px !important;
 
-
-border:
-
-1px solid var(--border);
-
-
-
-border-radius:
-20px!important;
-
-
-box-shadow:
-
-var(--card-shadow)!important;
-
-
+  box-shadow: var(--card-shadow) !important;
 }
-
-
-
-
 
 // Menu
 
-
 .mat-mdc-menu-panel {
+  background: var(--bg-elevated) !important;
 
+  border: 1px solid var(--border);
 
-background:
-var(--bg-elevated)!important;
-
-
-border:
-
-1px solid var(--border);
-
-
-
-border-radius:
-14px!important;
-
-
+  border-radius: 14px !important;
 }
-
-
 
 // Scrollbar
 
-
 ::-webkit-scrollbar {
-
-width:8px;
-
+  width: 8px;
 }
-
-
 
 ::-webkit-scrollbar-track {
-
-background:
-var(--bg-void);
-
+  background: var(--bg-void);
 }
-
-
 
 ::-webkit-scrollbar-thumb {
+  background: var(--text-ghost);
 
-
-background:
-var(--text-ghost);
-
-
-border-radius:
-10px;
-
-
+  border-radius: 10px;
 }
 
-
-
 ::-webkit-scrollbar-thumb:hover {
-
-
-background:
-var(--cyan);
-
+  background: var(--cyan);
+}
+.text-muted {
+  color: var(--text-muted) !important;
 }

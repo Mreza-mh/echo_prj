@@ -7,6 +7,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ToastService } from '../../services/toast/toast.service';
 import { AuthHTTPService } from '../../../auth/auth-http.service';
+import { TranslationService } from '../../services/translation.service';
 
 @Component({
   selector: 'app-patient-form',
@@ -26,7 +27,12 @@ export class PatientFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private http = inject(HttpClient);
   private toast = inject(ToastService);
-  
+  private translationService = inject(TranslationService);
+
+  getDirection(): 'ltr' | 'rtl' {
+    return this.translationService.getDirection();
+  }
+
   basicInfoForm!: FormGroup;
   cardiovascularForm!: FormGroup;
   heartDiseaseForm!: FormGroup;

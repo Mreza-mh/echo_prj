@@ -119,7 +119,7 @@ export class OrganizationServiceComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.panelHttp.editOrgService(service.id, result.data).subscribe({
+        this.panelHttp.editOrgService(service.id, result).subscribe({
           next: (res) => {
             if (res.success) {
               this.snackBar.open(this.getTranslation('serviceUpdatedSuccessfully') || 'Service updated successfully', 'Close', { duration: 3000 });

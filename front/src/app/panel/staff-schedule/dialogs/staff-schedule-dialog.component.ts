@@ -144,7 +144,7 @@ export interface StaffScheduleDialogData {
 
     .slots-list { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--border-color) transparent; }
     .slot-card { background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px; display: flex; align-items: flex-start; gap: 8px; }
-    .slot-fields { display: flex; flex: 1; gap: 8px; @media (max-width: 560px) { flex-direction: column; } }
+    .slot-fields { display: flex; flex-direction: column; flex: 1; gap: 8px; }
     .slot-field { flex: 1; }
     .remove-slot-btn { width: 30px; height: 30px; border: none; background: transparent; cursor: pointer; border-radius: 7px; display: flex; align-items: center; justify-content: center; color: #dc2626; flex-shrink: 0; margin-top: 8px; transition: background 0.15s; svg { width: 15px; height: 15px; } &:hover { background: rgba(220,38,38,.1); } }
 

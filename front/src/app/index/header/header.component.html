@@ -2,13 +2,8 @@
   <div class="container d-flex align-items-center justify-content-between">
     <!-- Logo & Brand -->
     <div class="brand-section d-flex align-items-center" routerLink="/">
-      <div class="logo-wrapper">
-        <mat-icon class="logo-icon">medical_services</mat-icon>
-      </div>
-      <div class="brand-text d-none d-sm-flex flex-column">
-        <span class="brand-name">Aca<span class="accent">ree</span></span>
-        <span class="brand-tagline">{{ getTranslation('clinicTagline') }}</span>
-      </div>
+      <img class="logo-mark" [src]="isDarkMode ? 'images/darklogo.png' : 'images/lightlogo.png'" alt="EchoMind">
+      <img class="logo-wordmark d-none d-sm-block" [src]="isDarkMode ? 'images/darktxt-removebg-preview.png' : 'images/lighttxt-removebg-preview.png'" alt="EchoMind">
     </div>
 
     <!-- Desktop Navigation -->
@@ -22,10 +17,21 @@
     <!-- Actions Area -->
     <div class="actions-section d-flex align-items-center gap-2">
       <!-- Language Switcher -->
-      <button mat-icon-button (click)="toggleLanguage()" [matTooltip]="getTranslation('toggleLanguage')">
-        <mat-icon>language</mat-icon>
-        <span class="lang-text d-none d-md-inline">{{ translationService.getCurrentLang() === 'fa' ? 'EN' : 'FA' }}</span>
+      <button mat-button class="lang-switcher-btn" [matMenuTriggerFor]="langMenu" [matTooltip]="getTranslation('toggleLanguage')">
+        <span class="lang-flag mx-1">{{ translationService.getCurrentLang() === 'fa' ? '🇮🇷' : '🇬🇧' }}</span>
+        <span class="lang-code d-none d-md-inline">{{ translationService.getCurrentLang() === 'fa' ? 'فا' : 'EN' }}</span>
+        <mat-icon class="lang-caret">arrow_drop_down</mat-icon>
       </button>
+      <mat-menu #langMenu="matMenu" class="lang-dropdown-menu">
+        <button mat-menu-item (click)="translationService.setLanguage('fa')" [class.active-lang]="translationService.getCurrentLang() === 'fa'">
+          <span class="lang-flag">🇮🇷</span>
+          <span class="mx-1">فارسی</span>
+        </button>
+        <button mat-menu-item (click)="translationService.setLanguage('en')" [class.active-lang]="translationService.getCurrentLang() === 'en'">
+          <span class="lang-flag">🇬🇧</span>
+          <span class="mx-1">English</span>
+        </button>
+      </mat-menu>
 
       <!-- Theme Toggle -->
       <button mat-icon-button (click)="toggleTheme()" [matTooltip]="getTranslation('toggleTheme')">
@@ -88,7 +94,7 @@
 <div class="mobile-drawer" [class.open]="isMenuOpen">
   <div class="drawer-header p-4 d-flex align-items-center justify-content-between">
     <div class="brand-section">
-      <span class="brand-name">Aca<span class="accent">ree</span></span>
+      <img class="logo-wordmark" [src]="isDarkMode ? 'images/darktxt-removebg-preview.png' : 'images/lighttxt-removebg-preview.png'" alt="EchoMind">
     </div>
     <button mat-icon-button (click)="closeMenu()">
       <mat-icon>close</mat-icon>

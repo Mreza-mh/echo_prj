@@ -77,11 +77,6 @@ export class SuperPanelManagementComponent implements OnInit {
     this.themeService.toggleTheme();
   }
 
-  toggleLanguage() {
-    const newLang = this.translationService.getCurrentLang() === 'en' ? 'fa' : 'en';
-    this.translationService.setLanguage(newLang);
-  }
-
   getTranslation(key: string): string {
     return this.translationService.getTranslation(key);
   }

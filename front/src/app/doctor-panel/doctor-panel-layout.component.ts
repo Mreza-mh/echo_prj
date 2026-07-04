@@ -109,11 +109,6 @@ export class DoctorPanelComponent implements OnInit {
     this.themeService.toggleTheme();
   }
 
-  toggleLanguage() {
-    const newLang = this.translationService.getCurrentLang() === 'en' ? 'fa' : 'en';
-    this.translationService.setLanguage(newLang);
-  }
-
   get isDarkMode(): boolean {
     return this.themeService.getCurrentTheme();
   }

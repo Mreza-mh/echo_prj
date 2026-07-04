@@ -1,4 +1,4 @@
-import { Component, inject, signal, ViewEncapsulation, HostListener } from '@angular/core';
+import { Component, HostListener, ViewEncapsulation, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -13,17 +13,37 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { IndexHttpService } from '../../index/index-http.service';
 
-interface Message {
-  role: 'user' | 'assistant' | 'system';
+type ChatRole = 'user' | 'assistant' | 'system';
+
+type UiType = 'SELECT_STAFF' | 'SELECT_SERVICE' | 'SELECT_DATE' | 'SELECT_TIME' | 'CONFIRMATION';
+
+interface UiPayload {
+  type: UiType;
+  data: any;
+  fullTag: string;
+}
+
+interface ChatMessage {
+  role: ChatRole;
   content: string;
   timestamp: Date;
-  // ui?: {
-  //   type: 'SELECT_STAFF' | 'SELECT_SERVICE' | 'SELECT_DATE' | 'SELECT_TIME' | 'CONFIRMATION';
-  //   data: any;
-  // };
-  ui?: any; 
-  rawContent?: string;
+  rawContent?: string; // متن فنی که به‌جای content به API فرستاده می‌شود (برای انتخاب‌های UI)
+  ui?: UiPayload;
 }
+
+const WELCOME_MESSAGE: ChatMessage = {
+  role: 'assistant',
+  content: 'سلام! من دستیار هوشمند اکومایند هستم. چطور می‌توانم در پیدا کردن پزشک یا رزرو نوبت به شما کمک کنم؟',
+  timestamp: new Date(),
+};
+
+const UI_PROMPTS: Record<UiType, string> = {
+  SELECT_STAFF: 'لطفاً یکی از پزشکان زیر را انتخاب کنید:',
+  SELECT_SERVICE: 'لطفاً خدمت مورد نظر خود را انتخاب کنید:',
+  SELECT_DATE: 'لطفاً تاریخ مورد نظر خود را برای رزرو انتخاب کنید:',
+  SELECT_TIME: 'لطفاً یکی از ساعت‌های خالی زیر را انتخاب کنید:',
+  CONFIRMATION: 'لطفاً اطلاعات نوبت خود را تایید کنید:',
+};
 
 @Component({
   selector: 'app-ai-assistant',
@@ -49,25 +69,80 @@ export class AiAssistantComponent {
   private indexHttp = inject(IndexHttpService);
   private sanitizer = inject(DomSanitizer);
 
-  isOpen = signal(false);
-  isLoading = signal(false);
+  isOpen = false;
+  isLoading = false;
   userInput = '';
 
-  messages = signal<Message[]>([
-    {
-      role: 'assistant',
-      content:
-        'سلام! من دستیار هوشمند آکاری هستم. چطور می‌توانم در پیدا کردن پزشک یا رزرو نوبت به شما کمک کنم؟',
-      timestamp: new Date(),
-    },
-  ]);
+  messages: ChatMessage[] = [WELCOME_MESSAGE];
 
-  formatMessage(msg: Message): SafeHtml {
+  toggleChat(): void {
+    this.isOpen = !this.isOpen;
+  }
+
+  async sendMessage(): Promise<void> {
+    const text = this.userInput.trim();
+    if (!text || this.isLoading) return;
+
+    this.userInput = '';
+    this.appendMessage({ role: 'user', content: text, timestamp: new Date() });
+    this.sendToApi();
+  }
+
+  selectStaff(staff: any): void {
+    const displayText = `پزشک ${staff.name} را انتخاب کردم.`;
+    const technicalText = `پزشک ${staff.name} (staff_id: ${staff.id}) را انتخاب کردم. حالا چه خدماتی ارائه می‌دهد؟`;
+    this.sendUiMessage(displayText, technicalText);
+  }
+
+  selectService(service: any): void {
+    const displayText = `خدمت ${service.name} را انتخاب کردم.`;
+    const technicalText = `خدمت ${service.name} (service_id: ${service.id}) را انتخاب کردم. نوبت‌های خالی را نشان بده.`;
+    this.sendUiMessage(displayText, technicalText);
+  }
+
+  onDateChange(date: Date, uiData: any): void {
+    const formattedDate = this.formatDate(date);
+    const displayText = `تاریخ ${formattedDate} را انتخاب کردم.`;
+    const technicalText = `برای تاریخ ${formattedDate} نوبت می‌خواهم. (staff_id: ${uiData.staff_id}, service_id: ${uiData.service_id})`;
+    this.sendUiMessage(displayText, technicalText);
+  }
+
+  selectTime(slot: any, uiData: any): void {
+    const displayText = `ساعت ${slot.start_time} را انتخاب کردم.`;
+    const technicalText = `ساعت ${slot.start_time} را برای تاریخ ${uiData.date} انتخاب کردم. (staff_id: ${uiData.staff_id}, service_id: ${uiData.service_id})`;
+    this.sendUiMessage(displayText, technicalText);
+  }
+
+  confirmBooking(uiData: any): void {
+    const displayText = 'بله، نوبت را تایید و ثبت کن.';
+    // پارامترها منطبق با AppointmentCreateRequest در بک‌اند (date_of_turn, start_time, staff_id, service_id)
+    const technicalText = `بله، نوبت را نهایی کن و ابزار book_appointment را فراخوانی کن: (staff_id: ${uiData.staff_id}, service_id: ${uiData.service_id}, date_of_turn: ${uiData.date}, start_time: ${uiData.time})`;
+    this.sendUiMessage(displayText, technicalText);
+  }
+
+  cancelBooking(): void {
+    this.userInput = 'لغو فرآیند';
+    this.sendMessage();
+  }
+
+  @HostListener('click', ['$event'])
+  onChatClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (target.classList.contains('ai-btn')) {
+      const action = target.getAttribute('data-action');
+      if (action) {
+        this.userInput = action;
+        this.sendMessage();
+      }
+    }
+  }
+
+  formatMessage(msg: ChatMessage): SafeHtml {
     let content = msg.content || '';
 
     content = content.replace(/<think>[\s\S]*?(<\/think>|$)/gi, '');
 
-    content = content.replace(/\[BTN:(.*?):(.*?)\]/g, (match, label, action) => {
+    content = content.replace(/\[BTN:(.*?):(.*?)\]/g, (_match, label, action) => {
       return `<button class="ai-btn" data-action="${action}">${label}</button>`;
     });
 
@@ -84,112 +159,18 @@ export class AiAssistantComponent {
     return this.sanitizer.bypassSecurityTrustHtml(html);
   }
 
-  parseUI(content: string) {
-    const match = content.match(/\[UI:([A-Z_]+):([\s\S]+)/); 
-    if (match) {
-      try {
-        let rawData = match[2];
-        let openBrackets = 0;
-        let cutIndex = -1;
-
-        for (let i = 0; i < rawData.length; i++) {
-          if (rawData[i] === '[' || rawData[i] === '{') openBrackets++;
-          if (rawData[i] === ']' || rawData[i] === '}') {
-            openBrackets--;
-            if (openBrackets === 0) {
-              cutIndex = i + 1;
-              break;
-            }
-          }
-        }
-
-        if (cutIndex !== -1) {
-          const jsonData = rawData.substring(0, cutIndex);
-          const fullTag = `[UI:${match[1]}:${jsonData}]`; // گرفتن تگ کامل برای حذف صحیح و دقیق از متن
-
-          return {
-            type: match[1] as any,
-            data: JSON.parse(jsonData),
-            fullTag: fullTag,
-          };
-        }
-      } catch (e) {
-        console.error('Failed to parse UI data.', e);
-      }
-    }
-    return undefined;
+  private sendUiMessage(display: string, technical: string): void {
+    this.appendMessage({ role: 'user', content: display, rawContent: technical, timestamp: new Date() });
+    this.sendToApi();
   }
 
-  @HostListener('click', ['$event'])
-  onChatClick(event: MouseEvent) {
-    const target = event.target as HTMLElement;
-    if (target.classList.contains('ai-btn')) {
-      const action = target.getAttribute('data-action');
-      if (action) {
-        this.userInput = action;
-        this.sendMessage();
-      }
-    }
-  }
+  private sendToApi(): void {
+    this.isLoading = true;
 
-  toggleChat() {
-    this.isOpen.update((v) => !v);
-  }
-
-  selectStaff(staff: any) {
-    const displayText = `پزشک ${staff.name} را انتخاب کردم.`;
-    const technicalText = `پزشک ${staff.name} (staff_id: ${staff.id}) را انتخاب کردم. حالا چه خدماتی ارائه می‌دهد؟`;
-    this.sendUiMessage(displayText, technicalText);
-  }
-
-  selectService(service: any) {
-    const displayText = `خدمت ${service.name} را انتخاب کردم.`;
-    const technicalText = `خدمت ${service.name} (service_id: ${service.id}) را انتخاب کردم. نوبت‌های خالی را نشان بده.`;
-    this.sendUiMessage(displayText, technicalText);
-  }
-
-  onDateChange(date: Date, uiData: any) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    const formattedDate = `${year}-${month}-${day}`;
-
-    const displayText = `تاریخ ${formattedDate} را انتخاب کردم.`;
-    const technicalText = `برای تاریخ ${formattedDate} نوبت می‌خواهم. (staff_id: ${uiData.staff_id}, service_id: ${uiData.service_id})`;
-    this.sendUiMessage(displayText, technicalText);
-  }
-
-  selectTime(slot: any, uiData: any) {
-    // از slot.start_time استفاده می شود که مطابق با ساختار خروجی getAvailableSlots است
-    const displayText = `ساعت ${slot.start_time} را انتخاب کردم.`;
-    const technicalText = `ساعت ${slot.start_time} را برای تاریخ ${uiData.date} انتخاب کردم. (staff_id: ${uiData.staff_id}, service_id: ${uiData.service_id})`;
-    this.sendUiMessage(displayText, technicalText);
-  }
-
-  confirmBooking(uiData: any) {
-    const displayText = `بله، نوبت را تایید و ثبت کن.`;
-    // پارامترها کاملاً منطبق با AppointmentCreateRequest در بک‌اند هستند (date_of_turn, start_time, staff_id, service_id)
-    const technicalText = `بله، نوبت را نهایی کن و ابزار book_appointment را فراخوانی کن: (staff_id: ${uiData.staff_id}, service_id: ${uiData.service_id}, date_of_turn: ${uiData.date}, start_time: ${uiData.time})`;
-    this.sendUiMessage(displayText, technicalText);
-  }
-
-  private sendUiMessage(display: string, technical: string) {
-    // در فرانت‌اند متن تمیز به کاربر نشان داده می‌شود، اما به API دیتای فنی می‌فرستیم
-    this.messages.update((msgs) => [
-      ...msgs,
-      {
-        role: 'user',
-        content: display,
-        rawContent: technical,
-        timestamp: new Date(),
-      },
-    ]);
-
-    this.isLoading.set(true);
-
-    const apiMessages = this.messages().map((m) => ({
+    // پیام اول خوش‌آمدگویی ثابت رابط کاربری است، نه بخشی از مکالمه واقعی — نباید به API ارسال شود
+    const apiMessages = this.messages.slice(1).map((m) => ({
       role: m.role,
-      content: m.rawContent || m.content, // ارسال دیتای اصلی و لاجیکال به هوش مصنوعی برای حفظ کانتکست
+      content: m.rawContent || m.content, // ارسال دیتای فنی به‌جای متن نمایشی برای حفظ کانتکست
     }));
 
     this.indexHttp.aiChat(apiMessages).subscribe({
@@ -198,105 +179,94 @@ export class AiAssistantComponent {
     });
   }
 
-  async sendMessage() {
-    if (!this.userInput.trim() || this.isLoading()) return;
-
-    const userMsg = this.userInput;
-    this.userInput = '';
-
-    this.messages.update((msgs) => [
-      ...msgs,
-      {
-        role: 'user',
-        content: userMsg,
-        timestamp: new Date(),
-      },
-    ]);
-
-    this.isLoading.set(true);
-
-    const apiMessages = this.messages().map((m) => ({
-      role: m.role,
-      content: m.rawContent || m.content,
-    }));
-
-    this.indexHttp.aiChat(apiMessages).subscribe({
-      next: (res: any) => this.handleAiResponse(res),
-      error: (err: any) => this.handleAiError(err),
-    });
-  }
-
-  private handleAiResponse(res: any) {
-    let aiMsg = res.choices[0].message.content || '';
-    const ui = this.parseUI(aiMsg);
+  private handleAiResponse(res: any): void {
+    const aiMsg: string = res?.choices?.[0]?.message?.content || '';
+    const ui = this.parseUi(aiMsg);
 
     let cleanText = aiMsg;
-
-    if (ui && ui.fullTag) {
-      // حذف کامل و بی نقص تگ استخراج شده از متنی که به کاربر نشان می‌دهیم
+    if (ui) {
       cleanText = aiMsg.replace(ui.fullTag, '').trim();
 
-      let prompt = '';
-      switch (ui.type) {
-        case 'SELECT_STAFF':
-          prompt = 'لطفاً یکی از پزشکان زیر را انتخاب کنید:';
-          break;
-        case 'SELECT_SERVICE':
-          prompt = 'لطفاً خدمت مورد نظر خود را انتخاب کنید:';
-          break;
-        case 'SELECT_DATE':
-          prompt = 'لطفاً تاریخ مورد نظر خود را برای رزرو انتخاب کنید:';
-          break;
-        case 'SELECT_TIME':
-          prompt = 'لطفاً یکی از ساعت‌های خالی زیر را انتخاب کنید:';
-          break;
-        case 'CONFIRMATION':
-          prompt = 'لطفاً اطلاعات نوبت خود را تایید کنید:';
-          break;
-      }
-
+      const prompt = UI_PROMPTS[ui.type];
       if (prompt && !cleanText.includes(prompt) && cleanText.length < 15) {
         cleanText = prompt + (cleanText ? '\n' + cleanText : '');
       }
     }
 
-    this.messages.update((msgs) => [
-      ...msgs,
-      {
-        role: 'assistant',
-        content: cleanText, // متنی که کاربر می‌بیند بدون سینتکس‌های عجیب
-        rawContent: aiMsg, // متنی که با تگ‌های UI در تاریخچه حفظ می‌شود برای کانتکست‌های بعدی
-        ui: ui,
-        timestamp: new Date(),
-      },
-    ]);
-    this.isLoading.set(false);
+    this.appendMessage({
+      role: 'assistant',
+      content: cleanText, // متنی که کاربر می‌بیند، بدون سینتکس‌های فنی
+      rawContent: aiMsg, // متن کامل با تگ UI، برای حفظ کانتکست در پیام‌های بعدی
+      ui,
+      timestamp: new Date(),
+    });
+    this.isLoading = false;
   }
 
-  private handleAiError(err: any) {
-    this.isLoading.set(false);
-    let errorMsg = 'خطایی در ارتباط با هوش مصنوعی رخ داد.';
+  private handleAiError(err: any): void {
+    this.isLoading = false;
 
-    if (err.error) {
-      if (typeof err.error === 'string') {
-        try {
-          const parsed = JSON.parse(err.error);
-          errorMsg = parsed.error?.message || parsed.message || errorMsg;
-        } catch (e) {
-          errorMsg = err.error;
-        }
-      } else {
-        errorMsg = err.error.error?.message || err.error.message || errorMsg;
+    let errorMsg = 'خطایی در ارتباط با هوش مصنوعی رخ داد.';
+    const errBody = err?.error;
+
+    if (typeof errBody === 'string') {
+      try {
+        const parsed = JSON.parse(errBody);
+        errorMsg = parsed.error?.message || parsed.message || errorMsg;
+      } catch {
+        errorMsg = errBody;
       }
+    } else if (errBody) {
+      errorMsg = errBody.error?.message || errBody.message || errorMsg;
     }
 
-    this.messages.update((msgs) => [
-      ...msgs,
-      {
-        role: 'assistant',
-        content: errorMsg,
-        timestamp: new Date(),
-      },
-    ]);
+    this.appendMessage({ role: 'assistant', content: errorMsg, timestamp: new Date() });
+  }
+
+  private appendMessage(msg: ChatMessage): void {
+    this.messages = [...this.messages, msg];
+  }
+
+  private parseUi(content: string): UiPayload | undefined {
+    const match = content.match(/\[UI:([A-Z_]+):([\s\S]+)/);
+    if (!match) return undefined;
+
+    try {
+      const rawData = match[2];
+      let openBrackets = 0;
+      let cutIndex = -1;
+
+      for (let i = 0; i < rawData.length; i++) {
+        if (rawData[i] === '[' || rawData[i] === '{') openBrackets++;
+        if (rawData[i] === ']' || rawData[i] === '}') {
+          openBrackets--;
+          if (openBrackets === 0) {
+            cutIndex = i + 1;
+            break;
+          }
+        }
+      }
+
+      if (cutIndex === -1) return undefined;
+
+      const jsonData = rawData.substring(0, cutIndex);
+      const fullTag = `[UI:${match[1]}:${jsonData}]`;
+
+      return {
+        type: match[1] as UiType,
+        data: JSON.parse(jsonData),
+        fullTag,
+      };
+    } catch (e) {
+      console.error('Failed to parse UI data.', e);
+      return undefined;
+    }
+  }
+
+  private formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 }

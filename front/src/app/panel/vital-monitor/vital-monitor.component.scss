@@ -1,14 +1,8 @@
 // ─────────────────────────────────────────────────────────────
 //  Vital Monitor — Component Styles
 // ─────────────────────────────────────────────────────────────
-
-$red:    #ef4444;
-$blue:   #3b82f6;
-$green:  #22c55e;
-$orange: #f97316;
-$muted:  #94a3b8;
-$dark:   #0f172a;
-$dark2:  #1e293b;
+// رنگ‌ها همگی از پالت سراسری (styles.scss) گرفته می‌شوند تا در حالت
+// روشن/تیره به‌درستی و با کنتراست کافی نمایش داده شوند.
 
 .vm-page {
   max-width: 860px;
@@ -17,7 +11,7 @@ $dark2:  #1e293b;
   display: flex;
   flex-direction: column;
   gap: 18px;
-  direction: rtl;
+  direction: inherit;
 }
 
 // ── Header ─────────────────────────────────────────────────────
@@ -27,22 +21,22 @@ $dark2:  #1e293b;
   align-items: center;
   gap: 16px;
   padding-bottom: 20px;
-  border-bottom: 1px solid var(--bg-deep, #e6edf6);
+  border-bottom: 1px solid var(--border-color);
 
   &__icon {
     width: 52px; height: 52px;
     border-radius: 16px;
-    background: linear-gradient(135deg, $red 0%, $orange 100%);
+    background: linear-gradient(135deg, var(--red) 0%, var(--orange) 100%);
     display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 8px 20px rgba($red, .3);
+    box-shadow: 0 8px 20px var(--red-dim);
     flex-shrink: 0;
-    mat-icon { color: #fff; font-size: 28px; }
+    mat-icon { color: var(--btn-on-primary); font-size: 28px; }
   }
 
   &__text {
     flex: 1;
-    h2 { margin: 0; font-size: 1.3rem; font-weight: 800; letter-spacing: -.02em; }
-    p  { margin: 0; font-size: .82rem; color: $muted; }
+    h2 { margin: 0; font-size: 1.3rem; font-weight: 800; letter-spacing: -.02em; color: var(--text-bright); }
+    p  { margin: 0; font-size: .82rem; color: var(--text-muted); }
   }
 }
 
@@ -51,23 +45,23 @@ $dark2:  #1e293b;
   padding: 5px 12px; border-radius: 20px; font-size: .78rem; font-weight: 600;
   mat-icon { font-size: 14px; width: 14px; height: 14px; }
 
-  &--mqtt { background: rgba($blue, .12); color: $blue; }
+  &--mqtt { background: var(--cyan-dim); color: var(--cyan); }
 }
 
 // ── Generic card ───────────────────────────────────────────────
 
 .vm-card {
-  background: var(--bg-surface, #fff);
-  border: 1px solid var(--bg-deep, #e6edf6);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
   border-radius: 18px;
-  box-shadow: 0 2px 12px rgba(0,0,0,.05);
+  box-shadow: 0 2px 12px var(--shadow);
 
   &__head {
     display: flex; align-items: center; gap: 8px;
     padding: 16px 20px 0;
-    font-size: .88rem; font-weight: 700; color: #374151;
-    mat-icon        { color: $muted; font-size: 18px; }
-    &-meta          { margin-right: auto; font-size: .75rem; color: $muted; font-weight: 400; }
+    font-size: .88rem; font-weight: 700; color: var(--text-primary);
+    mat-icon        { color: var(--text-muted); font-size: 18px; }
+    &-meta          { margin-right: auto; font-size: .75rem; color: var(--text-muted); font-weight: 400; }
   }
 
   &__body {
@@ -77,8 +71,8 @@ $dark2:  #1e293b;
 
   // control card variant
   &--control {
-    border-color: rgba($blue, .2);
-    box-shadow: 0 2px 16px rgba($blue, .06);
+    border-color: var(--cyan-dim);
+    box-shadow: 0 2px 16px var(--cyan-dim);
   }
 }
 
@@ -88,18 +82,18 @@ $dark2:  #1e293b;
 
 .search-box {
   display: flex; align-items: center; gap: 0;
-  border: 1.5px solid var(--bg-deep, #e6edf6);
+  border: 1.5px solid var(--border-color);
   border-radius: 12px; overflow: hidden;
-  background: var(--bg-surface, #fff);
+  background: var(--bg-surface);
   transition: border-color .2s, box-shadow .2s;
 
   &:focus-within {
-    border-color: var(--cyan, #0b8fc7);
-    box-shadow: 0 0 0 3px var(--cyan-dim, rgba(11,143,199,.12));
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 3px var(--cyan-dim);
   }
 
   &__icon {
-    padding: 0 10px 0 0; color: $muted; font-size: 20px;
+    padding: 0 10px 0 0; color: var(--text-muted); font-size: 20px;
     flex-shrink: 0; pointer-events: none;
     // برای RTL icon سمت راست
     order: -1; padding: 0 12px;
@@ -107,79 +101,79 @@ $dark2:  #1e293b;
 
   &__input {
     flex: 1; border: none; outline: none; background: transparent;
-    font-size: .9rem; padding: 11px 0; color: #1e293b;
-    font-family: inherit; direction: rtl;
-    &::placeholder { color: $muted; }
+    font-size: .9rem; padding: 11px 0; color: var(--text-primary);
+    font-family: inherit; direction: inherit;
+    &::placeholder { color: var(--text-muted); }
   }
 
   &__clear {
     display: flex; align-items: center; justify-content: center;
     padding: 0 10px; border: none; background: transparent;
-    cursor: pointer; color: $muted; transition: color .15s;
+    cursor: pointer; color: var(--text-muted); transition: color .15s;
     mat-icon { font-size: 18px; }
-    &:hover { color: $red; }
+    &:hover { color: var(--red); }
   }
 }
 
 .search-hint {
-  margin: 5px 2px 0; font-size: .74rem; color: $muted;
+  margin: 5px 2px 0; font-size: .74rem; color: var(--text-muted);
 }
 
 .search-empty {
-  margin: 8px 2px 0; font-size: .82rem; color: $muted;
-  padding: 10px 14px; background: var(--bg-elevated, #f8fafd);
+  margin: 8px 2px 0; font-size: .82rem; color: var(--text-muted);
+  padding: 10px 14px; background: var(--bg-elevated);
   border-radius: 8px; text-align: center;
 }
 
 .patient-dropdown {
   margin-top: 6px;
-  background: var(--bg-surface, #fff);
-  border: 1px solid var(--bg-deep, #e6edf6);
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0,0,0,.1);
+  box-shadow: 0 8px 24px var(--shadow);
   overflow: hidden;
 }
 
 .patient-option {
   display: flex; align-items: center; gap: 10px;
   padding: 10px 14px; cursor: pointer; transition: background .12s;
-  &:not(:last-child) { border-bottom: 1px solid var(--bg-deep, #e6edf6); }
-  &:hover { background: var(--bg-hover, #eef3f9); }
+  &:not(:last-child) { border-bottom: 1px solid var(--border-color); }
+  &:hover { background: var(--bg-hover); }
 
   &__avatar {
     width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
-    background: var(--cyan-dim, rgba(11,143,199,.10));
-    color: var(--cyan, #0b8fc7);
+    background: var(--cyan-dim);
+    color: var(--cyan);
     display: flex; align-items: center; justify-content: center;
     font-size: .9rem; font-weight: 700;
   }
-  &__name { font-size: .88rem; font-weight: 600; flex: 1; }
-  &__meta { font-size: .76rem; color: $muted; }
-  &__id   { font-size: .72rem; color: $muted; background: var(--bg-deep, #e6edf6);
+  &__name { font-size: .88rem; font-weight: 600; flex: 1; color: var(--text-primary); }
+  &__meta { font-size: .76rem; color: var(--text-muted); }
+  &__id   { font-size: .72rem; color: var(--text-muted); background: var(--bg-elevated);
              padding: 1px 7px; border-radius: 8px; }
 }
 
 .patient-chip {
   display: inline-flex; align-items: center; gap: 10px;
   padding: 8px 14px;
-  background: rgba($green, .07);
-  border: 1px solid rgba($green, .25); border-radius: 14px;
+  background: var(--mint-dim);
+  border: 1px solid var(--mint-dim); border-radius: 14px;
 
   &__avatar {
     width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
-    background: rgba($green, .15); color: darken($green, 10%);
+    background: var(--mint-dim); color: var(--mint);
     display: flex; align-items: center; justify-content: center;
     font-size: .85rem; font-weight: 700;
   }
-  &__name { font-size: .9rem; font-weight: 600; color: darken($green, 10%); }
-  &__id   { font-size: .75rem; color: $muted; background: var(--bg-deep, #e6edf6);
+  &__name { font-size: .9rem; font-weight: 600; color: var(--mint); }
+  &__id   { font-size: .75rem; color: var(--text-muted); background: var(--bg-elevated);
              padding: 1px 8px; border-radius: 8px; }
   &__remove {
     display: flex; align-items: center; margin-right: auto;
-    border: none; background: transparent; cursor: pointer; color: $muted;
+    border: none; background: transparent; cursor: pointer; color: var(--text-muted);
     transition: color .15s; padding: 0;
     mat-icon { font-size: 17px; }
-    &:hover { color: $red; }
+    &:hover { color: var(--red); }
   }
 }
 
@@ -192,19 +186,19 @@ $dark2:  #1e293b;
 .device-pill {
   display: flex; align-items: center; gap: 8px;
   padding: 6px 14px; border-radius: 20px;
-  border: 1px solid var(--bg-deep, #e6edf6);
-  font-size: .82rem; font-weight: 600; color: $muted;
+  border: 1px solid var(--border-color);
+  font-size: .82rem; font-weight: 600; color: var(--text-muted);
   transition: all .3s;
 
   &__dot {
     width: 8px; height: 8px; border-radius: 50%;
-    background: $muted; transition: background .3s;
+    background: var(--text-muted); transition: background .3s;
   }
 
   &--active {
-    color: $green; border-color: rgba($green,.3);
-    background: rgba($green,.06);
-    .device-pill__dot { background: $green; animation: pulse-dot 1.4s infinite; }
+    color: var(--mint); border-color: var(--mint-dim);
+    background: var(--mint-dim);
+    .device-pill__dot { background: var(--mint); animation: pulse-dot 1.4s infinite; }
   }
 }
 
@@ -215,9 +209,9 @@ $dark2:  #1e293b;
 .btn-start {
   display: flex; align-items: center; gap: 6px;
   padding: 9px 20px; border-radius: 12px; border: none; cursor: pointer;
-  background: linear-gradient(135deg, var(--cyan, #0b8fc7), #0070a8);
-  color: #fff; font-size: .88rem; font-weight: 700;
-  box-shadow: 0 4px 14px rgba(11,143,199,.35);
+  background: linear-gradient(135deg, var(--cyan), var(--accent-color));
+  color: var(--btn-on-primary); font-size: .88rem; font-weight: 700;
+  box-shadow: 0 4px 14px var(--cyan-dim);
   transition: all .2s;
   mat-icon { font-size: 20px; }
   mat-spinner { --mdc-circular-progress-active-indicator-color: #fff; }
@@ -228,12 +222,12 @@ $dark2:  #1e293b;
 
 .btn-stop {
   display: flex; align-items: center; gap: 6px;
-  padding: 9px 18px; border-radius: 12px; border: 1px solid rgba($red,.3);
-  cursor: pointer; background: rgba($red,.06); color: $red;
+  padding: 9px 18px; border-radius: 12px; border: 1px solid var(--red-dim);
+  cursor: pointer; background: var(--red-dim); color: var(--red);
   font-size: .88rem; font-weight: 700; transition: all .2s;
   mat-icon { font-size: 20px; }
 
-  &:hover:not(:disabled) { background: rgba($red,.12); }
+  &:hover:not(:disabled) { background: var(--red-dim); filter: brightness(1.15); }
   &:disabled { opacity: .35; cursor: not-allowed; }
 }
 
@@ -242,31 +236,33 @@ $dark2:  #1e293b;
 .countdown-wrap {
   margin-top: 14px;
   padding-top: 14px;
-  border-top: 1px solid var(--bg-deep, #e6edf6);
+  border-top: 1px solid var(--border-color);
 }
 
 .countdown-info {
   display: flex; align-items: center; gap: 6px;
-  font-size: .82rem; color: #374151; margin-bottom: 8px;
-  mat-icon    { font-size: 16px; color: $blue; }
-  b           { font-size: .95rem; color: $blue; }
-  .countdown-pct { margin-right: auto; color: $muted; }
+  font-size: .82rem; color: var(--text-primary); margin-bottom: 8px;
+  mat-icon    { font-size: 16px; color: var(--cyan); }
+  b           { font-size: .95rem; color: var(--cyan); }
+  .countdown-pct { margin-right: auto; color: var(--text-muted); }
 }
 
 .countdown-rail {
   height: 7px; border-radius: 6px;
-  background: var(--bg-deep, #e6edf6); overflow: hidden;
+  background: var(--bg-elevated); overflow: hidden;
 }
 .countdown-bar {
   height: 100%; border-radius: 6px;
-  background: linear-gradient(90deg, $blue, #06b6d4);
+  background: linear-gradient(90deg, var(--cyan), var(--mint));
   transition: width .95s linear, background .3s;
 
-  &--warn   { background: linear-gradient(90deg, $orange, #facc15); }
-  &--danger { background: linear-gradient(90deg, $red, $orange); animation: blink-bar 0.4s infinite; }
+  &--warn   { background: linear-gradient(90deg, var(--orange), var(--yellow)); }
+  &--danger { background: linear-gradient(90deg, var(--red), var(--orange)); animation: blink-bar 0.4s infinite; }
 }
 
 // ── Vital Dark Cards ───────────────────────────────────────────
+// این کارت عمداً همیشه تیره است (شبیه نمایشگر مانیتور بیمارستانی)،
+// صرف‌نظر از تم روشن/تیرهٔ سایت — به همین دلیل از رنگ‌های ثابت استفاده می‌کند.
 
 .vitals-row {
   display: grid; grid-template-columns: 1fr; gap: 16px;
@@ -274,7 +270,7 @@ $dark2:  #1e293b;
 
 .vital-dark {
   position: relative; overflow: hidden;
-  background: linear-gradient(160deg, $dark2 0%, $dark 100%);
+  background: linear-gradient(160deg, #1e293b 0%, #0f172a 100%);
   border-radius: 22px; padding: 24px 22px 20px;
   border: 1px solid rgba(255,255,255,.08);
   box-shadow: 0 12px 32px rgba(0,0,0,.25);
@@ -289,14 +285,14 @@ $dark2:  #1e293b;
   // خط رنگی بالا
   &__accent {
     position: absolute; top: 0; left: 0; right: 0; height: 4px;
-    &--red { background: linear-gradient(90deg, $red, $orange); }
+    &--red { background: linear-gradient(90deg, var(--red), var(--orange)); }
   }
 
   // آیکون
   &__icon {
     display: flex; align-items: center; gap: 0;
     mat-icon { font-size: 22px; }
-    &--red mat-icon { color: $red; text-shadow: 0 0 12px rgba($red, .6); }
+    &--red mat-icon { color: var(--red); text-shadow: 0 0 12px var(--red-dim); }
   }
 
   // لیبل
@@ -315,8 +311,8 @@ $dark2:  #1e293b;
     transition: color .3s, text-shadow .3s;
 
     &--red {
-      color: lighten($red, 18%);
-      text-shadow: 0 0 30px rgba($red, .5), 0 0 60px rgba($red, .2);
+      color: var(--red);
+      text-shadow: 0 0 30px var(--red-dim), 0 0 60px var(--red-dim);
     }
   }
   &__unit { font-size: .95rem; color: rgba(255,255,255,.35); font-weight: 500; padding-bottom: 8px; }
@@ -326,7 +322,7 @@ $dark2:  #1e293b;
     display: flex; align-items: center; gap: 6px;
     font-size: .78rem; color: rgba(255,255,255,.3); margin-top: 4px;
 
-    &--ok { color: $green; }
+    &--ok { color: var(--mint); }
   }
   &__dot {
     width: 6px; height: 6px; border-radius: 50%;
@@ -347,21 +343,21 @@ $dark2:  #1e293b;
 
   &__title {
     display: flex; align-items: center; gap: 6px;
-    font-size: .85rem; font-weight: 700;
+    font-size: .85rem; font-weight: 700; color: var(--text-primary);
     mat-icon { font-size: 18px; width: 18px; height: 18px; }
   }
-  &--hr .linechart__title { color: $red; }
+  &--hr .linechart__title { color: var(--red); }
 
   &__stats {
-    font-size: .76rem; color: $muted;
+    font-size: .76rem; color: var(--text-muted);
     b { font-size: .88rem; color: inherit; }
     small { opacity: .7; }
   }
 
   &__plot {
     position: relative;
-    background: var(--bg-elevated, #f8fafd);
-    border: 1px solid var(--bg-deep, #e6edf6);
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 4px;
 
@@ -371,28 +367,28 @@ $dark2:  #1e293b;
   // برچسب‌های محور Y (بیشینه بالا، کمینه پایین)
   &__ymax, &__ymin {
     position: absolute; left: 8px; font-size: .68rem;
-    color: $muted; font-weight: 700; pointer-events: none;
+    color: var(--text-muted); font-weight: 700; pointer-events: none;
   }
   &__ymax { top: 6px; }
   &__ymin { bottom: 6px; }
 
-  .grid { stroke: rgba(0, 0, 0, .06); stroke-width: 1; }
+  .grid { stroke: var(--border-color); stroke-width: 1; }
 
   .line {
     fill: none; stroke-width: 2.5;
     stroke-linejoin: round; stroke-linecap: round;
     transition: d .3s ease-out;
-    &--hr { stroke: $red; }
+    &--hr { stroke: var(--red); }
   }
 
   .dot {
-    stroke: #fff; stroke-width: 1.5;
-    &--hr { fill: $red; }
+    stroke: var(--bg-surface); stroke-width: 1.5;
+    &--hr { fill: var(--red); }
 
     // آخرین نقطه (زنده) کمی بزرگ‌تر و درخشان‌تر است
     &--latest {
       stroke-width: 2;
-      &.dot--hr { filter: drop-shadow(0 0 4px rgba($red, .7)); }
+      &.dot--hr { filter: drop-shadow(0 0 4px var(--red-dim)); }
     }
   }
 
@@ -401,7 +397,7 @@ $dark2:  #1e293b;
     fill: none; stroke-width: 2; opacity: .5;
     transform-box: fill-box; transform-origin: center;
     animation: dot-ring-pulse 1.6s ease-out infinite;
-    &--hr { stroke: $red; }
+    &--hr { stroke: var(--red); }
   }
 }
 
@@ -414,13 +410,13 @@ $dark2:  #1e293b;
 
 .log-count {
   margin-right: auto;
-  background: var(--cyan, #0b8fc7); color: #fff;
+  background: var(--cyan); color: var(--btn-on-primary);
   border-radius: 12px; padding: 1px 10px; font-size: .75rem; font-weight: 700;
 }
 
 .log-empty {
   display: flex; flex-direction: column; align-items: center;
-  gap: 10px; padding: 40px; color: $muted;
+  gap: 10px; padding: 40px; color: var(--text-muted);
   mat-icon { font-size: 44px; opacity: .4; }
   span     { font-size: .9rem; }
 }
@@ -430,16 +426,16 @@ $dark2:  #1e293b;
   grid-template-columns: 38px 74px 1fr 90px;
   align-items: center; gap: 8px;
   padding: 9px 20px; font-size: .82rem;
-  border-bottom: 1px solid var(--bg-deep, #e6edf6);
+  border-bottom: 1px solid var(--border-color);
   transition: background .12s;
 
   &--header {
-    font-size: .73rem; font-weight: 700; color: $muted;
+    font-size: .73rem; font-weight: 700; color: var(--text-muted);
     text-transform: uppercase; letter-spacing: .04em;
-    background: var(--bg-elevated, #f8fafd);
+    background: var(--bg-elevated);
     border-radius: 0;
   }
-  &--valid:hover { background: var(--bg-hover, #eef3f9); }
+  &--valid:hover { background: var(--bg-hover); }
   &--void        { opacity: .6; }
 
   &:last-child { border-bottom: none; border-radius: 0 0 18px 18px; }
@@ -449,12 +445,12 @@ $dark2:  #1e293b;
   display: flex; align-items: center; gap: 4px;
   mat-icon { font-size: 14px; flex-shrink: 0; }
 
-  &--num  { color: $muted; font-size: .72rem; }
-  &--time { color: #374151; font-variant-numeric: tabular-nums; }
+  &--num  { color: var(--text-muted); font-size: .72rem; }
+  &--time { color: var(--text-primary); font-variant-numeric: tabular-nums; }
 
-  &--val   { color: $muted; font-weight: 600; }
-  &--ok    { color: #15803d; }
-  &--muted { color: $muted; }
+  &--val   { color: var(--text-muted); font-weight: 600; }
+  &--ok    { color: var(--mint); }
+  &--muted { color: var(--text-muted); }
 }
 
 // بج‌ها
@@ -462,8 +458,8 @@ $dark2:  #1e293b;
   display: inline-block; padding: 2px 9px;
   border-radius: 10px; font-size: .7rem; font-weight: 700; white-space: nowrap;
 
-  &--ok   { background: rgba($green, .12); color: darken($green, 8%); }
-  &--void { background: rgba($muted, .12); color: $muted; }
+  &--ok   { background: var(--mint-dim); color: var(--mint); }
+  &--void { background: var(--bg-elevated); color: var(--text-muted); }
 }
 
 // ── Save bar ───────────────────────────────────────────────────
@@ -471,24 +467,24 @@ $dark2:  #1e293b;
 .save-bar {
   display: flex; align-items: center; gap: 14px;
   padding: 16px 20px;
-  background: linear-gradient(135deg, rgba($blue,.06), rgba($green,.06));
-  border: 1px solid rgba($blue,.2); border-radius: 16px;
+  background: linear-gradient(135deg, var(--cyan-dim), var(--mint-dim));
+  border: 1px solid var(--cyan-dim); border-radius: 16px;
   flex-wrap: wrap;
 
   &__text {
     display: flex; align-items: center; gap: 8px;
-    font-size: .88rem; color: #374151;
-    mat-icon { color: $blue; font-size: 20px; }
-    b { color: $blue; }
+    font-size: .88rem; color: var(--text-primary);
+    mat-icon { color: var(--cyan); font-size: 20px; }
+    b { color: var(--cyan); }
   }
 }
 
 .btn-save {
   display: flex; align-items: center; gap: 6px; margin-right: auto;
   padding: 9px 20px; border-radius: 12px; border: none; cursor: pointer;
-  background: linear-gradient(135deg, $green, #16a34a);
-  color: #fff; font-size: .88rem; font-weight: 700;
-  box-shadow: 0 4px 14px rgba($green,.3);
+  background: linear-gradient(135deg, var(--mint), var(--success-color));
+  color: var(--btn-on-primary); font-size: .88rem; font-weight: 700;
+  box-shadow: 0 4px 14px var(--mint-dim);
   transition: all .2s;
   mat-icon { font-size: 20px; }
   &:hover { filter: brightness(1.08); transform: translateY(-1px); }

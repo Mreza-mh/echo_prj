@@ -73,6 +73,15 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // لاگ تمیز و مختصر مکالمات دستیار هوشمند: پیام کاربر، تشخیص FAISS، و رفت‌وبرگشت با اروان
+        'ai_chat' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/ai-chat.log'),
+            'level' => 'info',
+            'days' => 14,
+            'tap' => [\App\Logging\CleanLineFormatter::class],
+        ],
+
         'slack' => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_WEBHOOK_URL'),

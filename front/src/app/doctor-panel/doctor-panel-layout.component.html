@@ -15,28 +15,29 @@
         <mat-icon>{{ isDarkMode ? 'light_mode' : 'dark_mode' }}</mat-icon>
       </button>
 
-      <button mat-icon-button (click)="toggleLanguage()" [matTooltip]="getTranslation('toggleLanguage')">
-        <mat-icon>language</mat-icon>
+      <button mat-button class="lang-switcher-btn" [matMenuTriggerFor]="langMenu" [matTooltip]="getTranslation('toggleLanguage')">
+        <span class="lang-flag">{{ translationService.getCurrentLang() === 'fa' ? '🇮🇷' : '🇬🇧' }}</span>
+        <span class="lang-code">{{ translationService.getCurrentLang() === 'fa' ? 'فا' : 'EN' }}</span>
+        <mat-icon class="lang-caret">arrow_drop_down</mat-icon>
       </button>
-
-      <button mat-icon-button [matMenuTriggerFor]="userMenu">
-        <mat-icon>account_circle</mat-icon>
-      </button>
-      <mat-menu #userMenu="matMenu">
-        <div class="user-menu-header" *ngIf="currentUser$ | async as user">
-          <div class="user-name">{{ user.name }}</div>
-          <div class="user-mobile">{{ user.mobile }}</div>
-        </div>
-        <mat-divider></mat-divider>
-        <button mat-menu-item routerLink="/dr-panel/settings">
-          <mat-icon>settings</mat-icon>
-          <span>{{ getTranslation('settings') }}</span>
+      <mat-menu #langMenu="matMenu" class="lang-dropdown-menu">
+        <button mat-menu-item (click)="translationService.setLanguage('fa')" [class.active-lang]="translationService.getCurrentLang() === 'fa'">
+          <span class="lang-flag">🇮🇷</span>
+          <span>فارسی</span>
         </button>
-        <button mat-menu-item (click)="logout()">
-          <mat-icon>logout</mat-icon>
-          <span>{{ getTranslation('logout') }}</span>
+        <button mat-menu-item (click)="translationService.setLanguage('en')" [class.active-lang]="translationService.getCurrentLang() === 'en'">
+          <span class="lang-flag">🇬🇧</span>
+          <span>English</span>
         </button>
       </mat-menu>
+
+      <button mat-icon-button routerLink="/" [matTooltip]="getTranslation('home')">
+        <mat-icon>home</mat-icon>
+      </button>
+
+      <button mat-icon-button (click)="logout()" [matTooltip]="getTranslation('logout')">
+        <mat-icon>logout</mat-icon>
+      </button>
     </div>
   </mat-toolbar>
 

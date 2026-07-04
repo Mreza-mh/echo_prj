@@ -10,6 +10,7 @@ import { Subject, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { VitalMonitorService, VitalReading } from './vital-monitor.service';
 import { GenericHttpService } from '../../@shared/services/generic-http.service';
+import { TranslationService } from '../../@shared/services/translation.service';
 
 @Component({
   selector: 'app-vital-monitor',
@@ -26,6 +27,11 @@ export class VitalMonitorComponent implements OnInit, OnDestroy {
   private vitalService = inject(VitalMonitorService);
   private http         = inject(GenericHttpService);
   private snack        = inject(MatSnackBar);
+  private translationService = inject(TranslationService);
+
+  getTranslation(key: string): string {
+    return this.translationService.getTranslation(key);
+  }
 
   // مدت session: سنسور فیزیکی هر ~۲ ثانیه یک خوانده تولید می‌کند (کد ESP32 ثابت است)،
   // پس ۱۲۰ ثانیه ≈ ۶۰ نقطه برای نمودار — روند قابل‌قبول. دکمه «توقف دستی» همیشه در دسترس است.

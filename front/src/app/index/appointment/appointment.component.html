@@ -1,4 +1,4 @@
-<div class="appt-wrap" dir="rtl">
+<div class="appt-wrap" [dir]="getDirection()">
 
   <!-- Org Header -->
   <div class="org-card" *ngIf="organizationDetails">
@@ -20,10 +20,10 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <polyline points="20 6 9 17 4 12"/>
             </svg>
-            تایید شده
+            {{ getTranslation('verifiedShort') }}
           </span>
         </div>
-        <p class="org-category">{{ organizationDetails.category?.title || 'مرکز تخصصی' }}</p>
+        <p class="org-category">{{ organizationDetails.category?.title || getTranslation('specialtyCenterShort') }}</p>
       </div>
       <div class="org-meta">
         <div class="org-meta-item" *ngIf="organizationDetails.phone">
@@ -53,8 +53,8 @@
         <div class="card-head">
           <span class="accent-bar"></span>
           <div class="">
-            <h3 class="card-title">تنظیمات نوبت</h3>
-            <p class="card-sub">پرسنل، خدمت و روز را انتخاب کنید</p>
+            <h3 class="card-title">{{ getTranslation('appointmentSettingsTitle') }}</h3>
+            <p class="card-sub">{{ getTranslation('selectPersonalService') }}</p>
           </div>
         </div>
         <div class="card-body">
@@ -65,10 +65,10 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
               </svg>
-              {{ hasStaffParam ? 'تغییر پرسنل' : 'انتخاب پرسنل' }}
+              {{ hasStaffParam ? getTranslation('changePersonalHint') : getTranslation('selectPersonalHint') }}
             </label>
             <mat-form-field appearance="outline" class="appt-mat-field">
-              <mat-select [(ngModel)]="staffId" [compareWith]="compareIds" (selectionChange)="onStaffChange()" placeholder="پرسنل مورد نظر را انتخاب کنید">
+              <mat-select [(ngModel)]="staffId" [compareWith]="compareIds" (selectionChange)="onStaffChange()" [placeholder]="getTranslation('selectStaffPlaceholder')">
                 <mat-option *ngFor="let staff of staffList" [value]="staff.organization_staff_id || staff.id">
                   <div class="staff-option">
                     <div class="staff-avatar">{{ (staff.user?.name || staff.name || 'P').charAt(0) }}</div>
@@ -85,10 +85,10 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
               </svg>
-              {{ hasServiceParam ? 'تغییر خدمت' : 'انتخاب خدمت' }}
+              {{ hasServiceParam ? getTranslation('changeServiceHint') : getTranslation('selectServiceHint') }}
             </label>
             <mat-form-field appearance="outline" class="appt-mat-field">
-              <mat-select [(ngModel)]="organizationServicesId" [compareWith]="compareIds" (selectionChange)="onServiceChange()" placeholder="نوع خدمت را انتخاب کنید">
+              <mat-select [(ngModel)]="organizationServicesId" [compareWith]="compareIds" (selectionChange)="onServiceChange()" [placeholder]="getTranslation('selectServicePlaceholder')">
                 <mat-option *ngFor="let service of serviceList" [value]="service.organization_service_id || service.id">
                   {{ service?.title || service.name }}
                 </mat-option>
@@ -103,10 +103,10 @@
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
                 <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
               </svg>
-              انتخاب مشتری
+              {{ getTranslation('selectCustomerHint') }}
             </label>
             <mat-form-field appearance="outline" class="appt-mat-field">
-              <mat-select [(ngModel)]="selectedUserId" [compareWith]="compareIds" placeholder="مشتری را انتخاب کنید">
+              <mat-select [(ngModel)]="selectedUserId" [compareWith]="compareIds" [placeholder]="getTranslation('selectCustomerPlaceholder')">
                 <mat-option *ngFor="let user of userList" [value]="user.id">
                   {{ user.name }}
                   <span class="user-phone" *ngIf="user.phone"> — {{ user.phone }}</span>
@@ -121,7 +121,7 @@
       <!-- Calendar card -->
       <div class="appt-card calendar-card">
         <div class="cal-head">
-          <span class="cal-label">انتخاب روز</span>
+          <span class="cal-label">{{ getTranslation('selectDayLabel') }}</span>
           <span class="cal-date-badge" *ngIf="selectedDate">{{ selectedDate | date:'MMMM yyyy' }}</span>
         </div>
         <mat-calendar
@@ -139,8 +139,8 @@
       <div class="card-head">
         <span class="accent-bar"></span>
         <div>
-          <h3 class="card-title">زمان‌های خالی</h3>
-          <p class="card-sub">یک بازه زمانی انتخاب کنید</p>
+          <h3 class="card-title">{{ getTranslation('availableSlotsTitle') }}</h3>
+          <p class="card-sub">{{ getTranslation('selectTimeSlot') }}</p>
         </div>
         <div class="date-badge" *ngIf="selectedDate">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -159,22 +159,22 @@
               <circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>
             </svg>
           </div>
-          <h4 class="empty-title">ابتدا اطلاعات را تکمیل کنید</h4>
-          <p class="empty-sub">پرسنل و خدمت مورد نظر را از ستون کناری انتخاب کنید</p>
+          <h4 class="empty-title">{{ getTranslation('completeInfoFirst') }}</h4>
+          <p class="empty-sub">{{ getTranslation('selectPersonalServiceHint') }}</p>
           <div class="checklist">
             <span class="check-item" [class.done]="!!staffId">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline *ngIf="staffId" points="20 6 9 17 4 12"/>
                 <circle *ngIf="!staffId" cx="12" cy="12" r="4"/>
               </svg>
-              انتخاب پرسنل
+              {{ getTranslation('selectPersonalHint') }}
             </span>
             <span class="check-item" [class.done]="!!organizationServicesId">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polyline *ngIf="organizationServicesId" points="20 6 9 17 4 12"/>
                 <circle *ngIf="!organizationServicesId" cx="12" cy="12" r="4"/>
               </svg>
-              انتخاب خدمت
+              {{ getTranslation('selectServiceHint') }}
             </span>
           </div>
         </div>
@@ -182,7 +182,7 @@
         <!-- Loading -->
         <div class="loading-state" *ngIf="isLoadingSlots && staffId && organizationServicesId">
           <mat-spinner diameter="36" strokeWidth="3"></mat-spinner>
-          <span>در حال بررسی تقویم...</span>
+          <span>{{ getTranslation('checkingCalendar') }}</span>
         </div>
 
         <!-- No slots -->
@@ -193,8 +193,8 @@
               <line x1="9" y1="15" x2="15" y2="15"/>
             </svg>
           </div>
-          <h4 class="empty-title">نوبت خالی وجود ندارد</h4>
-          <p class="empty-sub">روز دیگری را امتحان کنید</p>
+          <h4 class="empty-title">{{ getTranslation('noAvailableSlotsMsg') }}</h4>
+          <p class="empty-sub">{{ getTranslation('tryAnotherDay') }}</p>
         </div>
 
         <!-- Slots grid -->
@@ -205,7 +205,7 @@
             [class.active]="selectedSlot === slot"
             class="slot-btn">
             <span class="slot-time">{{ slot.start_time }}</span>
-            <span class="slot-label">خالی</span>
+            <span class="slot-label">{{ getTranslation('availableSlot') }}</span>
           </button>
         </div>
 
@@ -215,8 +215,8 @@
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
             </svg>
-            منابع
-            <span class="optional-tag">اختیاری</span>
+            {{ getTranslation('resourcesLabel') }}
+            <span class="optional-tag">{{ getTranslation('optionalTag') }}</span>
           </div>
           <div class="resource-chips">
             <div
@@ -245,9 +245,9 @@
             </svg>
           </div>
           <div class="preview-text">
-            <span class="preview-label">نوبت انتخابی</span>
+            <span class="preview-label">{{ getTranslation('selectedAppointmentTitle') }}</span>
             <span class="preview-val">
-              {{ selectedDate | date:'d MMMM' }} — ساعت <strong>{{ selectedSlot.start_time }}</strong>
+              {{ selectedDate | date:'d MMMM' }} — {{ getTranslation('atTimeLabel') }} <strong>{{ selectedSlot.start_time }}</strong>
             </span>
           </div>
         </div>
@@ -255,12 +255,12 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/>
           </svg>
-          یک زمان از بالا انتخاب کنید
+          {{ getTranslation('selectTimeFromAbove') }}
         </div>
 
         <div class="footer-actions">
           <a class="footer-btn footer-btn-cancel" routerLink="/panel/dashboard" *ngIf="isEditMode">
-            انصراف
+            {{ getTranslation('cancel') }}
           </a>
           <button
             class="footer-btn footer-btn-save"
@@ -270,7 +270,7 @@
             <svg *ngIf="!isBooking" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
             </svg>
-            {{ isBooking ? 'در حال ثبت...' : (isEditMode ? 'تایید ویرایش' : 'تایید و ثبت نوبت') }}
+            {{ isBooking ? getTranslation('bookingInProgress') : (isEditMode ? getTranslation('confirmEditShort') : getTranslation('confirmAndBookShort')) }}
           </button>
         </div>
       </div>

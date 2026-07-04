@@ -96,17 +96,9 @@
 
 /* Brand Logo */
 .brand-logo {
-    font-size: 2.5rem;
-    font-weight: 700;
+    height: auto;
+    width: auto;
     margin-bottom: 2rem;
-    letter-spacing: -0.02em;
-    background: linear-gradient(135deg, 
-        #ffffff 0%, 
-        #cbd5e1 100%
-    );
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
     position: relative;
     display: inline-block;
 }
@@ -503,9 +495,9 @@
     }
     
     .brand-logo {
-        font-size: 2.2rem;
+        height: auto;
     }
-    
+
     .brand-tagline {
         font-size: 1.3rem;
     }
@@ -566,7 +558,7 @@
     }
     
     .brand-logo {
-        font-size: 1.8rem;
+        height: auto;
         margin-bottom: 1.2rem;
         animation: fadeInDown 0.6s ease;
     }
@@ -737,9 +729,9 @@
     }
     
     .brand-logo {
-        font-size: 1.6rem;
+        height:auto;
     }
-    
+
     .brand-tagline {
         font-size: 1rem;
     }
@@ -996,7 +988,8 @@
     
     /* Compact Brand Logo */
     .brand-logo {
-        font-size: 1.5rem;
+        height: auto
+        ;
         margin-bottom: 0.75rem;
         animation: fadeInDown 0.4s ease;
     }
@@ -1219,7 +1212,7 @@
     }
     
     .brand-logo {
-        font-size: 1.3rem;
+        height: auto;
     }
     
     .brand-tagline {

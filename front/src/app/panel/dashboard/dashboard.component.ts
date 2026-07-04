@@ -12,6 +12,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { PanelHttpService } from '../panel-http.service';
 import { ToastService } from '../../@shared/services/toast/toast.service';
+import { TranslationService } from '../../@shared/services/translation.service';
 import { format, parseISO } from 'date-fns';
 import { Router } from '@angular/router';
 
@@ -51,6 +52,11 @@ export class DashboardComponent implements OnInit, OnDestroy {
   private panelService = inject(PanelService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private translationService = inject(TranslationService);
+
+  getTranslation(key: string): string {
+    return this.translationService.getTranslation(key);
+  }
 
   selectedDate: Date = new Date();
   filterStaffIds: number[] = [];

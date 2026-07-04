@@ -32,22 +32,20 @@
   position: absolute;
   inset: 0;
   background-size: cover;
-  background-position: center;
+  background-position: center 30%;
   background-repeat: no-repeat;
-  transform: scale(1.05);
-  filter: blur(3px);
 
   /* First layer: the image (on top) */
   /* Second layer: the gradient (shown if image fails) */
   background-image:
-    url(/images/avala.jpg),
+    url(/images/organizerhero.png),
     linear-gradient(135deg, var(--cyan) 0%, var(--purple) 100%);
 }
 
     .hero-overlay {
       position: absolute;
       inset: 0;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.65));
+      background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.55));
     }
 
     .hero-content {
@@ -80,48 +78,76 @@
     }
 
     .org-title {
+      display: inline-block;
       font-size: 3.5rem;
       font-weight: 800;
       letter-spacing: -1px;
       line-height: 1.15;
       word-wrap: break-word;
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 16px;
+      padding: 0.5rem 1.25rem;
 
       @include media-breakpoint-down(lg) { font-size: 2.5rem; }
-      @include media-breakpoint-down(md) { font-size: 1.75rem; }
+      @include media-breakpoint-down(md) { font-size: 1.75rem; padding: 0.4rem 1rem; }
       @include media-breakpoint-down(sm) { font-size: 1.5rem; }
     }
 
     .org-address {
       display: flex;
+      width: fit-content;
       align-items: center;
       gap: 0.5rem;
       font-size: 1rem;
       opacity: 0.95;
+      background: rgba(255,255,255,0.12);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: 12px;
+      padding: 0.5rem 1rem;
+      margin-top: 0.75rem;
 
       mat-icon { opacity: 0.75; flex-shrink: 0; }
 
-      @include media-breakpoint-down(md) { font-size: 0.9rem; }
+      @include media-breakpoint-down(md) { font-size: 0.9rem; margin-top: 0.5rem; }
     }
 
     .org-stats {
       display: flex;
-      gap: 2rem;
+      gap: 1rem;
       flex-wrap: wrap;
 
-      @include media-breakpoint-down(md) { gap: 1.5rem; }
-      @include media-breakpoint-down(sm) { gap: 1rem; }
+      @include media-breakpoint-down(md) { gap: 0.75rem; }
+      @include media-breakpoint-down(sm) { gap: 0.5rem; }
 
       .stat-item {
+        background: rgba(255,255,255,0.12);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.25);
+        border-radius: 14px;
+        padding: 0.75rem 1.5rem;
+        min-width: 100px;
+        text-align: center;
+
+        @include media-breakpoint-down(md) { padding: 0.6rem 1rem; min-width: 84px; }
+        @include media-breakpoint-down(sm) { padding: 0.5rem 0.75rem; min-width: 72px; }
+
         .stat-value {
           display: block;
           font-size: 1.8rem;
           font-weight: 700;
           line-height: 1;
+          color: #ffffff;
           @include media-breakpoint-down(md) { font-size: 1.5rem; }
         }
         .stat-label {
           font-size: 0.9rem;
-          opacity: 0.8;
+          opacity: 0.85;
           @include media-breakpoint-down(md) { font-size: 0.8rem; }
         }
       }
@@ -129,8 +155,11 @@
 
     // Contact card in hero (desktop only)
     .org-main-card {
-      background: var(--bg-surface) !important;
-      color: var(--text-primary) !important;
+      background: rgba(255,255,255,0.12) !important;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.25);
+      color: #ffffff !important;
       padding: 1.5rem;
       min-width: 280px;
       flex-shrink: 0;
@@ -510,10 +539,18 @@
     }
 
     .contact-item {
-      background: var(--bg-secondary);
+      background: transparent !important;
+      color: var(--text-primary);
       border-radius: 0.75rem;
       padding: 1rem;
     }
+  }
+
+  .org-main-card .contact-item {
+    // background: rgba(255,255,255,0.15);
+    color: #ffffff;
+
+    mat-icon.text-primary { color: #ffffff !important; opacity: 0.85; }
   }
 
   // Utility helpers
@@ -544,9 +581,6 @@
   }
 }
 
-[data-theme='dark'] .org-details-container .hero-bg {
-  filter: blur(3px) brightness(0.55);
-}
 
 // RTL tweaks
 [dir='rtl'] .org-details-container {
