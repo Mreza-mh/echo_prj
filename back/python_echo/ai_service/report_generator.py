@@ -153,21 +153,32 @@ def _clinical_recommendation(
 
 
 def _extract_echo_measurements(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """استخراج اندازه‌گیری‌های اکو از ردیف‌های pipeline"""
+    """
+    استخراج اندازه‌گیری‌های اکو از ردیف‌های pipeline.
+    یکتاسازی بر اساس (view, event, measurement_name) — نه فقط measurement_name —
+    چون یک پارامتر می‌تواند در چند نما/رویداد جدا اندازه‌گیری شود، مثلاً:
+      lvid در plax هم در End Diastol هم در End Sistol
+      la   هم در plax (End Sistol) هم در a4c (End Sistol)
+    اگر فقط با measurement_name یکتاسازی شود، این موارد جدا روی هم overwrite/drop می‌شوند.
+    """
     seen  = set()
     out: List[Dict[str, Any]] = []
 
     for row in rows:
         mname = row.get("measurement_name", "")
         val   = row.get("length_cm")
-        if not mname or val is None or mname in seen:
+        view  = row.get("detected_view", "")
+        event = row.get("event_name", "")
+        key   = (view, event, mname)
+        if not mname or val is None or key in seen:
             continue
-        seen.add(mname)
+        seen.add(key)
         out.append({
             "parameter": mname,
             "label_fa":  _PARAM_LABELS_FA.get(mname, mname),
             "value_cm":  round(float(val), 3),
-            "view":      row.get("detected_view", ""),
+            "view":      view,
+            "event":     event,
         })
     return out
 
@@ -384,16 +395,6 @@ def _build_doctor_report(
             lines.append("  تمام پارامترهای اکو در محدوده نرمال")
         lines.append("")
 
-    # ── Echo Measurements ─────────────────────────────────────────────────
-    if echo_meas:
-        lines += ["  ── اندازه‌گیری‌های اکو از ویدیو ──────────────────────────"]
-        for m in echo_meas:
-            lines.append(
-                f"  {m['label_fa']:<32}: {m['value_cm']:.2f} cm  "
-                f"[نما: {m.get('view', '?')}]"
-            )
-        lines.append("")
-
     # ── Risk Factors ──────────────────────────────────────────────────────
     if risk_factors:
         lines += ["  ── عوامل خطر بالینی شناسایی‌شده ─────────────────────────"]
@@ -412,11 +413,6 @@ def _build_doctor_report(
         f"    {rec['doctor']}",
         f"  سبک زندگی :",
         f"    {rec['lifestyle']}",
-        "",
-        "  ── سلب مسئولیت ──────────────────────────────────────────────",
-        "  این گزارش توسط سیستم هوش مصنوعی تولید شده است.",
-        "  جایگزین قضاوت بالینی متخصص نمی‌شود.",
-        "  تمام یافته‌ها باید توسط پزشک متخصص تأیید شوند.",
         "═" * 65,
     ]
 

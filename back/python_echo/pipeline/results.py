@@ -64,9 +64,10 @@ def ensure_dir(path: Path) -> Path:
 
 def write_json(data: dict[str, Any], output_path: Path) -> None:
     # دیکشنری رو با فرمت خوانا (indent=2) و پشتیبانی از فارسی (ensure_ascii=False) ذخیره می‌کنه
+    # default=str: فیلدهای datetime (مثلاً از مونگو) رو به‌جای کرش، به رشته تبدیل می‌کنه
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with output_path.open("w", encoding="utf-8") as handle:
-        json.dump(data, handle, indent=2, ensure_ascii=False)
+        json.dump(data, handle, indent=2, ensure_ascii=False, default=str)
 
 
 def relative_to_root(path_value: str | Path | None, output_root: Path) -> str | None:
@@ -293,7 +294,6 @@ def save_reports(
         "classification": classification_result,
         "events": {
             "event_frames": events_result.get("event_frames", {}),
-            "events_csv":   relative_to_root(events_result.get("events_csv"), internal_root),
         },
         "measurements_csv": relative_to_root(internal_csv_path, internal_root),
         "measurements":     internal_rows,
@@ -435,10 +435,11 @@ def generate_and_save_final_report(
             patient_id   = patient_id,
             visit_date   = visit_date,
             entry        = {
-                "type":         "llm_final_report",
-                "generated_at": datetime.now().isoformat(),
-                "report_text":  llm_report_text,
-                "files":        {"html": public_html_rel, "text": public_text_rel},
+                "type":            "llm_final_report",
+                "generated_at":    datetime.now().isoformat(),
+                "report_text":     llm_report_text,
+                "doctor_report":   report.get("doctor_report", ""),
+                "files":           {"html": public_html_rel, "text": public_text_rel},
             },
             patient_info = final_report_data.get("patient", {}),
             pull_filter  = {"type": "llm_final_report"},
@@ -459,10 +460,9 @@ def aggregate_and_evaluate_fuzzy(
     visit_date:        str,
     patient_config:    dict[str, Any],
     rows:              list[dict[str, Any]] | None = None,
-    summary_csv_path:  Path | None = None,
 ) -> dict[str, Any] | None:
     """
-    ورودی:  rows (سطرهای همه‌ی ویدیوها) یا summary_csv_path (اگه rows داده نشده بود از روی CSV می‌خونه)
+    ورودی:  rows (سطرهای همه‌ی ویدیوها)
     خروجی:  fuzzy_result dict (شامل score/category/reasons/llm_prompt) یا None اگه هیچ ویویی پردازش نشده بود
     """
     from fazOres.fuzzy import evaluate_patient, aggregate_patient_rows_for_fuzzy
@@ -471,16 +471,7 @@ def aggregate_and_evaluate_fuzzy(
     if not date_dir.exists():
         return None
 
-    # --- مرحله ۱: منبع سطرها رو مشخص می‌کنیم — یا مستقیم rows، یا خوندن از CSV ---
-    source_rows = rows
-    if source_rows is None and summary_csv_path and summary_csv_path.exists():
-        try:
-            source_rows = pd.read_csv(summary_csv_path).to_dict(orient="records")
-        except Exception as exc:
-            print(f"Error reading summary CSV for aggregation: {exc}")
-            source_rows = []
-    elif source_rows is None:
-        source_rows = []
+    source_rows = rows if rows is not None else []
 
     # --- مرحله ۲: می‌ره داخل fazOres.fuzzy و سطرهای خام رو به یک دیکشنری تجمیعی (aggregated_data) تبدیل می‌کنه ---
     aggregation      = aggregate_patient_rows_for_fuzzy(source_rows, patient_config)

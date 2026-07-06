@@ -1,0 +1,38 @@
+---
+id: 6307fd6a-09bb-47e0-a076-52e4f14145c4
+---
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#f1f5f9','primaryBorderColor':'#334155','primaryTextColor':'#1e293b','lineColor':'#64748b','fontSize':'14px','actorBkg':'#e2e8f0','actorBorder':'#334155','actorTextColor':'#1e293b'}}}%%
+sequenceDiagram
+    autonumber
+    actor D as fa:fa-user-md پزشک / اپراتور
+    participant BE as fa:fa-server Laravel
+    participant PY as fa:fa-code خط پردازش اکو
+    participant DB as fa:fa-leaf MongoDB
+    participant CV as fa:fa-eye مدل‌های بینایی ماشین
+    participant ML as fa:fa-chart-line مدل‌های ریسک
+    participant LLM as fa:fa-robot LLM گزارش‌نویس
+
+    D->>BE: آپلود ویدیوی اکو بیمار
+    BE->>PY: اجرای CLI با شناسه بیمار
+    activate PY
+    PY->>DB: خواندن پروفایل بالینی بیمار
+    DB-->>PY: داده‌های بالینی
+
+    PY->>CV: طبقه‌بندی نما (A4C/A2C/PLAX)
+    CV-->>PY: نتیجه طبقه‌بندی
+    PY->>CV: استخراج رویدادهای چرخه قلبی
+    CV-->>PY: فریم‌های کلیدی
+    PY->>CV: اندازه‌گیری و قطعه‌بندی حفرات
+    CV-->>PY: ابعاد و حجم حفرات
+
+    PY->>PY: تجمیع نتایج با منطق فازی
+    PY->>ML: برآورد ریسک قلبی-عروقی
+    ML-->>PY: سطح ریسک
+
+    PY->>LLM: درخواست تولید گزارش طبیعی
+    LLM-->>PY: متن گزارش نهایی
+
+    PY->>DB: ذخیره نتیجه کامل
+    deactivate PY
+    PY-->>BE: اعلام پایان پردازش
+    BE-->>D: نمایش گزارش نهایی در پنل

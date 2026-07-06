@@ -1,0 +1,22 @@
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e2e8f0','primaryBorderColor':'#334155','primaryTextColor':'#1e293b','lineColor':'#64748b','fontSize':'15px'}}}%%
+stateDiagram-v2
+    [*] --> Idle : دستگاه بی‌کار
+
+    Idle --> Started : دریافت فرمان start از MQTT
+    Started --> Measuring : قرارگیری انگشت روی سنسور
+
+    Measuring --> Measuring : انتشار داده هر ۲ ثانیه
+    Measuring --> FingerOff : خروج انگشت (IR کمتر از آستانه)
+    FingerOff --> Measuring : بازگشت انگشت
+
+    Measuring --> Stopped : فرمان stop / پایان کاربر
+    Measuring --> TimedOut : عبور از سقف ۱۵۰ ثانیه
+    Measuring --> ConnectionLost : قطع MQTT بیش از ۲۰ ثانیه
+
+    Stopped --> Idle
+    TimedOut --> Idle
+    ConnectionLost --> Idle
+
+    note right of Measuring
+        devices/ESP32_001/data
+    end note

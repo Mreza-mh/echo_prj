@@ -1,0 +1,47 @@
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#f1f5f9','primaryBorderColor':'#334155','primaryTextColor':'#1e293b','lineColor':'#64748b','fontSize':'15px'}}}%%
+flowchart TB
+    classDef node fill:#e2e8f0,stroke:#334155,stroke-width:2px,color:#1e293b
+    classDef container fill:#e5e7eb,stroke:#374151,stroke-width:1.5px,color:#111827
+    classDef laravelc fill:#fee2e2,stroke:#b91c1c,stroke-width:1.5px,color:#7f1d1d
+    classDef db fill:#f1f5f9,stroke:#334155,stroke-width:1.5px,color:#1e293b
+    classDef device fill:#e5e7eb,stroke:#374151,stroke-width:1.5px,color:#111827
+
+    subgraph SRV["fa:fa-server سرور اصلی (Docker Host)"]
+        direction TB
+        C1["fa:fa-docker کانتینر Laravel\n(PHP-FPM + Nginx)"]:::laravelc
+        C2["fa:fa-docker کانتینر FastAPI\n(FAISS Service)"]:::container
+        C3["fa:fa-docker کانتینر Mosquitto\n(MQTT Broker)"]:::container
+        C4["fa:fa-docker کانتینر MySQL"]:::db
+        C5["fa:fa-docker کانتینر MongoDB"]:::db
+        C6["fa:fa-folder Qdrant (فایلی/محلی)"]:::db
+    end
+
+    subgraph WEB["fa:fa-globe مرورگر کاربر"]
+        B1["fa:fa-window-maximize Angular SPA\n(Build استاتیک / CDN)"]:::node
+    end
+
+    subgraph EDGE["fa:fa-microchip لبه شبکه (کلینیک)"]
+        D1["fa:fa-heartbeat ماژول ESP32 + MAX30102"]:::device
+    end
+
+    subgraph CLOUD["fa:fa-cloud سرویس ابری خارجی"]
+        L1["fa:fa-robot Arvan Cloud AI Gateway"]:::node
+        L2["fa:fa-robot OpenRouter (fallback)"]:::node
+    end
+
+    subgraph WORKER["fa:fa-code اجرای دستی/زمان‌بندی‌شده"]
+        P1["fa:fa-cog خط پردازش پایتونی اکو (CLI)"]:::container
+    end
+
+    B1 <==>|"HTTPS / REST"| C1
+    C1 <==> C4
+    C1 <==> C5
+    C1 <==>|"HTTP"| C2
+    C2 --> C6
+    C1 <==>|"MQTT"| C3
+    C3 <==>|"Wi-Fi"| D1
+    C1 -.->|"HTTPS"| L1
+    C1 -.->|"HTTPS fallback"| L2
+    C2 -.->|"HTTPS"| L1
+    P1 <==> C5
+    P1 ==>|"ذخیره خروجی در Volume مشترک"| C1

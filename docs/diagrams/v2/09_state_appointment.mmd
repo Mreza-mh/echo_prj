@@ -1,0 +1,24 @@
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e2e8f0','primaryBorderColor':'#334155','primaryTextColor':'#1e293b','lineColor':'#64748b','fontSize':'15px'}}}%%
+stateDiagram-v2
+    [*] --> Pending : ثبت درخواست نوبت
+
+    Pending --> Confirmed : تأیید منشی/مدیر
+    Pending --> Cancelled : لغو توسط کاربر
+
+    Confirmed --> Reminded : ارسال یادآور خودکار
+    Reminded --> InProgress : حضور بیمار در کلینیک
+    Confirmed --> Cancelled : لغو نوبت
+
+    InProgress --> Completed : پایان ویزیت
+    InProgress --> NoShow : عدم حضور بیمار
+
+    Completed --> [*]
+    Cancelled --> [*]
+    NoShow --> [*]
+
+    note right of Pending
+        در انتظار تأیید
+    end note
+    note right of Completed
+        گزارش/نسخه در پروفایل ثبت می‌شود
+    end note

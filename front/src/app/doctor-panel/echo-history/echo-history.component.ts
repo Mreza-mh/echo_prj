@@ -211,8 +211,9 @@ export class EchoHistoryComponent implements OnInit {
   private loadLlmReport(patientId: string, visitDate: string): void {
     this.indexHttp.getPatientReportText(patientId, visitDate).subscribe({
       next: (response: any) => {
-        if (response.success && response.report_text) {
-          this.llmReportText = response.report_text;
+        // پنل دکتر: گزارش فنی/بالینی (doctor_report) نشون داده می‌شه، نه گزارش ساده‌شده‌ی بیمار
+        if (response.success && response.doctor_report) {
+          this.llmReportText = response.doctor_report;
           this.hasLlmReport = true;
           this.llmReportData = response;
         } else {

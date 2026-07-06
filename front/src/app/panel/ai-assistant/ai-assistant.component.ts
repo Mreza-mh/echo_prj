@@ -12,6 +12,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { IndexHttpService } from '../../index/index-http.service';
+import { JalaliDatePipe } from '../../shared/pipes/jalali-date.pipe';
 
 type ChatRole = 'user' | 'assistant' | 'system';
 
@@ -61,6 +62,7 @@ const UI_PROMPTS: Record<UiType, string> = {
     MatDividerModule,
     MatDatepickerModule,
     MatNativeDateModule,
+    JalaliDatePipe,
   ],
   templateUrl: './ai-assistant.component.html',
   styleUrls: ['./ai-assistant.component.scss'],
@@ -74,6 +76,7 @@ export class AiAssistantComponent {
   userInput = '';
 
   messages: ChatMessage[] = [WELCOME_MESSAGE];
+  private currentSlots: any = {};
 
   toggleChat(): void {
     this.isOpen = !this.isOpen;
@@ -121,6 +124,7 @@ export class AiAssistantComponent {
   }
 
   cancelBooking(): void {
+    this.currentSlots = {};
     this.userInput = 'لغو فرآیند';
     this.sendMessage();
   }
@@ -173,7 +177,7 @@ export class AiAssistantComponent {
       content: m.rawContent || m.content, // ارسال دیتای فنی به‌جای متن نمایشی برای حفظ کانتکست
     }));
 
-    this.indexHttp.aiChat(apiMessages).subscribe({
+    this.indexHttp.aiChat(apiMessages, this.currentSlots).subscribe({
       next: (res: any) => this.handleAiResponse(res),
       error: (err: any) => this.handleAiError(err),
     });
@@ -183,13 +187,21 @@ export class AiAssistantComponent {
     const aiMsg: string = res?.choices?.[0]?.message?.content || '';
     const ui = this.parseUi(aiMsg);
 
-    let cleanText = aiMsg;
-    if (ui) {
-      cleanText = aiMsg.replace(ui.fullTag, '').trim();
+    // حذف هر رشته‌ای شبیه تگ [UI:...] از متن نمایشی، چه معتبر پارس شده باشد چه مدل خودش یک نمونه ناقص/جعلی نوشته باشد
+    let cleanText = aiMsg.replace(/\[UI:[A-Z_]+:[\s\S]*$/g, '').trim();
 
-      const prompt = UI_PROMPTS[ui.type];
-      if (prompt && !cleanText.includes(prompt) && cleanText.length < 15) {
-        cleanText = prompt + (cleanText ? '\n' + cleanText : '');
+    if (ui) {
+      // حذف لیست آیتم‌ها از متن مدل، چون همان داده‌ها با کامپوننت UI (کارت/دکمه/تقویم) به‌صورت گرافیکی نمایش داده می‌شوند
+      // و تکرارشان به‌صورت متن ساده باعث نمایش دوباره (هم متن هم گزینه) می‌شود.
+      // بقیه‌ی متن مدل (خوش‌آمدگویی، توضیح، سوال) دست‌نخورده می‌ماند — پرامپت ثابت UI_PROMPTS
+      // فقط زمانی اضافه می‌شود که از متن مدل چیزی باقی نمانده باشد، نه به‌عنوان تکرار.
+      cleanText = cleanText.replace(/^[ \t]*[-*][ \t].*$/gm, '');
+      // خط‌هایی که فقط عنوان یک لیست حذف‌شده بودند (مثل «پزشک:» یا «خدمت:» بدون ادامه) نیز حذف می‌شوند
+      cleanText = cleanText.replace(/^[ \t]*\S.{0,20}:[ \t]*$/gm, '');
+      cleanText = cleanText.replace(/\n{2,}/g, '\n').trim();
+
+      if (!cleanText) {
+        cleanText = UI_PROMPTS[ui.type] || '';
       }
     }
 
@@ -200,6 +212,8 @@ export class AiAssistantComponent {
       ui,
       timestamp: new Date(),
     });
+    // ذخیره وضعیت اسلات‌ها برای ارسال در درخواست بعدی تا حافظه مکالمه (پزشک/خدمت/تاریخ انتخاب‌شده) حفظ شود
+    this.currentSlots = res?.current_slots || {};
     this.isLoading = false;
   }
 
@@ -228,7 +242,26 @@ export class AiAssistantComponent {
   }
 
   private parseUi(content: string): UiPayload | undefined {
-    const match = content.match(/\[UI:([A-Z_]+):([\s\S]+)/);
+    // ممکن است مدل خودش یک تگ [UI:...] ناقص/جعلی در متن بنویسد و بک‌اند هم تگ واقعی را در انتها اضافه کند.
+    // بنابراین همه‌ی رخدادهای [UI:...] را بررسی می‌کنیم و از آخر به اول اولین موردی که معتبر پارس شود را برمی‌گردانیم
+    // (تگ بک‌اند همیشه آخرین و معتبرترین مورد است).
+    const starts: number[] = [];
+    const tagRegex = /\[UI:[A-Z_]+:/g;
+    let m: RegExpExecArray | null;
+    while ((m = tagRegex.exec(content))) {
+      starts.push(m.index);
+    }
+
+    for (let s = starts.length - 1; s >= 0; s--) {
+      const parsed = this.tryParseUiAt(content, starts[s]);
+      if (parsed) return parsed;
+    }
+
+    return undefined;
+  }
+
+  private tryParseUiAt(content: string, startIndex: number): UiPayload | undefined {
+    const match = content.slice(startIndex).match(/^\[UI:([A-Z_]+):([\s\S]+)/);
     if (!match) return undefined;
 
     try {
@@ -258,7 +291,6 @@ export class AiAssistantComponent {
         fullTag,
       };
     } catch (e) {
-      console.error('Failed to parse UI data.', e);
       return undefined;
     }
   }

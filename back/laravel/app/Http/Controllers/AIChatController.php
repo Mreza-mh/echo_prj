@@ -223,11 +223,13 @@ class AIChatController extends Controller
         $routeData = $routeResponse->json();
         $intent = $routeData['intent'] ?? 'appointment';
         $score = $routeData['score'] ?? 0;
+        $reason = $routeData['reason'] ?? '';
 
-        $this->logAi("FAISS: intent={$intent}  score=" . round((float) $score, 2));
+        $this->logAi("FAISS: intent={$intent}  score=" . round((float) $score, 2) . "  reason={$reason}");
 
-        // سخت‌گیری بیشتر: اگر امتیاز پشتیبانی کم بود، باز هم ببرش سمت نوبت‌دهی
-        if ($intent === 'support' && $score > 0.8) {
+        // سرویس FAISS خودش تصمیم نهایی intent را می‌گیرد (شامل تشخیص کلمات کلیدی صریح مثل 'آدرس'/'تلفن').
+        // score همیشه امتیاز جستجوی برداری است، نه میزان اطمینان از این تصمیم؛ پس نباید دوباره روی آن آستانه بگذاریم.
+        if ($intent === 'support') {
             return $this->handleSupportIntent($messages, $lastUserMessage);
         }
 
@@ -456,6 +458,8 @@ class AIChatController extends Controller
                 $slotsText = "هنوز تاریخی انتخاب نشده است. از کاربر بخواه برای چه روزی (مثلاً فردا، شنبه یا ...) نوبت می‌خواهد.";
             } else {
                 $standardDate = $this->convertRelativeDateToStandard($slots['date']);
+                // نگه‌داشتن تاریخ استاندارد به‌جای عبارت نسبی خام (مثل '2 شنبه') تا در پاسخ به کاربر و مراحل بعدی هم درست نمایش داده شود
+                $slots['date'] = $standardDate;
 
                 $availableSlotsRequest = new \App\Http\Requests\Appointment\AvailableSlotsRequest([
                     'staff_id' => $staffFound->id,
@@ -468,12 +472,12 @@ class AIChatController extends Controller
                     $availableSlots = $availableData['data'] ?? [];
 
                     if (empty($availableSlots)) {
-                        $slotsText = "متاسفانه برای تاریخ {$slots['date']} هیچ زمان خالی پیدا نشد. از کاربر بخواه روز دیگری را انتخاب کند.";
+                        $slotsText = "متاسفانه برای تاریخ {$standardDate} هیچ زمان خالی پیدا نشد. از کاربر بخواه روز دیگری را انتخاب کند.";
                         $slots['date'] = null; // ریست کردن تاریخ برای پرسش مجدد
                     } else {
                         $times = collect($availableSlots)->map(fn($s) => $s['start_time'])->take(8)->implode('، ');
                         // مقدار واقعی که باید به هوش مصنوعی برسد
-                        $slotsText = "زمان‌های خالی در تاریخ {$slots['date']}: [{$times}]. حتماً این زمان‌ها را به کاربر نشان بده تا یکی را انتخاب کند.";
+                        $slotsText = "زمان‌های خالی در تاریخ {$standardDate}: [{$times}]. حتماً این زمان‌ها را به کاربر نشان بده تا یکی را انتخاب کند.";
                         $timeSlotOptions = collect($availableSlots)->map(fn($s) => ['start_time' => $s['start_time']])->values()->all();
                     }
                 } catch (\Exception $e) {
@@ -597,6 +601,10 @@ class AIChatController extends Controller
     private function appendUiTag(array $llmResult, string $uiType, array $data): array
     {
         $content = $llmResult['choices'][0]['message']['content'] ?? '';
+        // مدل زبانی گاهی خودش یک تگ [UI:...] ناقص/جعلی در متن می‌نویسد؛ قبل از افزودن تگ واقعی حذفش می‌کنیم
+        // تا فرانت با دو تگ (یکی نامعتبر، یکی معتبر) مواجه نشود.
+        $content = preg_replace('/\[UI:[A-Z_]+:[\s\S]*/', '', $content) ?? $content;
+
         $tag = "[UI:{$uiType}:" . json_encode($data, JSON_UNESCAPED_UNICODE) . ']';
         $llmResult['choices'][0]['message']['content'] = trim($content) . "\n" . $tag;
 
@@ -608,23 +616,49 @@ class AIChatController extends Controller
      */
     private function convertRelativeDateToStandard($relativeDate)
     {
+        // یک تاریخ Y-m-d معتبر که از قبل تبدیل شده را دست‌نخورده برگردان
+        if (preg_match('/^\d{4}-\d{2}-\d{2}$/', trim($relativeDate ?? ''))) {
+            return trim($relativeDate);
+        }
+
+        // نرمال‌سازی: حذف فاصله‌ها و تبدیل ارقام فارسی/عربی به لاتین تا 'دو شنبه'، '۲ شنبه' و 'دوشنبه' یکسان مچ شوند
+        $normalized = str_replace(' ', '', $relativeDate ?? '');
+        $normalized = strtr($normalized, [
+            '۰' => '0', '۱' => '1', '۲' => '2', '۳' => '3', '۴' => '4',
+            '۵' => '5', '۶' => '6', '۷' => '7', '۸' => '8', '۹' => '9',
+            '٠' => '0', '١' => '1', '٢' => '2', '٣' => '3', '٤' => '4',
+            '٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9',
+        ]);
+
         $date = now();
 
-        if (str_contains($relativeDate, 'فردا')){
-            $date->addDay(1);
+        if (str_contains($normalized, 'پسفردا')) {
+            $date->addDays(2);
+            return $date->format('Y-m-d');
         }
-        if (str_contains($relativeDate, 'پس‌فردا')) $date->addDays(2);
 
-        // نگاشت روزهای هفته (ساده شده)
+        if (str_contains($normalized, 'فردا')) {
+            $date->addDay();
+            return $date->format('Y-m-d');
+        }
+
+        // نگاشت روزهای هفته؛ همچنین شکل عامیانه عددی (۱شنبه=شنبه ... ۶شنبه=پنج‌شنبه) پشتیبانی می‌شود.
+        // نکته: کلیدهای اختصاصی‌تر باید قبل از 'شنبه' خام چک شوند چون همه‌ی روزها شامل زیررشته‌ی 'شنبه' هستند.
         $days = [
-            'شنبه' => Carbon::SATURDAY, 'یکشنبه' => Carbon::SUNDAY, 'دوشنبه' => Carbon::MONDAY,
-            'سه‌شنبه' => Carbon::TUESDAY, 'چهارشنبه' => Carbon::WEDNESDAY, 'پنج‌شنبه' => Carbon::THURSDAY, 'جمعه' => Carbon::FRIDAY
+            '1شنبه' => Carbon::SATURDAY,
+            'یکشنبه' => Carbon::SUNDAY, '2شنبه' => Carbon::SUNDAY,
+            'دوشنبه' => Carbon::MONDAY, '3شنبه' => Carbon::MONDAY,
+            'سه‌شنبه' => Carbon::TUESDAY, 'سهشنبه' => Carbon::TUESDAY, '4شنبه' => Carbon::TUESDAY,
+            'چهارشنبه' => Carbon::WEDNESDAY, '5شنبه' => Carbon::WEDNESDAY,
+            'پنج‌شنبه' => Carbon::THURSDAY, 'پنجشنبه' => Carbon::THURSDAY, '6شنبه' => Carbon::THURSDAY,
+            'جمعه' => Carbon::FRIDAY,
+            'شنبه' => Carbon::SATURDAY,
         ];
 
         foreach ($days as $dayName => $dayConstant) {
-            if (str_contains($relativeDate, $dayName)) {
+            if (str_contains($normalized, $dayName)) {
                 $date->next($dayConstant);
-                break;
+                return $date->format('Y-m-d');
             }
         }
 

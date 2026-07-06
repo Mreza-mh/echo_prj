@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>نمودار معماری سیستم Echo</title>
+<style>
+  :root{
+    --bg:#ffffff;
+    --ink:#1e1b4b;
+    --sub:#475569;
+    --client:#dbeafe; --client-b:#1e40af; --client-t:#1e3a8a;
+    --server:#fee2e2; --server-b:#b91c1c; --server-t:#7f1d1d;
+    --ai:#e2e8f0; --ai-b:#475569; --ai-t:#1e293b;
+    --iot:#e5e7eb; --iot-b:#374151; --iot-t:#111827;
+    --db:#f1f5f9; --db-b:#334155; --db-t:#1e293b;
+    --ext:#e2e8f0; --ext-b:#475569; --ext-t:#1e293b;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; padding:32px;
+    background:var(--bg);
+    font-family:"Segoe UI","Vazirmatn","Tahoma",sans-serif;
+    color:var(--ink);
+  }
+  h1{
+    text-align:center; font-size:22px; margin:0 0 28px;
+    color:var(--ink);
+  }
+  .canvas{
+    max-width:1180px; margin:0 auto;
+    display:flex; flex-direction:column; gap:22px;
+  }
+  .layer{
+    border:1.5px dashed #c7c9d9; border-radius:16px;
+    padding:18px 20px 22px;
+    position:relative;
+  }
+  .layer-label{
+    position:absolute; top:-13px; right:20px;
+    background:var(--bg); padding:0 10px;
+    font-size:13px; font-weight:700; color:var(--sub);
+  }
+  .row{ display:flex; gap:18px; flex-wrap:wrap; justify-content:center; }
+  .node{
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    border-radius:14px; padding:14px 18px; min-width:150px;
+    border:2px solid; box-shadow:0 1px 3px rgba(0,0,0,.06);
+  }
+  .node .icon{ width:40px; height:40px; display:flex; align-items:center; justify-content:center; }
+  .node .icon svg{ width:100%; height:100%; }
+  .node .title{ font-size:13.5px; font-weight:700; text-align:center; line-height:1.5; }
+  .node .sub{ font-size:11px; color:var(--sub); text-align:center; }
+
+  .client{ background:var(--client); border-color:var(--client-b); color:var(--client-t); }
+  .server{ background:var(--server); border-color:var(--server-b); color:var(--server-t); }
+  .ai{ background:var(--ai); border-color:var(--ai-b); color:var(--ai-t); }
+  .iot{ background:var(--iot); border-color:var(--iot-b); color:var(--iot-t); }
+  .db{ background:var(--db); border-color:var(--db-b); color:var(--db-t); border-radius:50px; }
+  .ext{ background:var(--ext); border-color:var(--ext-b); color:var(--ext-t); }
+
+  svg.conn{ display:block; width:100%; }
+  .legend{
+    display:flex; gap:16px; justify-content:center; flex-wrap:wrap;
+    margin-top:26px; font-size:12px; color:var(--sub);
+  }
+  .legend span{ display:inline-flex; align-items:center; gap:6px; }
+  .dot{ width:10px; height:10px; border-radius:50%; display:inline-block; }
+</style>
+</head>
+<body>
+<h1>نمودار معماری کلی سیستم Echo</h1>
+<div class="canvas">
+
+  <!-- Layer 1: Client -->
+  <div class="layer">
+    <span class="layer-label">لایه کاربر</span>
+    <div class="row">
+      <div class="node client">
+        <div class="icon"><!-- Angular -->
+          <svg viewBox="0 0 250 250" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#DD0031" d="M125 0l125 45-19 156-106 49-106-49L0 45z"/>
+            <path fill="#C3002F" d="M125 0v250l0 0 106-49 19-156z"/>
+            <path fill="#fff" d="M125 27L46 199h29l16-40h68l16 40h29L125 27zm0 51l25 60H100z"/>
+          </svg>
+        </div>
+        <div class="title">Angular 20 (SPA)</div>
+        <div class="sub">پورت 4200 — پنل‌های کاربر/پزشک/ادمین</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layer 2: Service -->
+  <div class="layer">
+    <span class="layer-label">لایه سرویس</span>
+    <div class="row">
+      <div class="node server">
+        <div class="icon"><!-- Laravel -->
+          <svg viewBox="0 0 51 52" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#FF2D20" d="M50.66 11.24a.86.86 0 01.04.24v10.55a.87.87 0 01-.44.75l-8.86 5.1v10.1c0 .31-.17.6-.44.75L23.7 49.03a.87.87 0 01-.88 0L4.57 38.73a.87.87 0 01-.44-.75V6.8c0-.09.01-.17.04-.25.01-.04.03-.07.05-.1.02-.06.05-.11.09-.16.03-.03.06-.06.09-.09l.14-.1L13.9.13a.87.87 0 01.87 0l8.85 5.1c.31.18.44.44.44.75v19.03l7.7-4.43V10.02c0-.09.01-.17.04-.25l.05-.1c.03-.06.05-.11.09-.16l.09-.09.14-.1L40.02.13a.87.87 0 01.87 0l8.85 5.1c.32.19.5.53.5.9v5.02z"/>
+          </svg>
+        </div>
+        <div class="title">Laravel 12 API</div>
+        <div class="sub">پورت 8000 — احراز هویت، نوبت‌دهی</div>
+      </div>
+
+      <div class="node ai">
+        <div class="icon"><!-- FastAPI -->
+          <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="256" cy="256" r="256" fill="#05998b"/>
+            <path fill="#fff" d="M272 24c-70 110-133 209-198 313h130l-45 151c74-113 140-215 205-321H236z"/>
+          </svg>
+        </div>
+        <div class="title">FastAPI + FAISS/Qdrant</div>
+        <div class="sub">پورت 9000 — RAG و تشخیص نیت</div>
+      </div>
+
+      <div class="node ai">
+        <div class="icon"><!-- Python -->
+          <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#3776AB" d="M63.4 6c-5 0-9.8.4-14 1.2-12.4 2.2-14.6 6.8-14.6 15.3v11.2h29.2v3.7H24.3c-8.6 0-16.2 5.2-18.6 15.1-2.7 11.3-2.8 18.4 0 30.2 2.1 8.8 7.2 15.1 15.8 15.1h10.2V85.3c0-9.8 8.5-18.4 18.6-18.4h29.2c8.2 0 14.8-6.8 14.8-15V22.5c0-8-6.7-14-14.8-15.3-5-.8-10.2-1.2-16.1-1.2z"/>
+            <path fill="#FFD343" d="M64.6 122c5 0 9.8-.4 14-1.2 12.4-2.2 14.6-6.8 14.6-15.3V94.3H63.9v-3.7h39.7c8.6 0 16.2-5.2 18.6-15.1 2.7-11.3 2.8-18.4 0-30.2-2.1-8.8-7.2-15.1-15.8-15.1H96.2v11.9c0 9.8-8.5 18.4-18.6 18.4H48.4c-8.2 0-14.8 6.8-14.8 15v19.4c0 8 6.7 14 14.8 15.3 5 .8 10.2 1.2 16.1 1.2z"/>
+          </svg>
+        </div>
+        <div class="title">خط پردازش اکو (Python CLI)</div>
+        <div class="sub">بینایی ماشین + یادگیری ماشین</div>
+      </div>
+
+      <div class="node iot">
+        <div class="icon"><!-- MQTT -->
+          <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+            <rect width="512" height="512" rx="60" fill="#660066"/>
+            <text x="256" y="300" font-size="150" text-anchor="middle" fill="#fff" font-family="Arial" font-weight="bold">M</text>
+          </svg>
+        </div>
+        <div class="title">Mosquitto MQTT Broker</div>
+        <div class="sub">ارتباط بلادرنگ با ESP32</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layer 3: Data -->
+  <div class="layer">
+    <span class="layer-label">لایه داده</span>
+    <div class="row">
+      <div class="node db">
+        <div class="icon"><!-- MySQL wordmark badge -->
+          <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="44" width="120" height="40" rx="8" fill="#00618A"/>
+            <text x="64" y="71" font-size="26" text-anchor="middle" fill="#f29111" font-family="Arial" font-weight="bold">MySQL</text>
+          </svg>
+        </div>
+        <div class="title">MySQL</div>
+        <div class="sub">کاربران، نوبت‌ها، پرسنل</div>
+      </div>
+
+      <div class="node db">
+        <div class="icon"><!-- MongoDB leaf -->
+          <svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#4DB33D" d="M64.5 2C50 20 36 45 41 74c3 18 14 33 23 46 2-6 3-13 3-20 12-32-3-79-2.5-98z"/>
+            <path fill="#4DB33D" opacity=".7" d="M63 24c8 12 16 32 12 55-3 16-9 27-11 33-2-6-8-17-11-33-4-23 4-43 10-55z"/>
+          </svg>
+        </div>
+        <div class="title">MongoDB</div>
+        <div class="sub">داده بالینی و علائم حیاتی</div>
+      </div>
+
+      <div class="node db">
+        <div class="icon"><!-- Vector DB generic -->
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="6" cy="6" r="3" fill="#9333ea"/>
+            <circle cx="18" cy="6" r="3" fill="#9333ea"/>
+            <circle cx="6" cy="18" r="3" fill="#9333ea"/>
+            <circle cx="18" cy="18" r="3" fill="#9333ea"/>
+            <circle cx="12" cy="12" r="3" fill="#c084fc"/>
+            <line x1="6" y1="6" x2="12" y2="12" stroke="#9333ea" stroke-width="1"/>
+            <line x1="18" y1="6" x2="12" y2="12" stroke="#9333ea" stroke-width="1"/>
+            <line x1="6" y1="18" x2="12" y2="12" stroke="#9333ea" stroke-width="1"/>
+            <line x1="18" y1="18" x2="12" y2="12" stroke="#9333ea" stroke-width="1"/>
+          </svg>
+        </div>
+        <div class="title">Qdrant</div>
+        <div class="sub">embedding پایگاه دانش</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Layer 4: External + Hardware -->
+  <div class="layer">
+    <span class="layer-label">سرویس‌های خارجی و سخت‌افزار</span>
+    <div class="row">
+      <div class="node ext">
+        <div class="icon"><!-- Cloud/LLM generic -->
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#dc2626" d="M19 18H6a4 4 0 01-.4-8A5.5 5.5 0 0116 8.1 4.5 4.5 0 0119 18z"/>
+          </svg>
+        </div>
+        <div class="title">Arvan Cloud AI Gateway</div>
+        <div class="sub">مدل Gemma + OpenRouter (fallback)</div>
+      </div>
+
+      <div class="node iot">
+        <div class="icon"><!-- Chip / ESP32 -->
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <rect x="6" y="6" width="12" height="12" rx="1" fill="#d97706"/>
+            <g stroke="#d97706" stroke-width="1.2">
+              <line x1="8" y1="2" x2="8" y2="6"/><line x1="12" y1="2" x2="12" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/>
+              <line x1="8" y1="18" x2="8" y2="22"/><line x1="12" y1="18" x2="12" y2="22"/><line x1="16" y1="18" x2="16" y2="22"/>
+              <line x1="2" y1="8" x2="6" y2="8"/><line x1="2" y1="12" x2="6" y2="12"/><line x1="2" y1="16" x2="6" y2="16"/>
+              <line x1="18" y1="8" x2="22" y2="8"/><line x1="18" y1="12" x2="22" y2="12"/><line x1="18" y1="16" x2="22" y2="16"/>
+            </g>
+          </svg>
+        </div>
+        <div class="title">ESP32 + MAX30102</div>
+        <div class="sub">اندازه‌گیری ضربان قلب</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="legend">
+  <span><span class="dot" style="background:#1e40af"></span> کاربر</span>
+  <span><span class="dot" style="background:#b91c1c"></span> Laravel</span>
+  <span><span class="dot" style="background:#475569"></span> سرویس / هوش مصنوعی</span>
+  <span><span class="dot" style="background:#374151"></span> سخت‌افزار / IoT</span>
+  <span><span class="dot" style="background:#334155"></span> پایگاه‌داده</span>
+</div>
+
+</body>
+</html>

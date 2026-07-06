@@ -71,20 +71,56 @@ PARAM_CONFIG = {
     # قطر شریان ریوی (mm): نرمال ≤25, Mild ≤30, Severe >30
 }
 
-# نگاشت نام اندازه‌گیری pipeline → نام پارامتر PARAM_CONFIG
-_PIPELINE_PARAM_MAP = {
-    "aortic_root":       "aortic_root",
-    "aorta":             "aortic_asc",
-    "ivs":               "ivs_thickness",
-    "lvpw":              "pw_thickness",
-    "lvid":              "lv_diameter",
-    "left_atrium_area":  "la_volume",
-    "right_atrium_area": "ra_volume",
-    "lv_area":           "lv_edv",
+# نگاشت (detected_view, event_name, measurement_name) → نام پارامتر PARAM_CONFIG
+# فقط با measurement_name نگاشت نمی‌کنیم چون بعضی اندازه‌گیری‌ها در چند نما/رویداد جدا
+# تکرار می‌شوند (مثلاً lvid هم در End Diastol هم End Sistol در plax) — این‌ها باید
+# پارامترهای فازی جدا باشند نه اینکه یکی روی دیگری overwrite شود.
+# فعلاً فقط نماهای a4c و plax پوشش داده شده‌اند (تنها نماهایی که در حال حاضر استفاده می‌شوند).
+#
+# نکته درباره‌ی "la": اندازه‌گیری خطی measurement_name="la" (هم در plax هم در a4c، از مدل
+# YOLO) عمداً اینجا نگاشت نشده و وارد موتور فازی نمی‌شود — چون این یک قطر/طول خام است،
+# در حالی که PARAM_CONFIG برای دهلیز چپ فقط la_volume (مساحت/mL بر مترمربع، از
+# a4c_left_atrium_area_cm2 که مسیر جدای segmentation است) آستانه‌ی بالینی دارد. اضافه
+# کردن یک آستانه‌ی جعلی برای این طول خام باعث دسته‌بندی نادرست می‌شد. این اندازه‌گیری‌ها
+# همچنان در گزارش خام pipeline (echo_measurements در report_generator.py) دیده می‌شوند،
+# فقط در ارزیابی فازی شرکت نمی‌کنند.
+_PIPELINE_PARAM_MAP: dict[tuple[str, str, str], str] = {
+    # --- plax ---
+    ("plax", "End Diastol", "ivs"):          "ivs_thickness",
+    ("plax", "End Diastol", "lvid"):         "lv_diameter_ed",
+    ("plax", "End Diastol", "lvpw"):         "pw_thickness",
+    ("plax", "End Sistol",  "lvid"):         "lv_diameter_es",
+    ("plax", "LVOT",        "aorta"):        "aortic_asc",
+    ("plax", "LVOT",        "aortic_root"):  "aortic_root",
+    # --- a4c ---
+    ("a4c",  "End Diastol", "rv_base"):      "rv_diameter",
 }
 
+# پارامترهایی که آستانه‌ی بالینی‌شان دقیقاً همان پارامتر پایه‌ی PARAM_CONFIG است، فقط با
+# نام جدا نگه‌داری می‌شوند تا view/event متفاوتشان روی هم overwrite نشود.
+_ALIAS_TO_BASE_CONFIG = {
+    "lv_diameter_ed": "lv_diameter",
+    "lv_diameter_es": "lv_diameter",
+}
+for _alias, _base in _ALIAS_TO_BASE_CONFIG.items():
+    PARAM_CONFIG[_alias] = PARAM_CONFIG[_base]
+
 # پارامترهای خطی که pipeline بر حسب cm می‌دهد ولی PARAM_CONFIG بر حسب mm است
-_LINEAR_PARAMS_CM = {"aortic_root", "aortic_asc", "ivs_thickness", "pw_thickness", "lv_diameter"}
+_LINEAR_PARAMS_CM = {
+    "aortic_root", "aortic_asc", "ivs_thickness", "pw_thickness",
+    "lv_diameter_ed", "lv_diameter_es", "rv_diameter",
+}
+
+# واحد هر پارامتر — فقط برای خوانا کردن reasons در خروجی (مصرف LLM)
+_PARAM_UNITS = {
+    "aortic_root": "mm", "aortic_asc": "mm",
+    "la_volume": "mL/m2", "ra_volume": "mL/m2",
+    "rv_diameter": "mm", "rv_wall": "mm",
+    "lv_edv": "mL/m2", "lv_esv": "mL/m2",
+    "ivs_thickness": "mm", "pw_thickness": "mm",
+    "lv_diameter": "mm", "lv_diameter_ed": "mm", "lv_diameter_es": "mm",
+    "pa_diameter": "mm",
+}
 
 
 def _as_float(value: Any) -> float | None:
@@ -131,11 +167,17 @@ def aggregate_patient_rows_for_fuzzy(
         rows_used += 1
 
         view_name = row.get("detected_view")
+        event_name = row.get("event_name")
         if view_name and view_name not in processed_views:
             processed_views.append(str(view_name))
 
         # اندازه‌گیری خطی این ردیف (cm) → نگاشت به پارامتر فازی
-        mapped_key = _PIPELINE_PARAM_MAP.get(str(row.get("measurement_name")))
+        # کلید نگاشت شامل (view, event, measurement_name) است — نه فقط measurement_name —
+        # چون همین اندازه‌گیری در نمای/رویداد دیگری ممکن است دوباره تکرار شده باشد
+        # (مثلاً lvid در End Diastol و End Sistol، یا la در plax و a4c) و نباید روی هم
+        # overwrite شوند؛ هرکدام پارامتر فازی جدای خودش را دارد.
+        map_key = (str(view_name), str(event_name), str(row.get("measurement_name")))
+        mapped_key = _PIPELINE_PARAM_MAP.get(map_key)
         measurement_cm = _as_float(row.get("length_cm"))
         if mapped_key and measurement_cm is not None:
             if mapped_key in _LINEAR_PARAMS_CM:
@@ -144,6 +186,7 @@ def aggregate_patient_rows_for_fuzzy(
                 base[mapped_key] = measurement_cm
 
         # مساحت‌های دهلیزی و بطنی (cm²) — اگر در ردیف موجود باشند
+        # این مساحت از segmentation می‌آید (نه از اندازه‌گیری خطی la که عمداً از فازی حذف شد)
         la_area = _as_float(row.get("a4c_left_atrium_area_cm2"))
         if la_area is not None:
             base["la_volume"] = la_area
@@ -220,12 +263,20 @@ def evaluate_patient(patient_data, patient_name="Patient", show_plot=False):
     # ========================================================================
     # قدم ۱: استخراج اطلاعات پایه و محاسبه BSA
     # ========================================================================
-    # تبدیل gender از عدد به string (MongoDB: 1=زن, 2=مرد یا 0=زن, 1=مرد)
-    gender_raw = patient_data.get('gender', patient_data.get('sex', 'male'))
-    if isinstance(gender_raw, (int, float)):
-        gender = 'male' if int(gender_raw) in (1, 2) else 'female'
-    elif isinstance(gender_raw, str):
-        gender = 'male' if gender_raw.lower() in ('male', 'مرد', 'm', '1', '2') else 'female'
+    # تبدیل gender/sex به رشته — دو قرارداد متفاوت در پروژه وجود دارد (مثل ml_predictor.py):
+    #   sex    (دیتاست HD): 0=زن, 1=مرد
+    #   gender (دیتاست CV): 1=زن, 2=مرد
+    # فرم فرانت (patient-form.component.ts) هر دو کلید را هم‌زمان و با این قراردادها می‌فرستد،
+    # پس باید هر کلید را جدا و با قرارداد خودش بخوانیم — نه هر دو را با یک قانون مشترک.
+    if 'sex' in patient_data and patient_data['sex'] is not None:
+        sex_raw = patient_data['sex']
+        gender = 'male' if str(sex_raw).lower() in ('1', 'male', 'مرد', 'm') else 'female'
+    elif 'gender' in patient_data and patient_data['gender'] is not None:
+        gender_raw = patient_data['gender']
+        if isinstance(gender_raw, str) and gender_raw.lower() in ('male', 'مرد', 'm', 'female', 'زن', 'f'):
+            gender = 'male' if gender_raw.lower() in ('male', 'مرد', 'm') else 'female'
+        else:
+            gender = 'male' if str(gender_raw) == '2' else 'female'
     else:
         gender = 'male'  # پیش‌فرض
 
@@ -276,9 +327,11 @@ def evaluate_patient(patient_data, patient_name="Patient", show_plot=False):
         antecedent = ctrl.Antecedent(np.arange(0, max_universe, 0.1), param)
 
         # ----- توابع عضویت (مثال‌ها برای la_volume male) -----
-        # Normal: ذوزنقه [0, 0, n_max, mild_max] — تا n_max عضویت ۱، سپس کاهش خطی تا mild_max
-        #   مثال: trapmf [0, 0, 34, 41]
-        antecedent['Normal'] = fuzz.trapmf(antecedent.universe, [0, 0, n_max, mild_max])
+        # Normal: ذوزنقه [0, 0, n_max, n_max] — دقیقاً تا n_max عضویت ۱ و درست در n_max به صفر می‌رسد
+        # (قبلاً تا mild_max ادامه پیدا می‌کرد و باعث می‌شد در وسط بازه‌ی Mild هم Normal
+        #  عضویت بالایی داشته باشد و یافته‌های Mild به‌اشتباه به‌عنوان Normal گزارش شوند)
+        #   مثال: trapmf [0, 0, 34, 34]
+        antecedent['Normal'] = fuzz.trapmf(antecedent.universe, [0, 0, n_max, n_max])
 
         # Mild: مثلث [n_max, mild_max, sev_max] — قله در mild_max
         #   مثال: trimf [34, 41, 50]
@@ -333,9 +386,6 @@ def evaluate_patient(patient_data, patient_name="Patient", show_plot=False):
     try:
         risk_sim.compute()
         score = risk_sim.output['risk']
-        # حالت همه-نرمال: فقط Normal Rule فعال → MOM روی ناحیه Normal → score = 0.0
-
-        category = "Normal" if score < 35 else "Mild" if score < 65 else "Severe"
 
         # ----- محاسبه درجات عضویت هر پارامتر (برای گزارش و نمودار) -----
         reasons = []
@@ -359,11 +409,25 @@ def evaluate_patient(patient_data, patient_name="Patient", show_plot=False):
             overall_mild_deg = max(overall_mild_deg, mild_deg)   # OR
             overall_sev_deg  = max(overall_sev_deg, sev_deg)     # OR
 
-            # تشخیص دلیل ریسک: مجموعه‌ای که بیشترین عضویت را دارد
+            # تشخیص دلیل ریسک: مجموعه‌ای با بیشترین عضویت برای همین پارامتر
+            # (نه مقایسه‌ی norm/mild با هم فقط وقتی mild "بیشتر" باشه — چون در ابتدای
+            #  بازه‌ی Mild، Normal هنوز عضویت باقیمانده‌ی بالایی داره و یافته گم می‌شد)
+            unit = _PARAM_UNITS.get(param, "")
+            n_min, n_max, mild_max, sev_max = PARAM_CONFIG[param][gender]
             if sev_deg >= mild_deg and sev_deg >= norm_deg and sev_deg > 0:
-                reasons.append(f"{param} is SEVERE ({val:.1f})")
-            elif mild_deg > norm_deg and mild_deg > 0:
-                reasons.append(f"{param} is MILD ({val:.1f})")
+                reasons.append(f"{param} is SEVERE ({val:.1f} {unit}, normal<={n_max})")
+            elif mild_deg >= norm_deg and mild_deg > 0:
+                reasons.append(f"{param} is MILD ({val:.1f} {unit}, normal<={n_max})")
+
+        # ----- دسته‌بندی نهایی مستقیم از بدترین درجه‌ی عضویت پارامترها -----
+        # (نه از MOM روی خروجی aggregate‌شده‌ی risk — چون Normal یک ذوزنقه‌ی پهن است
+        #  و در حالت تک‌پارامتر Mild می‌تواند بر Mild غالب شود و score را کاذباً پایین بیاورد)
+        if overall_sev_deg >= overall_mild_deg and overall_sev_deg > 0:
+            category = "Severe"
+        elif overall_mild_deg >= overall_norm_deg and overall_mild_deg > 0:
+            category = "Mild"
+        else:
+            category = "Normal"
 
         reasons_text = "\n  - ".join(reasons) if reasons else "All normal."
 

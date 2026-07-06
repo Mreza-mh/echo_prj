@@ -1,0 +1,114 @@
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#f1f5f9','primaryBorderColor':'#334155','primaryTextColor':'#1e293b','lineColor':'#64748b','fontSize':'14px'}, 'flowchart': {'nodeSpacing': 28, 'rankSpacing': 55, 'curve': 'basis'}}}%%
+flowchart LR
+    classDef root fill:#e2e8f0,stroke:#1e293b,stroke-width:2.5px,color:#1e293b,font-weight:bold
+    classDef front fill:#dbeafe,stroke:#1e40af,stroke-width:2px,color:#1e3a8a
+    classDef laravel fill:#fee2e2,stroke:#b91c1c,stroke-width:2px,color:#7f1d1d
+    classDef faiss fill:#e2e8f0,stroke:#475569,stroke-width:2px,color:#1e293b
+    classDef pyroot fill:#e5e7eb,stroke:#334155,stroke-width:2px,color:#111827
+    classDef cvmodel fill:#dbeafe,stroke:#1e40af,stroke-width:1.5px,color:#1e3a8a
+    classDef mlmodel fill:#e2e8f0,stroke:#475569,stroke-width:1.5px,color:#1e293b
+    classDef fuzzy fill:#f1f5f9,stroke:#334155,stroke-width:1.5px,color:#1e293b
+    classDef llm fill:#e5e7eb,stroke:#374151,stroke-width:1.5px,color:#111827
+    classDef db fill:#f1f5f9,stroke:#334155,stroke-width:2px,color:#1e293b
+    classDef iot fill:#e5e7eb,stroke:#374151,stroke-width:2px,color:#111827
+
+    ROOT["fa:fa-heartbeat سامانه Echo"]:::root
+
+    %% ==================== FRONTEND BRANCH ====================
+    subgraph SG_FE["fa:fa-window-maximize فرانت‌اند Angular 20"]
+        direction TB
+        FE1["fa:fa-user پنل بیمار"]:::front
+        FE2["fa:fa-user-md پنل پزشک"]:::front
+        FE3["fa:fa-user-tie پنل مدیریت / ابرمدیر"]:::front
+        FE4["fa:fa-comments دستیار هوشمند (چت)"]:::front
+        FE5["fa:fa-heart-pulse پایش زنده ضربان قلب"]:::front
+    end
+
+    %% ==================== BACKEND 1: LARAVEL ====================
+    subgraph SG_BE1["fa:fa-server بک‌اند ۱ — Laravel 12 (اصلی)"]
+        direction TB
+        L1["fa:fa-lock احراز هویت (Passport / OTP)"]:::laravel
+        L2["fa:fa-calendar-check نوبت‌دهی و برنامه کاری"]:::laravel
+        L3["fa:fa-users-cog مدیریت پرسنل / خدمات / منابع"]:::laravel
+        L4["fa:fa-comment-dots هماهنگ‌کننده چت‌بات"]:::laravel
+        L5["fa:fa-file-medical مدیریت گزارش و تاریخچه اکو"]:::laravel
+        L6["fa:fa-satellite-dish گوش‌دهنده MQTT"]:::laravel
+    end
+
+    %% ==================== BACKEND 2: FAISS ====================
+    subgraph SG_BE2["fa:fa-brain بک‌اند ۲ — سرویس FAISS (FastAPI)"]
+        direction TB
+        F1["fa:fa-route مسیریابی نیت (Route Intent)"]:::faiss
+        F2["fa:fa-vector-square Embedding محلی"]:::faiss
+        F3["fa:fa-dna جستجوی برداری در Qdrant (RAG)"]:::faiss
+    end
+
+    %% ==================== BACKEND 3: PYTHON ECHO PIPELINE ====================
+    subgraph SG_BE3["fa:fa-code بک‌اند ۳ — خط پردازش اکو (Python CLI)"]
+        direction TB
+
+        subgraph SG_CV["fa:fa-eye بینایی ماشین"]
+            direction TB
+            PCV1["fa:fa-tags طبقه‌بندی نما (A4C/A2C/PLAX)"]:::cvmodel
+            PCV2["fa:fa-map-marker-alt استخراج رویداد چرخه قلبی"]:::cvmodel
+            PCV3["fa:fa-ruler برآورد مقیاس پیکسل‌به‌سانتی‌متر"]:::cvmodel
+            PCV4["fa:fa-puzzle-piece قطعه‌بندی حفرات (PyTorch)"]:::cvmodel
+            PCV5["fa:fa-ruler-combined اندازه‌گیری LV / دهلیز / LVOT"]:::cvmodel
+        end
+
+        subgraph SG_FUZZY["fa:fa-random منطق فازی"]
+            direction TB
+            PF1["fa:fa-sliders-h تجمیع معیارهای اندازه‌گیری"]:::fuzzy
+            PF2["fa:fa-exclamation-triangle تعیین سطح ریسک نهایی"]:::fuzzy
+        end
+
+        subgraph SG_ML["fa:fa-chart-line مدل‌های یادگیری ماشین ریسک"]
+            direction TB
+            PML1["fa:fa-tree CatBoost (ریسک قلبی-عروقی)"]:::mlmodel
+            PML2["fa:fa-square-root-alt Logistic Regression (ریسک قلبی)"]:::mlmodel
+        end
+
+        subgraph SG_LLM["fa:fa-robot تولید گزارش با LLM"]
+            direction TB
+            PLLM1["fa:fa-cloud Arvan Cloud AI Gateway (Gemma)"]:::llm
+            PLLM2["fa:fa-file-alt گزارش نهایی متنی طبیعی"]:::llm
+        end
+
+        SG_CV --> SG_FUZZY --> SG_ML --> SG_LLM
+    end
+
+    %% ==================== IOT ====================
+    subgraph SG_IOT["fa:fa-broadcast-tower بروکر و سخت‌افزار"]
+        direction TB
+        MQTTNODE["fa:fa-broadcast-tower Mosquitto MQTT"]:::iot
+        ESP["fa:fa-microchip ESP32 + MAX30102"]:::iot
+        MQTTNODE --> ESP
+    end
+
+    %% ==================== DATABASES ====================
+    subgraph SG_DB["fa:fa-database پایگاه‌های داده"]
+        direction TB
+        DB1[("fa:fa-table MySQL")]:::db
+        DB2[("fa:fa-leaf MongoDB")]:::db
+        DB3[("fa:fa-dna Qdrant")]:::db
+    end
+
+    %% ==================== TOP-LEVEL TREE ====================
+    ROOT --> SG_FE
+    ROOT --> SG_BE1
+    ROOT --> SG_BE2
+    ROOT --> SG_BE3
+    ROOT --> SG_IOT
+
+    %% ==================== CROSS-CUTTING CONNECTIONS ====================
+    SG_FE -->|"REST API / JWT"| SG_BE1
+    SG_BE1 -->|"Route + RAG"| SG_BE2
+    SG_BE1 -->|"اجرای CLI"| SG_BE3
+    SG_BE1 <-->|"start / stop / data"| SG_IOT
+
+    SG_BE1 --> DB1
+    SG_BE1 --> DB2
+    SG_BE2 --> DB3
+    SG_BE3 --> DB2
+
+    PLLM1 -.->|"سرویس LLM مشترک"| L4

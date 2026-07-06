@@ -523,8 +523,7 @@ def run_single_inference(
       ۲) خواندن و پیش‌پردازش تصویر
       ۳) پیش‌بینی مختصات
       ۴) رسم و ذخیره تصویر حاشیه‌نویسی‌شده
-      ۵) ذخیره CSV مختصات
-    
+
     ورودی:
         model_weights : نام مدل
         file_path     : مسیر تصویر ورودی
@@ -546,7 +545,6 @@ def run_single_inference(
             "input_path": "C:\\Users\\...\\frame_0060.jpg",
             "output_path": "C:\\Users\\...\\rv_base.jpg",
             "preview_image": "C:\\Users\\...\\rv_base.jpg",
-            "coordinates_csv": "C:\\Users\\...\\rv_base.csv",
             "frame_count": 1,
             "summary": {
                 "frame_number": 0,
@@ -582,11 +580,7 @@ def run_single_inference(
     )
     # dataframe: DataFrame یک‌سطره
 
-    # --- مرحله ۶ (آخر): ذخیره‌ی CSV کنار همون تصویر خروجی (همون اسم، پسوند csv) ---
     resolved_output = Path(output_path).expanduser().resolve()
-    coordinates_csv = resolved_output.with_suffix(".csv")           # ".../rv_base.csv"
-    dataframe.to_csv(coordinates_csv, index=False)
-
     first_row = dataframe.iloc[0].to_dict()
 
     return {
@@ -598,7 +592,6 @@ def run_single_inference(
         "input_path": str(Path(file_path).expanduser().resolve()),
         "output_path": str(resolved_output),
         "preview_image": str(resolved_output),                      # همان output_path
-        "coordinates_csv": str(coordinates_csv),
         "frame_count": 1,
         "summary": first_row,
     }

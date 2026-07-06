@@ -42,5 +42,6 @@ def get_patient_config(patient_id: str | int) -> dict:
     patient.pop('_id', None)
     patient.pop('created_at', None)
     patient.pop('updated_at', None)
+    patient.pop('last_vital_reading_at', None)
 
     return patient

@@ -1,0 +1,46 @@
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#f1f5f9','primaryBorderColor':'#334155','primaryTextColor':'#1e293b','lineColor':'#64748b','fontSize':'15px'}}}%%
+flowchart TB
+    classDef client fill:#dbeafe,stroke:#1e40af,stroke-width:2px,color:#1e3a8a
+    classDef laravel fill:#fee2e2,stroke:#b91c1c,stroke-width:2px,color:#7f1d1d
+    classDef server fill:#e2e8f0,stroke:#475569,stroke-width:2px,color:#1e293b
+    classDef iot fill:#e5e7eb,stroke:#374151,stroke-width:2px,color:#111827
+    classDef db fill:#f1f5f9,stroke:#334155,stroke-width:2px,color:#1e293b
+    classDef ext fill:#e2e8f0,stroke:#475569,stroke-width:2px,color:#1e293b
+
+    subgraph L1["fa:fa-desktop لایه کاربر"]
+        FE["fa:fa-window-maximize فرانت‌اند Angular 20\n(پورت 4200)"]:::client
+    end
+
+    subgraph L2["fa:fa-cogs لایه سرویس"]
+        BE["fa:fa-server بک‌اند Laravel 12\n(پورت 8000)"]:::laravel
+        AI["fa:fa-brain سرویس FAISS / FastAPI\n(پورت 9000)"]:::server
+        PY["fa:fa-code خط پردازش اکو\n(Python CLI)"]:::server
+        MQTT["fa:fa-broadcast-tower بروکر MQTT\n(Mosquitto)"]:::iot
+    end
+
+    subgraph L3["fa:fa-database لایه داده"]
+        MySQL[("fa:fa-table MySQL\nکاربران، نوبت‌ها، پرسنل")]:::db
+        Mongo[("fa:fa-leaf MongoDB\nداده بالینی، علائم حیاتی")]:::db
+        Qdrant[("fa:fa-dna Qdrant\nembedding پایگاه دانش")]:::db
+    end
+
+    subgraph L4["fa:fa-cloud سرویس‌های خارجی"]
+        LLM["fa:fa-robot Arvan Cloud AI Gateway\n(+ OpenRouter fallback)"]:::ext
+    end
+
+    subgraph L5["fa:fa-microchip سخت‌افزار"]
+        ESP["fa:fa-heartbeat ESP32 + MAX30102\nسنسور ضربان قلب"]:::iot
+    end
+
+    FE <==>|"REST API / JWT"| BE
+    BE <==>|"Route + Search"| AI
+    AI --> Qdrant
+    AI -.->|"پاسخ گفتگو"| LLM
+    BE -.->|"پاسخ گفتگو / گزارش"| LLM
+    BE <==> MySQL
+    BE <==> Mongo
+    BE <==>|"mqtt:listen"| MQTT
+    MQTT <==>|"start / stop / data"| ESP
+    PY --> Mongo
+    PY -.->|"گزارش نهایی LLM"| LLM
+    PY ==>|"ذخیره خروجی"| BE

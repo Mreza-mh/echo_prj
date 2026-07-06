@@ -190,11 +190,15 @@ class PatientReportController extends Controller
                 ], 404);
             }
             
+            // فقط دکتر/ادمین می‌تونن متن گزارش پزشکی (doctor_report) رو ببینن — نه خود بیمار
+            $isStaff = in_array(auth()->user()->role ?? null, ['doctor', 'admin']);
+
             foreach ($visitData as $item) {
                 if (isset($item['type']) && $item['type'] === 'llm_final_report') {
                     return response()->json([
                         'success' => true,
                         'report_text' => $item['report_text'] ?? '',
+                        'doctor_report' => $isStaff ? ($item['doctor_report'] ?? '') : null,
                         'generated_at' => $item['generated_at'] ?? null,
                         'files' => $item['files'] ?? []
                     ]);

@@ -1,0 +1,21 @@
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#f1f5f9','primaryBorderColor':'#334155','primaryTextColor':'#1e293b','lineColor':'#64748b','fontSize':'15px'}}}%%
+flowchart TD
+    classDef startEnd fill:#334155,stroke:#1e293b,color:#fff,font-weight:bold
+    classDef io fill:#e5e7eb,stroke:#374151,color:#111827
+    classDef cv fill:#dbeafe,stroke:#1e40af,color:#1e3a8a
+    classDef ml fill:#e2e8f0,stroke:#475569,color:#1e293b
+    classDef fuzzy fill:#f1f5f9,stroke:#334155,color:#1e293b
+    classDef out fill:#e5e7eb,stroke:#334155,color:#111827
+
+    Start(["fa:fa-play شروع پردازش"]):::startEnd --> A["fa:fa-video بارگذاری ویدیوی اکو در پوشه بیمار"]:::io
+    A --> B[("fa:fa-database خواندن اطلاعات بالینی از MongoDB")]:::io
+    B --> C["fa:fa-tags طبقه‌بندی نمای اکو\n(A4C / A2C / PLAX) — CNN Keras"]:::cv
+    C --> D["fa:fa-map-marker-alt استخراج رویدادهای چرخه قلبی\n(End Diastole / End Systole)"]:::cv
+    D --> E["fa:fa-ruler برآورد مقیاس پیکسل‌به‌سانتی‌متر"]:::cv
+    E --> F["fa:fa-ruler-combined اندازه‌گیری حفرات و مسیر خروجی بطن"]:::cv
+    F --> G["fa:fa-puzzle-piece قطعه‌بندی و محاسبه حجم\n(مدل Segmentation PyTorch)"]:::cv
+    G --> H["fa:fa-brain تجمیع نتایج با منطق فازی"]:::fuzzy
+    H --> I["fa:fa-chart-line برآورد ریسک قلبی-عروقی\n(CatBoost / Logistic Regression)"]:::ml
+    I --> J["fa:fa-file-alt تولید گزارش نهایی (اختیاری با LLM)"]:::ml
+    J --> K[("fa:fa-save ذخیره در MongoDB و مسیر خروجی مشترک")]:::out
+    K --> End(["fa:fa-stop پایان"]):::startEnd

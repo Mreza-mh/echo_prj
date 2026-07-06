@@ -32,21 +32,7 @@ class VitalController extends Controller
             return ApiResponse::error('patient_id الزامی است', 422);
         }
 
-        // session قبلی رو ببند
-        $this->db->vital_sessions->updateMany(
-            ['device_id' => $deviceId, 'status' => 'active'],
-            ['$set' => ['status' => 'stopped', 'stopped_at' => new \MongoDB\BSON\UTCDateTime()]]
-        );
-
-        // session جدید بساز
         $startedAt = new \MongoDB\BSON\UTCDateTime();
-        $this->db->vital_sessions->insertOne([
-            'patient_id' => (int)$patientId,
-            'device_id'  => $deviceId,
-            'status'     => 'active',
-            'started_by' => auth()->id(),
-            'created_at' => $startedAt,
-        ]);
 
         // دستور start رو از طریق MQTT به ESP32 ارسال کن
         $this->publishCommand($deviceId, [
@@ -70,11 +56,6 @@ class VitalController extends Controller
     public function stopSession(Request $request)
     {
         $deviceId = $request->input('device_id', 'ESP32_001');
-
-        $this->db->vital_sessions->updateMany(
-            ['device_id' => $deviceId, 'status' => 'active'],
-            ['$set' => ['status' => 'stopped', 'stopped_at' => new \MongoDB\BSON\UTCDateTime()]]
-        );
 
         $this->publishCommand($deviceId, ['action' => 'stop']);
 

@@ -53,8 +53,8 @@ export class IndexHttpService {
     return this.genericHttpService.get(`/resource/${resource_id}`);
   }
 
-  aiChat(messages: any[]): Observable<any> {
-    return this.genericHttpService.post('/ai/chat', { messages });
+  aiChat(messages: any[], currentSlots?: any): Observable<any> {
+    return this.genericHttpService.post('/ai/chat', { messages, current_slots: currentSlots || {} });
   }
 
   // User dashboard APIs

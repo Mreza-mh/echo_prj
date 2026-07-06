@@ -1,0 +1,29 @@
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#f1f5f9','primaryBorderColor':'#334155','primaryTextColor':'#1e293b','lineColor':'#64748b','fontSize':'14px','actorBkg':'#e2e8f0','actorBorder':'#334155','actorTextColor':'#1e293b'}}}%%
+sequenceDiagram
+    autonumber
+    actor P as fa:fa-user بیمار
+    participant FE as fa:fa-window-maximize پنل پایش
+    participant BE as fa:fa-server Laravel API
+    participant MQ as fa:fa-broadcast-tower بروکر MQTT
+    participant ESP as fa:fa-microchip ESP32
+    participant DB as fa:fa-leaf MongoDB
+
+    P->>FE: شروع پایش
+    FE->>BE: POST /vitals/start
+    BE->>MQ: publish devices/ESP32_001/cmd {start}
+    MQ->>ESP: دریافت فرمان start
+    activate ESP
+    loop هر ۲ ثانیه
+        ESP->>ESP: خواندن ضربان از MAX30102
+        ESP->>MQ: publish devices/ESP32_001/data {hr}
+        MQ->>BE: mqtt:listen دریافت داده
+        BE->>DB: ذخیره VitalReading
+        FE->>BE: GET /vitals/live?since=
+        BE-->>FE: داده‌های جدید
+        FE-->>P: نمایش نمودار زنده
+    end
+    deactivate ESP
+    P->>FE: پایان پایش
+    FE->>BE: POST /vitals/stop
+    BE->>MQ: publish {stop}
+    MQ->>ESP: دریافت فرمان stop

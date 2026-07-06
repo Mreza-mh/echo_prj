@@ -123,16 +123,16 @@ def _extract_ecg_signal(video_path: Path) -> pd.DataFrame:
           - Frame_Number : شماره فریم ویدیو که سیگنال در آن ثبت شده
           - Signal_Value : مقدار سیگنال (ارتفاع نوار از پایین ROI)
     """
-    cap = cv2.VideoCapture(str(video_path))
+    cap = cv2.VideoCapture(str(video_path)) #open video
     if not cap.isOpened():
         raise FileNotFoundError(f"خطا در باز کردن ویدیو: {video_path}")
 
-    w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))   # عرض ویدیو (مثلاً 1920)
-    h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))  # ارتفاع ویدیو (مثلاً 1080)
+    w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))   # عرض ویدیو ( 1920)
+    h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))  # ارتفاع ویدیو ( 1080)
 
     # مختصات ناحیه ROI (پایین تصویر)
-    y1, y2 = int(h * ROI_Y1), int(h * ROI_Y2)    # مثلاً y1=950, y2=1058
-    x1, x2 = int(w * ROI_X1), int(w * ROI_X2)    # مثلاً x1=96, x2=1632
+    y1, y2 = int(h * ROI_Y1), int(h * ROI_Y2)    #  y1=950, y2=1058
+    x1, x2 = int(w * ROI_X1), int(w * ROI_X2)    #  x1=96, x2=1632
     roi_h = y2 - y1                              # ارتفاع ROI (حدود 108 پیکسل)
     roi_w = x2 - x1                              # عرض ROI (حدود 1536 پیکسل)
 
@@ -192,8 +192,8 @@ def _extract_ecg_signal(video_path: Path) -> pd.DataFrame:
 
         valid_xs = np.sort(valid_xs)
 
-        # تشخیص wrap (پرش بزرگ در مختصات X) و بازمرتب‌سازی:
-        # اول نقاط بعد از wrap (سمت چپ)، بعد نقاط قبل از wrap (سمت راست)
+        # اگر اختلاف دو ستون خیلی زیاد باشد
+        # /می‌فهمد که نوار از انتهای صفحه به ابتدای صفحه برگشته است.
         wrap_indices = np.where(np.diff(valid_xs) > roi_w / 2)[0]
         if len(wrap_indices) > 0:
             wrap_idx = wrap_indices[0]
@@ -201,14 +201,16 @@ def _extract_ecg_signal(video_path: Path) -> pd.DataFrame:
         else:
             ordered_xs = valid_xs
 
+        # بررسی هر ستون
         for x in ordered_xs:
             # مختصات Y پیکسل‌های فعال در این ستون
             y_coords = np.where(current_mask[:, x] > 0)[0]
             if len(y_coords) == 0:
                 continue
 
-            prev_y_img = (roi_h - signal_data[-1]) if signal_data else None
-            final_y = _pick_wavefront_y(y_coords, prev_y_img)
+            prev_y_img = (roi_h - signal_data[-1]) if signal_data else None # up or down ? 
+            final_y = _pick_wavefront_y(y_coords, prev_y_img) #هنگام صعود → لبه بالایی نوار
+                                                                # هنگام نزول → لبه پایینی نوار
 
             # ثبت مقدار سیگنال (ارتفاع از پایین ROI)
             signal_data.append(roi_h - final_y)
@@ -511,10 +513,10 @@ def extract_events(
     تابع اصلی استخراج رویدادهای ECG.
 
     مراحل:
-      ۱) استخراج سیگنال ECG از ویدیو
-      ۲) تحلیل سیگنال و یافتن فریم‌های رویدادها
-      ۳) استخراج و ذخیره فریم‌های مربوطه
-      ۴) تولید CSV رویدادها
+    ۱) استخراج سیگنال ECG از ویدیو
+    ۲) تحلیل سیگنال و یافتن فریم‌های رویدادها
+    ۳) استخراج و ذخیره فریم‌های مربوطه
+    ۴) تولید CSV رویدادها
 
     خروجی:
         dict = {
@@ -523,31 +525,24 @@ def extract_events(
             "saved_frames": {
                 'End Diastol': 'C:\\Users\\...\\frame_0060.jpg',
                 'End Sistol': 'C:\\Users\\...\\frame_0087.jpg'
-            },
-            "events_csv": 'C:\\Users\\...\\event_frames.csv'
+            }
         }
     """
     resolved_video = Path(video_path).expanduser().resolve()
     resolved_output = Path(output_dir).expanduser().resolve()
     resolved_output.mkdir(parents=True, exist_ok=True)
 
-    # --- مرحله ۱: می‌ره داخل _extract_ecg_signal → DataFrame(Sample_Index, Frame_Number, Signal_Value) ---
+    # ---  1: extract_ecg_signal 
     df_signal = _extract_ecg_signal(resolved_video)
 
-    # --- مرحله ۲: می‌ره داخل _find_events_and_plot → فریم‌های حساس + نمودار → {'End Diastol': 60, ...} ---
+    # ---  2:   _find_events_and_plot → فریم‌های حساس + نمودار → {'End Diastol': 60, ...} ---
     event_frames = _find_events_and_plot(df_signal, resolved_output, required_events)
 
-    # --- مرحله ۳: می‌ره داخل _save_event_images → بریدن و ذخیره فریم‌ها → {نام رویداد: مسیر تصویر} ---
+    # ---  3:   _save_event_images → بریدن و ذخیره فریم‌ها → {نام رویداد: مسیر تصویر} ---
     saved_frames = _save_event_images(resolved_video, resolved_output, event_frames)
-
-    # --- مرحله ۴ (آخر): تولید CSV نهایی برای پایپ‌لاین (event_name, frame_number) ---
-    event_rows = [{"event_name": k, "frame_number": v} for k, v in event_frames.items()]
-    events_csv_path = resolved_output / "event_frames.csv"
-    pd.DataFrame(event_rows).to_csv(events_csv_path, index=False)
 
     return {
         "total_frames": int(df_signal["Frame_Number"].max()) if not df_signal.empty else 0,
         "event_frames": event_frames,
         "saved_frames": saved_frames,
-        "events_csv": str(events_csv_path),
     }

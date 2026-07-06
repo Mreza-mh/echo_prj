@@ -54,7 +54,7 @@
             </div>
 
             <div *ngIf="msg.ui.type === 'SELECT_TIME'" class="ui-time-slots">
-              <div class="date-header">{{ msg.ui.data.date }}</div>
+              <div class="date-header">{{ msg.ui.data.date | jalaliDate }}</div>
               <div class="slots-grid">
                 <button mat-flat-button *ngFor="let slot of msg.ui.data.slots" (click)="selectTime(slot, msg.ui.data)" class="slot-btn">
                   {{ slot.start_time }}
@@ -70,7 +70,7 @@
                 <mat-card-content>
                   <div class="confirm-item"><strong>پزشک:</strong> {{ msg.ui.data.staff_name }}</div>
                   <div class="confirm-item"><strong>خدمت:</strong> {{ msg.ui.data.service_name }}</div>
-                  <div class="confirm-item"><strong>تاریخ:</strong> {{ msg.ui.data.date }}</div>
+                  <div class="confirm-item"><strong>تاریخ:</strong> {{ msg.ui.data.date | jalaliDate }}</div>
                   <div class="confirm-item"><strong>ساعت:</strong> {{ msg.ui.data.time }}</div>
                 </mat-card-content>
                 <mat-divider></mat-divider>

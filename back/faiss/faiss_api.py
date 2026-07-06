@@ -40,25 +40,26 @@ def encode_text(text: str) -> list:
     embedding = torch.nn.functional.normalize(embedding, p=2, dim=1)
     return embedding[0].cpu().numpy().tolist()
 
-# ۱. لیست کلمات کلیدی را غنی‌تر کنید
-support_keywords = ["آدرس", "ادرس", "کجا", "لوکیشن", "مکان", "محل", "تلفن", "شماره", "بیمه"]
+APPOINTMENT_KEYWORDS = [
+    "نوبت بگیر", "رزرو کن", "وقت بگیر", "تایم بگیر", "برنامه ریز", "نوبت دهی", "نوبت گیری",
+    "نوبت میخوام", "نوبت می‌خوام", "وقت میخوام", "وقت می‌خوام", "رزرو نوبت", "نوبت خالی",
+    "میخوام نوبت", "می‌خوام نوبت", "ویزیت میخوام", "ویزیت می‌خوام",
+]
+SUPPORT_KEYWORDS = [
+    "آدرس", "ادرس", "کجا", "لوکیشن", "مکان", "محل", "تلفن", "شماره", "بیمه", "هزینه", "قیمت",
+    "تعرفه", "ساعت کاری", "ساعت کار", "چند تومان", "چقدر می‌گیرید", "چقدر میگیرید",
+    "کلینیک کجاست", "مطب کجاست", "درمانگاه", "چه بیمه", "کدوم بیمه", "کدام بیمه",
+    "باز هستید", "باز است", "تعطیل", "پارکینگ", "چطور بیایم", "مسیر",
+]
 
-# ۲. آستانه را کمی پایین بیاورید یا منطق را جابجا کنید
-THRESHOLD = 0.40 # کاهش از 0.5 به 0.4
 # ۳. مهم‌ترین اصلاح: اولویت کلمات کلیدی را بالاتر ببرید
-@app.post("/route")
 @app.post("/route")
 def route_request(request: UserRequest):
     try:
-        user_text_lower = request.sentence.lower()
-        
-        # ۱. تعریف لیست کلمات کلیدی (بهتر است خارج از تابع یا ابتدای آن باشد)
-        appointment_keywords = ["نوبت بگیر", "رزرو کن", "وقت بگیر", "تایم بگیر", "برنامه ریز", "نوبت دهی", "نوبت گیری"]
-        support_keywords = ["آدرس", "ادرس", "کجا", "لوکیشن", "مکان", "محل", "تلفن", "شماره", "بیمه", "هزینه", "ساعت کاری"]
+        user_text = request.sentence
 
-        # ۲. بررسی سریع کلمات کلیدی
-        has_support_keyword = any(keyword in user_text_lower for keyword in support_keywords)
-        has_appointment_keyword = any(keyword in user_text_lower for keyword in appointment_keywords)
+        has_support_keyword = any(keyword in user_text for keyword in SUPPORT_KEYWORDS)
+        has_appointment_keyword = any(keyword in user_text for keyword in APPOINTMENT_KEYWORDS)
 
         # ۳. پردازش برداری
         query_vector = encode_text(request.sentence)
@@ -106,10 +107,8 @@ def route_request(request: UserRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 DIRECT_ANSWERS = {
-    ("آدرس", "کجا", "لوکیشن", "مکان", "محل"): 
+    ("آدرس", "ادرس", "کجا", "لوکیشن", "مکان", "محل", "درمانگاه", "مسیر"):
         "آدرس کلینیک: زنجان، خیابان هفت تیر",
-    ("آدرس", "کجا", "لوکیشن", "مکان", "محل"): 
-        "آدرس مطب کجاست: زنجان، خیابان هفت تیر",
     ("ساعت", "کاری", "باز", "تعطیل", "وقت کاری"): 
         "شنبه تا چهارشنبه ۸ صبح تا ۸ شب، پنجشنبه تا ۲ بعدازظهر، جمعه تعطیل",
     ("تلفن", "شماره", "تماس"):

@@ -14,9 +14,9 @@ export class VitalMonitorService {
 
   private DEVICE_ID = 'ESP32_001';
 
-  // دستگاه هر ۲ ثانیه یک reading منتشر می‌کند — poll با همین بازه سینک است
-  // تا درخواست‌های اضافی (بدون داده‌ی جدید) زده نشود
-  private readonly POLL_MS = 2000;
+  private readonly POLL_MS = 2000; // هر 2 ثانیه یه درخواست جدید میده
+  // توی esp PUBLISH_INTERVAL_MS=2000  sync
+  //  published esp, get front every 2s
 
   startSession(patientId: number): Observable<any> {
     return this.http.post('/vitals/start', {
@@ -28,16 +28,13 @@ export class VitalMonitorService {
   stopSession(): Observable<any> {
     return this.http.post('/vitals/stop', { device_id: this.DEVICE_ID });
   }
-
-  /**
-   * sinceMs: زمان شروع session (میلی‌ثانیه، از پاسخ /vitals/start) — فقط خوانده‌های همین session برمی‌گردد
-   */
+  // sinceMs = session start time
   liveData$(patientId: number, sinceMs?: number): Observable<any> {
     const since = sinceMs ? `?since=${sinceMs}` : '';
     return interval(this.POLL_MS).pipe(
-      startWith(0),
+      startWith(0), // first req
       switchMap(() => this.http.get(`/vitals/live/${patientId}${since}`)),
-      share()
+      // share(),
     );
   }
 

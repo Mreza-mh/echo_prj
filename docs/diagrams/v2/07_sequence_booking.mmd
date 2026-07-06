@@ -1,0 +1,28 @@
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#f1f5f9','primaryBorderColor':'#334155','primaryTextColor':'#1e293b','lineColor':'#64748b','fontSize':'14px','actorBkg':'#e2e8f0','actorBorder':'#334155','actorTextColor':'#1e293b'}}}%%
+sequenceDiagram
+    autonumber
+    actor P as fa:fa-user بیمار
+    participant FE as fa:fa-window-maximize فرانت‌اند
+    participant BE as fa:fa-server Laravel API
+    participant AI as fa:fa-brain سرویس FAISS
+    participant LLM as fa:fa-robot LLM (Arvan)
+    participant DB as fa:fa-database پایگاه‌داده
+
+    P->>FE: پیام "می‌خوام نوبت بگیرم"
+    FE->>BE: POST /ai/chat
+    BE->>AI: POST /route (تشخیص نیت)
+    AI-->>BE: intent = "appointment"
+    BE->>LLM: استخراج اطلاعات نوبت
+    LLM-->>BE: {پزشک, خدمت, تاریخ, ساعت}
+
+    alt اطلاعات ناقص
+        BE-->>FE: سوال تکمیلی
+        FE-->>P: نمایش سوال
+        P->>FE: پاسخ کاربر
+        FE->>BE: ارسال مجدد پیام
+    else اطلاعات کامل
+        BE->>DB: ثبت Appointment جدید
+        DB-->>BE: تأیید ذخیره
+        BE-->>FE: پیام تأیید نوبت
+        FE-->>P: نمایش نوبت رزرو شده
+    end

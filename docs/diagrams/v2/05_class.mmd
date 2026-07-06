@@ -1,0 +1,115 @@
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e2e8f0','primaryBorderColor':'#334155','primaryTextColor':'#1e293b','lineColor':'#64748b','fontSize':'14px'}}}%%
+classDiagram
+    direction TB
+
+    class User {
+        +int id
+        +string name
+        +string email
+        +UserRole role
+        +string passwordHash
+        +login()
+        +register()
+        +sendOtp()
+    }
+    class UserRole {
+        <<enumeration>>
+        admin
+        user
+        doctor
+        nurse
+        operator
+        monshi
+    }
+    class Staff {
+        +int id
+        +string name
+        +int expertiseId
+    }
+    class Expertise {
+        +int id
+        +string title
+    }
+    class Service {
+        +int id
+        +string title
+        +int duration
+    }
+    class Resource {
+        +int id
+        +string name
+        +string type
+    }
+    class Status {
+        +int id
+        +string title
+    }
+    class Appointment {
+        +int id
+        +int userId
+        +int staffId
+        +int serviceId
+        +int statusId
+        +date dateOfTurn
+        +time startTime
+        +time endTime
+        +book()
+        +cancel()
+        +reschedule()
+    }
+    class PatientData {
+        +string patientId
+        +int age
+        +string sex
+        +float height
+        +float weight
+        +float apHi
+        +float apLo
+        +float cholesterol
+        +float thalach
+    }
+    class VitalSession {
+        +string patientId
+        +string deviceId
+        +string status
+        +string startedBy
+        +start()
+        +stop()
+    }
+    class VitalReading {
+        +string sessionId
+        +string patientId
+        +int heartRate
+        +bool validHr
+        +datetime timestamp
+    }
+    class EchoResult {
+        +string patientId
+        +string visitDate
+        +string view
+        +float lvVolume
+        +float atrialArea
+        +string riskLevel
+        +string finalReport
+    }
+    class AIChatSession {
+        +string sessionId
+        +string userId
+        +string intent
+        +json history
+        +classifyIntent()
+        +generateReply()
+    }
+
+    User "1" --> "0..*" Appointment : رزرو می‌کند
+    Staff "1" --> "0..*" Appointment : انجام می‌دهد
+    Service "1" --> "0..*" Appointment
+    Status "1" --> "0..*" Appointment
+    Staff "0..*" --> "1" Expertise
+    Appointment "0..*" --> "0..*" Resource
+    User "1" --> "1" PatientData : دارد
+    User "1" --> "0..*" VitalSession : شروع می‌کند
+    VitalSession "1" --> "0..*" VitalReading : شامل
+    User "1" --> "0..*" EchoResult : دریافت می‌کند
+    User "1" --> "0..*" AIChatSession : گفتگو می‌کند
+    User --> UserRole

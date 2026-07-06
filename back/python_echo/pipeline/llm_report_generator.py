@@ -180,6 +180,7 @@ class LLMReportGenerator:
         severity   = assessment.get("severity_fa", "نرمال")
         risk_score = assessment.get("risk_score", 0)
         reasons    = echo.get("reasons", [])
+        risk_factors = data.get("risk_factors", [])
 
         lines = [
             f"به یک بیمار {age} ساله {gender} که اکوکاردیوگرافی انجام داده، گزارش نتیجه را توضیح بده.",
@@ -200,6 +201,14 @@ class LLMReportGenerator:
                 lines.append(f"- {fa}")
         else:
             lines.append("- تمام پارامترهای بررسی‌شده در محدوده طبیعی هستند")
+
+        if risk_factors:
+            lines.append("")
+            lines.append("عوامل خطر بالینی شناسایی‌شده:")
+            for rf in risk_factors:
+                label = rf.get("label_fa") if isinstance(rf, dict) else rf
+                if label:
+                    lines.append(f"- {label}")
 
         lines += [
             "",
