@@ -1,8 +1,11 @@
 $transition-smooth: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 
 .header-toolbar {
-  position: sticky;
+  // position: fixed (نه sticky) عمداً انتخاب شده: GSAP ScrollTrigger با pin کردن
+  // بخش هیروی سینمایی (hero-cinematic) گاهی هدر sticky را از حالت چسبیده خارج می‌کرد
+  position: fixed;
   top: 0;
+  inset-inline: 0;
   z-index: 1000;
   background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
   backdrop-filter: blur(12px);

@@ -1,0 +1,635 @@
+// ═══════════════════════════════════════════════════════════════════
+//  HERO CINEMATIC — CardioAI
+//  از همان CSS variableهای تم پروژه استفاده می‌کند (dark/light خودکار)
+// ═══════════════════════════════════════════════════════════════════
+
+$cyan:         var(--cyan);
+$purple:       var(--purple);
+$mint:         var(--mint);
+$text-bright:  var(--text-bright);
+$text-primary: var(--text-primary);
+$text-muted:   var(--text-muted);
+$border:       var(--border);
+$font-mono:    'JetBrains Mono', 'Fira Code', monospace;
+$font-persian: 'Vazirmatn', 'IRANSansFaNum', Tahoma, Arial, sans-serif;
+$cyan-dim:     var(--cyan-dim);
+$t-fast:       0.18s cubic-bezier(0.4, 0, 0.2, 1);
+$t-base:       0.32s cubic-bezier(0.4, 0, 0.2, 1);
+$t-spring:     0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+$r-md:  14px;
+$r-xl:  28px;
+
+// این کلاس‌ها (clinic-badge/hero-title/stat-pill/echo-placeholder و…) در
+// home.component.scss هم تعریف شده‌اند اما به‌خاطر view encapsulation به
+// تمپلیت این کامپوننت child نمی‌رسند — این‌جا هم لازم است تعریف شوند
+
+@mixin gradient-text($from: $cyan, $to: $purple) {
+  background: linear-gradient(135deg, $from 0%, $to 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@mixin glass-bright {
+  background: var(--glass-bg-bright);
+  backdrop-filter: blur(24px) saturate(1.4);
+  border: 1px solid var(--glass-border-accent);
+  box-shadow: var(--glass-shadow-md);
+}
+
+@mixin accent-glow($spread: 1) {
+  box-shadow:
+    0 #{4px * $spread} #{12px * $spread} color-mix(in srgb, var(--accent, var(--cyan)) 8%, transparent),
+    0 #{8px * $spread} #{24px * $spread} color-mix(in srgb, var(--accent, var(--cyan)) 4%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--accent, var(--cyan)) 6%, transparent);
+}
+
+@keyframes pulse-ring {
+  0%   { transform: scale(1); opacity: 0.8; }
+  70%  { transform: scale(2.2); opacity: 0; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+@keyframes scan-line {
+  0%   { top: 0%; opacity: 0; }
+  10%  { opacity: 0.6; }
+  90%  { opacity: 0.6; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.container {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 32px;
+  position: relative;
+
+  @media (max-width: 768px) { padding: 0 20px; }
+}
+
+.clinic-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: $text-primary;
+  background: color-mix(in srgb, var(--cyan) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--cyan) 20%, transparent);
+  border-radius: 100px;
+  padding: 8px 18px 8px 8px;
+  margin-bottom: 28px;
+}
+
+.pulse-dot {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+
+  &::before, &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+  }
+  &::before {
+    background: $mint;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  &::after {
+    background: $mint;
+    animation: pulse-ring 2s ease-out infinite;
+  }
+}
+
+.hero-title {
+  font-size: clamp(2.2rem, 4.5vw, 3.8rem);
+  font-weight: 900;
+  color: $text-bright;
+  line-height: 1.18;
+  letter-spacing: -0.03em;
+  margin-bottom: 24px;
+
+  .gradient-text { @include gradient-text($cyan, $purple); }
+  .text-accent   { @include gradient-text($mint, $cyan); }
+}
+
+.hero-lead {
+  font-size: 1.08rem;
+  color: $text-muted;
+  line-height: 1.9;
+  margin-bottom: 36px;
+  max-width: 500px;
+}
+
+.hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 40px;
+}
+
+.stat-pill {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 20px;
+  background: var(--stat-pill-bg);
+  border: 1px solid var(--border);
+  border-radius: $r-md;
+  transition: transform $t-spring, border-color $t-base, box-shadow $t-base;
+
+  &:hover {
+    border-color: color-mix(in srgb, var(--cyan) 30%, transparent);
+    transform: translateY(-4px);
+    @include accent-glow(0.8);
+  }
+
+  .stat-value {
+    font-family: $font-mono;
+    font-size: 1.4rem;
+    font-weight: 700;
+    @include gradient-text($cyan, $mint);
+  }
+
+  .stat-label {
+    font-size: 0.72rem;
+    color: $text-muted;
+    margin-top: 2px;
+    white-space: nowrap;
+  }
+}
+
+.hero-actions {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 28px;
+  border-radius: $r-md;
+  font-family: $font-persian;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+  transition: transform $t-spring, box-shadow $t-base, background $t-fast;
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--btn-shine) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity $t-fast;
+  }
+  &:hover::after { opacity: 1; }
+
+  &:active { transform: scale(0.97) !important; }
+
+  &-primary {
+    background: linear-gradient(135deg, $cyan 0%, $purple 100%);
+    color: var(--btn-on-primary);
+    @include accent-glow(0.5);
+    &:hover {
+      transform: translateY(-3px);
+      @include accent-glow(1);
+    }
+  }
+
+  &-outline {
+    background: transparent;
+    color: $cyan;
+    border: 1px solid color-mix(in srgb, var(--cyan) 35%, transparent);
+    &:hover {
+      background: $cyan-dim;
+      border-color: color-mix(in srgb, var(--cyan) 60%, transparent);
+      transform: translateY(-3px);
+    }
+  }
+}
+
+.echo-placeholder {
+  @include glass-bright;
+  border-radius: $r-xl;
+  aspect-ratio: 3/4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: var(--echo-box-shadow);
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    height: 2px;
+    background: var(--scan-line-gradient);
+    animation: scan-line 3.5s ease-in-out infinite;
+    z-index: 1;
+  }
+
+  .echo-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+// ── section: تمام‌صفحه و آماده‌ی pin شدن توسط ScrollTrigger ──
+.hc-section {
+  position: relative;
+  // z-index صریح لازم است: وقتی GSAP این بخش را در حین اسکرول pin (position: fixed)
+  // می‌کند، بدون z-index مشخص روی هدر سایت (z-index: 1000) می‌نشیند و پنهانش می‌کند
+  z-index: 1;
+  height: 100vh;
+  height: 100svh; // موبایل: نوار آدرس مرورگر را حساب می‌کند
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+
+  // همان گرید ECG پس‌زمینه‌ی هیروی قبلی
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--grid-line-color) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line-color) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+// ── لایه ۰: بوم سه‌بعدی ──
+.hc-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+
+  canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+  }
+}
+
+// ── لودر ──
+.hc-loader {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  pointer-events: none;
+
+  .hc-loader-ring {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid color-mix(in srgb, var(--cyan) 20%, transparent);
+    border-top-color: $cyan;
+    animation: hc-spin 0.9s linear infinite;
+  }
+
+  .hc-loader-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: $text-muted;
+  }
+}
+
+@keyframes hc-spin {
+  to { transform: rotate(360deg); }
+}
+
+// ── فال‌بک: اگر مدل لود نشد، هاله‌ی ضربان (lub-dub واقعی) ──
+.hc-fallback-glow {
+  position: absolute;
+  top: 50%;
+  inset-inline-end: 18%;
+  width: 320px;
+  height: 320px;
+  transform: translateY(-50%);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--red) 40%, transparent) 0%,
+    color-mix(in srgb, var(--red) 12%, transparent) 45%,
+    transparent 70%
+  );
+  animation: hc-glow-beat 0.94s ease-in-out infinite;
+  z-index: 1;
+  pointer-events: none;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -20%;
+    border-radius: 50%;
+    border: 1px solid color-mix(in srgb, var(--red) 25%, transparent);
+    opacity: 0;
+  }
+  &::before { animation: hc-ring-pulse 0.94s ease-out infinite; }
+  &::after  { animation: hc-ring-pulse 0.94s ease-out infinite 0.16s; }
+}
+
+@keyframes hc-glow-beat {
+  0%, 100% { transform: translateY(-50%) scale(1);    opacity: 0.65; }
+  12%      { transform: translateY(-50%) scale(1.1);  opacity: 1; }
+  22%      { transform: translateY(-50%) scale(0.98); opacity: 0.75; }
+  30%      { transform: translateY(-50%) scale(1.05); opacity: 0.9; }
+  42%      { transform: translateY(-50%) scale(1);     opacity: 0.65; }
+}
+
+@keyframes hc-ring-pulse {
+  0%   { transform: scale(0.85); opacity: 0.55; }
+  100% { transform: scale(1.25); opacity: 0; }
+}
+
+// ── لایه ۱: خط ECG ──
+.hc-ecg {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 12vh;
+  width: 100%;
+  height: 90px;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.85;
+
+  .hc-ecg-path {
+    stroke: $cyan;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 0 6px color-mix(in srgb, var(--cyan) 60%, transparent));
+  }
+}
+
+// ── لایه ورود: هیروی استاتیک قبلی — از همون لحظه لود دیده می‌شود ──
+// روی همه‌چیز (حتی بوم سه‌بعدی) قرار می‌گیرد تا صفحه هیچ‌وقت خالی نباشد؛
+// با اولین حرکت اسکرول محو و کوچک می‌شود و صحنه سینمایی زیرش نمایان می‌شود
+.hc-intro {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 60px;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}
+
+.hc-intro-text {
+  padding: 36px 40px;
+  border-radius: 26px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--bg-surface) 55%, transparent),
+    color-mix(in srgb, var(--bg-surface) 15%, transparent)
+  );
+  border: 1px solid color-mix(in srgb, var(--cyan) 12%, transparent);
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  box-shadow:
+    0 24px 60px color-mix(in srgb, black 18%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--text-bright) 5%, transparent);
+
+  .clinic-badge { margin-bottom: 20px; }
+
+  .hc-intro-title {
+    margin-bottom: 16px;
+
+    span { display: inline; }
+  }
+
+  .hc-intro-lead {
+    margin-bottom: 0;
+    font-size: 1rem;
+  }
+
+  @media (max-width: 900px) {
+    padding: 26px 24px;
+    border-radius: 20px;
+  }
+}
+
+.hc-intro-visual {
+  display: flex;
+  justify-content: center;
+
+  @media (max-width: 900px) {
+    display: none;
+  }
+}
+
+// ── لایه ۲: محتوا ──
+// متن همیشه در سمت شروع خواندن می‌ماند (راست در RTL، چپ در LTR)
+// قلب سه‌بعدی در فضای باقی‌مانده در پس‌زمینه/کنار آن می‌چرخد
+.hc-content {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  height: 100%;
+
+  [dir='rtl'] & {
+    justify-content: flex-end;
+  }
+}
+
+.hc-text-col {
+  width: min(520px, 100%);
+  max-height: calc(100svh - 60px - 25px);
+  overflow: hidden;
+  position: relative;
+  padding: 26px 32px;
+  border-radius: 24px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--bg-surface) 55%, transparent),
+    color-mix(in srgb, var(--bg-surface) 15%, transparent)
+  );
+  border: 1px solid color-mix(in srgb, var(--cyan) 12%, transparent);
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  box-shadow:
+    0 24px 60px color-mix(in srgb, rgb(0, 0, 0) 18%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--text-bright) 5%, transparent);
+
+  .hc-badge,
+  .hc-lead,
+  .hc-actions {
+    visibility: hidden;
+  }
+
+  .clinic-badge { margin-bottom: 18px; }
+
+  .hero-title {
+    font-size: clamp(1.7rem, 3.4vw, 2.6rem);
+    margin-bottom: 14px;
+  }
+
+  .hero-lead {
+    font-size: 0.95rem;
+    line-height: 1.65;
+    margin-bottom: 20px;
+  }
+
+  .hero-stats { margin-bottom: 20px; }
+
+  @media (max-width: 900px) {
+    width: 100%;
+    padding: 20px 22px;
+    border-radius: 18px;
+  }
+}
+
+.hc-title {
+  display: flex;
+  flex-direction: column;
+
+  span {
+    display: block;
+    visibility: hidden; // gsap نشان می‌دهد
+  }
+}
+
+.hc-stats {
+  .stat-pill {
+    visibility: hidden; // gsap نشان می‌دهد
+  }
+}
+
+// ── کپشن شناور صحنه ۲ ──
+.hc-caption {
+  visibility: hidden;
+  position: absolute;
+  bottom: 22vh;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 22px;
+  border-radius: 100px;
+  font-size: 0.85rem;
+  color: $text-bright;
+  background: color-mix(in srgb, var(--bg-surface) 75%, transparent);
+  border: 1px solid $border;
+  backdrop-filter: blur(12px);
+  white-space: nowrap;
+
+  [dir='rtl'] & {
+    transform: translateX(50%);
+  }
+
+  .hc-caption-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: $mint;
+    animation: hc-glow-beat-dot 1s ease-in-out infinite;
+  }
+
+  @media (max-width: 640px) {
+    font-size: 0.72rem;
+    padding: 8px 16px;
+  }
+}
+
+@keyframes hc-glow-beat-dot {
+  0%, 100% { opacity: 0.5; }
+  15%      { opacity: 1; }
+}
+
+// ── نشانگر اسکرول ──
+.hc-scroll-hint {
+  visibility: hidden;
+  position: absolute;
+  bottom: 3vh;
+  inset-inline-start: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: $text-muted;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+
+  [dir='rtl'] & {
+    transform: translateX(50%);
+  }
+
+  .hc-mouse {
+    width: 24px;
+    height: 38px;
+    border: 1.5px solid $text-muted;
+    border-radius: 14px;
+    display: flex;
+    justify-content: center;
+    padding-top: 6px;
+  }
+
+  .hc-wheel {
+    width: 3px;
+    height: 8px;
+    border-radius: 2px;
+    background: $cyan;
+    animation: hc-wheel 1.6s ease-in-out infinite;
+  }
+}
+
+@keyframes hc-wheel {
+  0%   { transform: translateY(0);   opacity: 1; }
+  70%  { transform: translateY(10px); opacity: 0; }
+  100% { transform: translateY(0);   opacity: 0; }
+}
+
+// ── موبایل ──
+@media (max-width: 640px) {
+  .hc-ecg { bottom: 16vh; height: 60px; }
+}
+
+// ── reduced motion: انیمیشن‌های تزئینی خاموش ──
+@media (prefers-reduced-motion: reduce) {
+  .hc-wheel,
+  .hc-fallback-glow,
+  .hc-caption-dot {
+    animation: none;
+  }
+}

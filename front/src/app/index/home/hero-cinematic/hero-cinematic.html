@@ -1,0 +1,120 @@
+<!-- ═══════════════════════════════════════════════════════
+  HERO CINEMATIC — با اسکرول مثل یک کلیپ کوتاه پخش می‌شود
+  ═══════════════════════════════════════════════════════ -->
+<section class="hc-section" #pinSection [attr.dir]="isRTL() ? 'rtl' : 'ltr'" id="hero">
+
+  <!-- لایه ۰: بوم سه‌بعدی (قلب) — پشت همه‌چیز -->
+  <div class="hc-canvas" #canvasHost aria-hidden="true"></div>
+
+  <!-- لایه‌ی استاتیک ورود: همان هیروی قبلی، از همون اول لحظه‌ی لود دیده می‌شود
+       تا زمان لود مدل/اسکرول خالی نباشد؛ با شروع اسکرول محو و جایگزین صحنه سینمایی می‌شود -->
+  <div class="hc-intro container" #introLayer>
+    <div class="hc-intro-text">
+      <div class="clinic-badge">
+        <span class="pulse-dot"></span>
+        {{ getTranslation('platformBadge') }}
+      </div>
+
+      <h1 class="hero-title hc-intro-title">
+        <span class="gradient-text">{{ getTranslation('aiPlatform') }}</span>
+        {{ getTranslation('diagnosisAndPrediction') }}
+        <span class="text-accent">{{ getTranslation('heartDiseases') }}</span>
+      </h1>
+
+      <p class="hero-lead hc-intro-lead">
+        {{ getTranslation('heroTagline') }}
+      </p>
+    </div>
+
+    <div class="hc-intro-visual">
+      <div class="echo-placeholder" [attr.aria-label]="getTranslation('echoInfo')">
+        <img
+          [src]="isDarkMode ? '/images/landingecho.png' : '/images/lightlanding.png'"
+          [alt]="getTranslation('echoInfo')"
+          class="echo-image" />
+      </div>
+    </div>
+  </div>
+
+  <!-- لودر مدل -->
+  <div class="hc-loader" *ngIf="!modelLoaded && !modelFailed">
+    <div class="hc-loader-ring"></div>
+    <span class="hc-loader-text">{{ loadProgress }}%</span>
+  </div>
+
+  <!-- فال‌بک اگر مدل لود نشد: هاله‌ی ضربان CSS -->
+  <div class="hc-fallback-glow" *ngIf="modelFailed" aria-hidden="true"></div>
+
+  <!-- لایه ۱: خط ECG که با اسکرول کشیده می‌شود -->
+  <svg class="hc-ecg" viewBox="0 0 1200 120" preserveAspectRatio="none" aria-hidden="true">
+    <path #ecgPath
+      class="hc-ecg-path"
+      d="M0,60 L180,60 L200,60 L210,38 L222,84 L234,18 L248,96 L260,60 L300,60
+         L460,60 L480,60 L490,40 L502,82 L514,20 L528,94 L540,60 L580,60
+         L740,60 L760,60 L770,42 L782,80 L794,22 L808,92 L820,60 L860,60
+         L1020,60 L1040,60 L1050,44 L1062,78 L1074,26 L1088,90 L1100,60 L1200,60"
+      fill="none" />
+  </svg>
+
+  <!-- لایه ۲: محتوای هیرو — در سه صحنه ظاهر می‌شود -->
+  <div class="hc-content container">
+
+    <div class="hc-text-col">
+      <!-- صحنه ۱ -->
+      <div class="hc-badge clinic-badge">
+        <span class="pulse-dot"></span>
+        {{ getTranslation('platformBadge') }}
+      </div>
+
+      <h1 class="hero-title hc-title">
+        <span class="hc-title-line1 gradient-text">{{ getTranslation('aiPlatform') }}</span>
+        <span class="hc-title-line2">{{ getTranslation('diagnosisAndPrediction') }}</span>
+        <span class="hc-title-line3 text-accent">{{ getTranslation('heartDiseases') }}</span>
+      </h1>
+
+      <!-- صحنه ۲: آمارها — هرکدام با یک ضربان ECG -->
+      <div class="hero-stats hc-stats">
+        <div class="stat-pill hc-stat-1">
+          <span class="stat-value">98.5%</span>
+          <span class="stat-label">{{ getTranslation('accuracyLabel') }}</span>
+        </div>
+        <div class="stat-pill hc-stat-2">
+          <span class="stat-value">6</span>
+          <span class="stat-label">{{ getTranslation('parallelModels') }}</span>
+        </div>
+        <div class="stat-pill hc-stat-3">
+          <span class="stat-value">30–60s</span>
+          <span class="stat-label">{{ getTranslation('processingTime') }}</span>
+        </div>
+        <div class="stat-pill hc-stat-4">
+          <span class="stat-value">12+</span>
+          <span class="stat-label">{{ getTranslation('cardiacParams') }}</span>
+        </div>
+      </div>
+
+      <!-- صحنه ۳: لید + CTA -->
+      <p class="hero-lead hc-lead">
+        {{ getTranslation('heroPipelineDescription') }}
+      </p>
+
+      <div class="hero-actions hc-actions">
+        <a href="#architecture" class="btn btn-primary">{{ getTranslation('getStarted') }}</a>
+        <a href="#architecture" class="btn btn-outline">{{ getTranslation('systemArchitecture') }}</a>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- کپشن شناور وسط صحنه ۲ -->
+  <div class="hc-caption" aria-hidden="true">
+    <span class="hc-caption-dot"></span>
+    {{ isRTL() ? 'تحلیل بلادرنگ اکوکاردیوگرافی با ۶ مدل موازی' : 'Real-time echo analysis with 6 parallel models' }}
+  </div>
+
+  <!-- نشانگر اسکرول -->
+  <div class="hc-scroll-hint" aria-hidden="true">
+    <div class="hc-mouse"><div class="hc-wheel"></div></div>
+    <span>{{ isRTL() ? 'اسکرول کنید' : 'Scroll' }}</span>
+  </div>
+
+</section>

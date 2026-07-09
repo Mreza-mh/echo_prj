@@ -1,65 +1,6 @@
 
-
+<app-hero-cinematic></app-hero-cinematic>
 <div class="landing-page">
-
-  <!-- ═══════════════════════════════════════════════════════
-       SECTION 1 — HERO
-  ═══════════════════════════════════════════════════════ -->
-  <section class="hero-section" id="hero">
-    <div class="container">
-      <div class="hero-grid">
-
-        <div class="hero-content">
-          <div class="clinic-badge">
-            <span class="pulse-dot"></span>
-            {{ getTranslation('platformBadge') }}
-          </div>
-
-          <h1 class="hero-title">
-            <span class="gradient-text">{{ getTranslation('aiPlatform') }}</span><br>
-            {{ getTranslation('diagnosisAndPrediction') }}<br>
-            <span class="text-accent">{{ getTranslation('heartDiseases') }}</span>
-          </h1>
-
-          <p class="hero-lead">
-            {{ getTranslation('heroDescription') }}
-          </p>
-
-          <div class="hero-stats">
-            <div class="stat-pill">
-              <span class="stat-value">98.5%</span>
-              <span class="stat-label">{{ getTranslation('accuracyLabel') }}</span>
-            </div>
-            <div class="stat-pill">
-              <span class="stat-value">6</span>
-              <span class="stat-label">{{ getTranslation('parallelModels') }}</span>
-            </div>
-            <div class="stat-pill">
-              <span class="stat-value">30–60s</span>
-              <span class="stat-label">{{ getTranslation('processingTime') }}</span>
-            </div>
-            <div class="stat-pill">
-              <span class="stat-value">12+</span>
-              <span class="stat-label">{{ getTranslation('cardiacParams') }}</span>
-            </div>
-          </div>
-
-          <div class="hero-actions">
-            <a href="#architecture" class="btn btn-primary">{{ getTranslation('getStarted') }}</a>
-            <a href="#architecture" class="btn btn-outline">{{ getTranslation('systemArchitecture') }}</a>
-          </div>
-        </div>
-
-        <div class="hero-visual">
-          <div class="echo-placeholder" [attr.aria-label]="getTranslation('echoInfo')">
-            <img [src]="isDarkMode ? '/images/landingecho.png' : '/images/lightlanding.png'" [alt]="getTranslation('echoInfo')" class="echo-image" />
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </section>
-
 
   <!-- ═══════════════════════════════════════════════════════
        SECTION 2 — TECH STACK

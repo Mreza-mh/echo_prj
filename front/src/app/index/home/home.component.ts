@@ -9,6 +9,7 @@ import { TranslationService } from '../../@shared/services/translation.service';
 import { ThemeService } from '../../@shared/services/theme.service';
 import { AuthService } from '../../auth/auth.service';
 import { AuthHTTPService } from '../../auth/auth-http.service';
+import { HeroCinematicComponent } from './hero-cinematic/hero-cinematic';
 
 @Component({
   selector: 'app-home',
@@ -20,6 +21,7 @@ import { AuthHTTPService } from '../../auth/auth-http.service';
     MatIconModule,
     MatCardModule,
     MatChipsModule,
+    HeroCinematicComponent
   ],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
