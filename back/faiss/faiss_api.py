@@ -1,44 +1,51 @@
 import sys
 
-if sys.platform == "win32":
+if sys.platform == "win32":  #اگه سیستم ویندوز باشه برای اینکه کلمات فارسی تو کنسول به مشکل نخوره
     sys.stdout.reconfigure(encoding="utf-8")
     sys.stderr.reconfigure(encoding="utf-8")
 
 from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-from transformers import AutoTokenizer, AutoModel
+from pydantic import BaseModel          #تعریف ساختار داده‌های ورودی
+from transformers import AutoTokenizer, AutoModel       #بار گذاری مدل ترنسفورمر از هاگینگ فیس
 import torch
 from qdrant_client import QdrantClient
 
 app = FastAPI()
 
 print("در حال لود کردن مدل...")
-tokenizer = AutoTokenizer.from_pretrained("./local_model")
+tokenizer = AutoTokenizer.from_pretrained("./local_model") #توکنایزر: متن بلند و به بخشای کوچیک کوچیک (توکن) تبدیل میکنه
 model = AutoModel.from_pretrained("./local_model")
+# AutoTokenizer و AutoModel:
+# کلاسای عمومی ای هستن که میتونن هر مدل یا توکنایزری رو بسته به اون فایلی که توش هست بارگذاری کنن
+
 
 print("در حال اتصال به دیتابیس Qdrant...")
-client = QdrantClient(path="./embed_database")
+client = QdrantClient(path="./embed_database")  #دیتابیسی که داده ها بصورت بردار های امبد ذخیره شدن
 collection_name = "embeds"
 
 
-class UserRequest(BaseModel):
+class UserRequest(BaseModel): #ورودی رشته
     sentence: str
 
 
-def mean_pooling(model_output, attention_mask):
-    token_embeddings = model_output[0]
-    input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()
-    return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)
+def mean_pooling(model_output, attention_mask):        #خروجی ترسفورمرها به ازای هر کلمه یه برداره درحالیکه ما به ازای هر جمله یه بردار میخوام پس باید بردارهای هر کلمه تو جمله رو باهم ترکیب کنیم تا بردار واحد جمله بدست بیاد
+    token_embeddings = model_output[0]                 #بردار هر توکن (کلمه) تو اخرین لایه مدل
+    input_mask_expanded = attention_mask.unsqueeze(-1).expand(token_embeddings.size()).float()  # هم اندازه کردن ابعاد ماسک و خروجی مدل
+    return torch.sum(token_embeddings * input_mask_expanded, 1) / torch.clamp(input_mask_expanded.sum(1), min=1e-9)    #محاسبه میانگین وزنی     
 
 
-def encode_text(text: str) -> list:
+def encode_text(text: str) -> list:  # تبدیل رشته به بردار embedding
     # text باید رشته باشه، نه لیست
-    encoded_input = tokenizer(text, padding=True, truncation=True, return_tensors='pt')
+    encoded_input = tokenizer(text, padding=True, truncation=True, return_tensors='pt')  #تبدیل متن خام به رمتی که مدل بفهمه(عددی)
+    # {
+    # 'input_ids': tensor([[101, 2023, 2003, ..., 102]]),      # شناسه عددی توکن‌ها
+    # 'attention_mask': tensor([[1, 1, 1, ..., 1]])             # ماسک padding
+    # }
     with torch.no_grad():
-        model_output = model(**encoded_input)
-    embedding = mean_pooling(model_output, encoded_input['attention_mask'])
-    embedding = torch.nn.functional.normalize(embedding, p=2, dim=1)
-    return embedding[0].cpu().numpy().tolist()
+        model_output = model(**encoded_input)    #خروجی ترنسفورمر که به mean pooling میدیم
+    embedding = mean_pooling(model_output, encoded_input['attention_mask'])  #تبدیل کلمات به جمله : درواقع خروجی این خط یه بردار واحد برای کل جملس
+    embedding = torch.nn.functional.normalize(embedding, p=2, dim=1)   #نرمالسازی با نرم2 اقلیدوسی رو بعد1 
+    return embedding[0].cpu().numpy().tolist() # فقط بعد صفر که بردار کل جملس برمیداریم میبریم رو سی پی یو و تنسور پایتورچ رو به لیست نامپای تبدیل میکنیم
 
 APPOINTMENT_KEYWORDS = [
     "نوبت بگیر", "رزرو کن", "وقت بگیر", "تایم بگیر", "برنامه ریز", "نوبت دهی", "نوبت گیری",
@@ -52,31 +59,32 @@ SUPPORT_KEYWORDS = [
     "باز هستید", "باز است", "تعطیل", "پارکینگ", "چطور بیایم", "مسیر",
 ]
 
-# ۳. مهم‌ترین اصلاح: اولویت کلمات کلیدی را بالاتر ببرید
-@app.post("/route")
+
+@app.post("/route")   #تشخیص نیت کاربر : نوبت گیری یا پشتیبانی با ترکیب کلمه کلیدی و جستجوی برداری
 def route_request(request: UserRequest):
     try:
         user_text = request.sentence
 
-        has_support_keyword = any(keyword in user_text for keyword in SUPPORT_KEYWORDS)
-        has_appointment_keyword = any(keyword in user_text for keyword in APPOINTMENT_KEYWORDS)
+        has_support_keyword = any(keyword in user_text for keyword in SUPPORT_KEYWORDS)  #ایا کلمه کلیدی پشتیبانی تو متن هست یا نه
+        has_appointment_keyword = any(keyword in user_text for keyword in APPOINTMENT_KEYWORDS) #ایا کلمه کلیدی نوبت گیری تو متن هست یا نه
 
-        # ۳. پردازش برداری
-        query_vector = encode_text(request.sentence)
+        #  پردازش برداری
+        query_vector = encode_text(request.sentence)  #تبدیل جمله کاربر به بردار عددی
         search_result = client.query_points(
-            collection_name=collection_name,
-            query=query_vector,
+            collection_name=collection_name,   #اسم کالکشن دیتابیس که بردارها توش ذخیره شدن
+            query=query_vector,  #بردار جمله کاربر که میخوایم نزدیکترین بردارها بهش رو پیدا کنیم
             limit=5
-        )
+        )    # این میاد ۵ تا نزدیکترین بردار به جمله کاربر رو از دیتابیس میاره
 
         if not search_result.points:
             intent = "support" if has_support_keyword else "appointment"
-            return {"intent": intent, "score": 0.0, "reason": "no vector results"}
+            return {"intent": intent, "score": 0.0, "reason": "no vector results"}  #اگه جمله کاربر هیچ برداری تو دیتابیس نداشت، بر اساس کلمه کلیدی تصمیم میگیریم
 
-        top_score = search_result.points[0].score
-        top_category = search_result.points[0].payload.get("category", "unknown")
+        top_score = search_result.points[0].score #امتیاز نزدیکترین بردار به جمله کاربر
+        #cosine similarity : عددی بین ۰ تا ۱ که هرچی به ۱ نزدیکتر باشه یعنی جمله کاربر و جمله دیتابیس شبیه ترن
+        top_category = search_result.points[0].payload.get("category", "unknown") #اطلاعات دسته بندی جمله نزدیکترین بردار به جمله کاربر
         
-        # ۴. منطق تصمیم‌گیری نهایی (Priority Logic)
+        #  منطق تصمیم‌گیری نهایی (Priority Logic)
         # اولویت ۱: کلمات کلیدی صریح (اگر فقط یکی از دو نوع باشد)
         if has_support_keyword and not has_appointment_keyword:
             intent, reason = "support", "explicit support keyword"
@@ -86,11 +94,11 @@ def route_request(request: UserRequest):
         # اولویت ۲: استفاده از امتیاز برداری (اگر کلمات کلیدی مبهم بودند یا وجود نداشتند)
         else:
             THRESHOLD = 0.45 
-            if top_score >= THRESHOLD:
+            if top_score >= THRESHOLD:  # اگه نزدیکترین جمله که از دیتابیس اومده امتیازش بیشتر از این حد باشه ، اون دسته بندی بعنوان نیت کاربر ارسال میشه
                 intent = top_category
                 reason = "high vector score"
             else:
-                # اگر امتیاز پایین بود، به نفع "appointment" (رزرو نوبت) رای بده (طبق نیاز سیستم شما)
+                # اگر امتیاز پایین بود، به نفع  (رزرو نوبت) رای بده 
                 intent = "appointment"
                 reason = "low score fallback"
 
@@ -106,6 +114,7 @@ def route_request(request: UserRequest):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
 DIRECT_ANSWERS = {
     ("آدرس", "ادرس", "کجا", "لوکیشن", "مکان", "محل", "درمانگاه", "مسیر"):
         "آدرس کلینیک: زنجان، خیابان هفت تیر",
@@ -117,7 +126,8 @@ DIRECT_ANSWERS = {
         "بیمه‌های طرف قرارداد: تامین اجتماعی، سلامت، نیروهای مسلح، بانک تجارت، بیمه ایران",
 }
 
-@app.post("/search-faiss")
+@app.post("/search-faiss")   #جستجو معنایی با پاسخ مستقیم برای سوالات متداول و جستجوی برداری برای بقیه سوالات
+# اگه سوال کاربر متداول و از پیش تعیین شده باشه جواب اونو مستقیم برمیگردونه در غیراینصورت جستجوی برداری انجام میده و نزدیکترین جوابو برمیگردونه
 def search(request: UserRequest):
     # اول keyword check
     for keywords, answer in DIRECT_ANSWERS.items():
@@ -131,23 +141,23 @@ def search(request: UserRequest):
     
     # بعد vector search
     threshold = 0.50
-    query_vector = encode_text(request.sentence)
+    query_vector = encode_text(request.sentence)  #تبدیل جمله کاربر به بردار عددی
 
     search_result = client.query_points(
         collection_name=collection_name,
         query=query_vector,
-        limit=10  # افزایش limit برای بازیابی بیشتر
-    )
+        limit=10  
+    ) #10 نزدیکترین بردار به جمله کاربر رو از دیتابیس میاره
 
     results = []
     seen_sentences = set()  # برای جلوگیری از تکرار جملات
     
     # اولویت‌بندی: جملات با امتیاز بالا
-    for hit in search_result.points:
+    for hit in search_result.points:  #اگه امتیاز نزدیکترین جمله به جمله کاربر بیشتر از ۰.۵ باشه اون جمله بعنوان جواب برمیگرده
         if hit.score >= threshold:
             sentence = hit.payload["sentence_text"]
-            if sentence not in seen_sentences:
-                seen_sentences.add(sentence)
+            if sentence not in seen_sentences: #اگه جمله تکراری نبود، به لیست نتایج اضافه میشه
+                seen_sentences.add(sentence) # و به مجموعه جملات دیده شده اضافه میشه
                 results.append({
                     "sentence": sentence,
                     "similarity": hit.score
