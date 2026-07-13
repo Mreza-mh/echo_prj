@@ -1,4 +1,4 @@
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e2e8f0','primaryBorderColor':'#334155','primaryTextColor':'#1e293b','lineColor':'#64748b','fontSize':'14px'}}}%%
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#eff6ff','primaryBorderColor':'#1e40af','primaryTextColor':'#1e293b','lineColor':'#64748b','fontSize':'14px', 'classText':'#1e293b'}}}%%
 classDiagram
     direction TB
 
@@ -7,7 +7,6 @@ classDiagram
         +string name
         +string email
         +UserRole role
-        +string passwordHash
         +login()
         +register()
         +sendOtp()
@@ -40,16 +39,11 @@ classDiagram
         +string name
         +string type
     }
-    class Status {
-        +int id
-        +string title
-    }
     class Appointment {
         +int id
         +int userId
         +int staffId
         +int serviceId
-        +int statusId
         +date dateOfTurn
         +time startTime
         +time endTime
@@ -71,7 +65,6 @@ classDiagram
     class VitalSession {
         +string patientId
         +string deviceId
-        +string status
         +string startedBy
         +start()
         +stop()
@@ -101,15 +94,14 @@ classDiagram
         +generateReply()
     }
 
-    User "1" --> "0..*" Appointment : رزرو می‌کند
-    Staff "1" --> "0..*" Appointment : انجام می‌دهد
+    User "1" --> "0..*" Appointment : رزرو
+    Staff "1" --> "0..*" Appointment : انجام
     Service "1" --> "0..*" Appointment
-    Status "1" --> "0..*" Appointment
     Staff "0..*" --> "1" Expertise
     Appointment "0..*" --> "0..*" Resource
     User "1" --> "1" PatientData : دارد
-    User "1" --> "0..*" VitalSession : شروع می‌کند
+    User "1" --> "0..*" VitalSession : شروع
     VitalSession "1" --> "0..*" VitalReading : شامل
-    User "1" --> "0..*" EchoResult : دریافت می‌کند
-    User "1" --> "0..*" AIChatSession : گفتگو می‌کند
+    User "1" --> "0..*" EchoResult : دریافت
+    User "1" --> "0..*" AIChatSession : گفتگو
     User --> UserRole

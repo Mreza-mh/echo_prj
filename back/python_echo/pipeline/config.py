@@ -20,6 +20,9 @@ DEFAULT_PIXELS_PER_CM = 12.0           # وقتی تشخیص خودکار مقی
 DEFAULT_ONE_FRAME_REPEAT = 8           # تعداد تکرار فریم تکی برای ساخت ویدیوی یک‌فریمی
 DEFAULT_ONE_FRAME_FPS = 10             # fps ویدیوی یک‌فریمی ساخته‌شده
 
+# تمام لیبل‌هایی که مدل طبقه‌بندی می‌تونه برگردونه (۸ کلاس خروجی مدل .h5).
+# این مجموعه فقط برای اعتبارسنجی خروجی مدل است؛ لیبل خارج از این → خطا.
+# نماهایی که در VIEW_PIPELINES نیستند، معتبرند ولی "unsupported_view" علامت می‌خورند.
 SUPPORTED_CLASSIFIER_LABELS = frozenset(
     {"plax", "psax-av", "psax-mv", "psax-ap", "a2c", "a3c", "a4c", "a5c"}
 )
@@ -28,7 +31,7 @@ SUPPORTED_CLASSIFIER_LABELS = frozenset(
 # نقشه‌ی هر ویو به رویدادهای قلبی و مدل‌های اندازه‌گیری مربوطه
 # processing.process_video از این دیکشنری می‌خونه تا بفهمه بعد از تشخیص ویو،
 # دنبال کدوم رویدادها (events) بگرده و برای هر رویداد کدوم مدل‌های YOLO (event_models) رو اجرا کنه
-# اگه ویویی این‌جا نباشه، در process_video به‌عنوان "unsupported_view" علامت می‌خوره
+# فقط دو نمای plax و a4c فعال‌اند؛ بقیه‌ی نماها "unsupported_view" علامت می‌خورن
 # ==============================================================================
 
 VIEW_PIPELINES: dict[str, dict[str, dict | list[str]]] = {
@@ -43,21 +46,6 @@ VIEW_PIPELINES: dict[str, dict[str, dict | list[str]]] = {
             "LVOT": ["aorta", "aortic_root"],
         },
     },
-    "psax-av": {
-        "events": ["End Sistol"],
-        "event_models": {
-            # شریان ریوی (PA) و دهلیز چپ (LA) در این نما بهترین دید را دارند
-            "End Sistol": ["la", "pa"],
-        },
-    },
-    "psax-mv": {
-        "events": [],
-        "event_models": {},
-    },
-    "psax-ap": {
-        "events": [],
-        "event_models": {},
-    },
     "a4c": {
         "events": ["End Diastol", "End Sistol"],
         "event_models": {
@@ -65,26 +53,6 @@ VIEW_PIPELINES: dict[str, dict[str, dict | list[str]]] = {
             "End Diastol": ["rv_base"],
             # حجم دهلیز چپ (LA Volume) در پایان سیستول (قبل از باز شدن دریچه میترال) محاسبه می‌شود
             "End Sistol": ["la"],
-        },
-    },
-    "a2c": {
-        "events": ["End Sistol"],
-        "event_models": {
-            # برای محاسبه حجم دهلیز چپ به روش Biplane، نمای دو حفره‌ای هم در پایان سیستول نیاز است
-            "End Sistol": ["la"],
-        },
-    },
-    "a3c": {
-        "events": ["LVOT"],
-        "event_models": {
-            # نمای سه حفره‌ای مسیر خروجی بطن چپ و آئورت را به خوبی نشان می‌دهد
-            "LVOT": ["aorta", "aortic_root"],
-        },
-    },
-    "a5c": {
-        "events": ["LVOT"],
-        "event_models": {
-            "LVOT": ["aorta"],
         },
     },
 }

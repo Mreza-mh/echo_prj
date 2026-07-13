@@ -1,28 +1,28 @@
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#f1f5f9','primaryBorderColor':'#334155','primaryTextColor':'#1e293b','lineColor':'#64748b','fontSize':'15px'}}}%%
+%%{init: {'theme':'base', 'flowchart': {'curve':'linear', 'nodeSpacing':45, 'rankSpacing':50, 'padding':10}, 'themeVariables': {'primaryColor':'#eff6ff','primaryBorderColor':'#1e40af','primaryTextColor':'#1e293b','lineColor':'#64748b','fontSize':'14px'}}}%%
 flowchart TD
-    classDef startEnd fill:#334155,stroke:#1e293b,color:#fff,font-weight:bold
-    classDef process fill:#e2e8f0,stroke:#475569,color:#1e293b
-    classDef decision fill:#f1f5f9,stroke:#334155,color:#1e293b
+    classDef startEnd fill:#1e40af,stroke:#1e3a8a,color:#ffffff,font-weight:bold
+    classDef process fill:#eff6ff,stroke:#60a5fa,color:#1e3a8a
     classDef ai fill:#dbeafe,stroke:#1e40af,color:#1e3a8a
-    classDef data fill:#e5e7eb,stroke:#374151,color:#111827
+    classDef decision fill:#f8fafc,stroke:#64748b,color:#334155
+    classDef data fill:#e2e8f0,stroke:#475569,color:#1e293b
 
-    Start(["fa:fa-play شروع"]):::startEnd --> A["fa:fa-comment کاربر پیام ارسال می‌کند"]:::process
-    A --> B["fa:fa-route سرویس FAISS نیت پیام را تشخیص می‌دهد"]:::ai
-    B --> C{"fa:fa-question نوع نیت؟"}:::decision
+    Start(["شروع"]):::startEnd --> A["دریافت پیام کاربر"]:::process
+    A --> B["تشخیص نیت پیام<br/>(سرویس FAISS)"]:::ai
+    B --> C{"نوع نیت؟"}:::decision
 
-    C -->|"نوبت"| D["fa:fa-robot LLM اطلاعات نوبت را استخراج می‌کند\n(پزشک، خدمت، تاریخ، ساعت)"]:::ai
-    D --> E{"fa:fa-check اطلاعات کامل است؟"}:::decision
-    E -->|"خیر"| F["fa:fa-question-circle سوال تکمیلی از کاربر پرسیده می‌شود"]:::process
+    C -->|"نوبت"| D["استخراج اطلاعات نوبت با LLM<br/>(پزشک، خدمت، تاریخ، ساعت)"]:::ai
+    D --> E{"اطلاعات کامل است؟"}:::decision
+    E -->|"خیر"| F["پرسش تکمیلی از کاربر"]:::process
     F --> D
-    E -->|"بله"| G[("fa:fa-save ثبت نوبت در پایگاه‌داده")]:::data
-    G --> H["fa:fa-check-circle تأیید نهایی به کاربر نمایش داده می‌شود"]:::process
+    E -->|"بله"| G[("ثبت نوبت در پایگاه‌داده")]:::data
+    G --> H["نمایش تأیید نهایی به کاربر"]:::process
 
-    C -->|"پشتیبانی"| I["fa:fa-search جستجو در پایگاه دانش Qdrant"]:::ai
-    I --> J{"fa:fa-bullseye پاسخ مستقیم یافت شد؟"}:::decision
-    J -->|"بله"| K["fa:fa-thumbtack پاسخ کلیدواژه‌ای بازگردانده می‌شود"]:::process
-    J -->|"خیر"| L["fa:fa-dna نزدیک‌ترین سند با جستجوی برداری"]:::ai
-    L --> M["fa:fa-pen پاسخ توسط LLM بازنویسی می‌شود"]:::ai
+    C -->|"پشتیبانی"| I["جستجو در پایگاه دانش<br/>(Qdrant)"]:::ai
+    I --> J{"پاسخ مستقیم یافت شد؟"}:::decision
+    J -->|"بله"| K["ارسال پاسخ کلیدواژه‌ای"]:::process
+    J -->|"خیر"| L["یافتن نزدیک‌ترین سند<br/>(جستجوی برداری)"]:::ai
+    L --> M["بازنویسی پاسخ با LLM"]:::ai
 
-    K --> N(["fa:fa-stop پایان"]):::startEnd
-    M --> N
-    H --> N
+    K --> End(["پایان"]):::startEnd
+    M --> End
+    H --> End

@@ -1,61 +1,52 @@
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#f1f5f9','primaryBorderColor':'#334155','primaryTextColor':'#1e293b','lineColor':'#64748b','fontSize':'16px'}}}%%
+%%{init: {'theme':'base', 'flowchart': {'curve':'linear', 'nodeSpacing':35, 'rankSpacing':60, 'padding':10}, 'themeVariables': {'primaryColor':'#eff6ff','primaryBorderColor':'#1e40af','primaryTextColor':'#1e293b','lineColor':'#64748b','fontSize':'14px'}}}%%
 flowchart LR
-    classDef actor fill:#e2e8f0,stroke:#334155,stroke-width:2px,color:#1e293b,font-weight:bold
-    classDef patientUC fill:#dbeafe,stroke:#1e40af,stroke-width:1.5px,color:#1e3a8a
-    classDef doctorUC fill:#e2e8f0,stroke:#475569,stroke-width:1.5px,color:#1e293b
-    classDef adminUC fill:#e5e7eb,stroke:#374151,stroke-width:1.5px,color:#111827
-    classDef sysUC fill:#eff6ff,stroke:#3b82f6,stroke-width:1.5px,color:#1e40af,stroke-dasharray: 4 2
+    classDef actor fill:#1e40af,stroke:#1e3a8a,stroke-width:1.5px,color:#ffffff,font-weight:bold
+    classDef uc fill:#eff6ff,stroke:#60a5fa,stroke-width:1.5px,color:#1e3a8a
+    classDef sysUC fill:#f8fafc,stroke:#94a3b8,stroke-width:1.5px,color:#334155,stroke-dasharray:4 3
+    classDef grp fill:#f8fafc,stroke:#cbd5e1,stroke-width:1px,color:#475569
 
     Patient["fa:fa-user بیمار"]:::actor
     Doctor["fa:fa-user-md پزشک"]:::actor
-    Nurse["fa:fa-user-nurse پرستار / اپراتور"]:::actor
+    Nurse["fa:fa-user-nurse پرستار"]:::actor
     Receptionist["fa:fa-address-book منشی"]:::actor
-    Admin["fa:fa-user-tie مدیر سازمانی"]:::actor
-    SuperAdmin["fa:fa-crown ابرمدیر"]:::actor
     ESP32["fa:fa-microchip دستگاه ESP32"]:::actor
 
-    subgraph SYS["fa:fa-heartbeat سامانه Echo"]
+    subgraph SYS["سامانه Echo"]
         direction TB
 
-        subgraph G1["fa:fa-id-badge حساب کاربری"]
-            UC1(["fa:fa-lock ثبت‌نام / ورود (OTP یا رمز عبور)"]):::patientUC
-            UC2(["fa:fa-edit ویرایش پروفایل"]):::patientUC
+        subgraph G1["حساب کاربری"]
+            UC1(["ثبت‌نام / ورود"]):::uc
+            UC2(["ویرایش پروفایل"]):::uc
         end
 
-        subgraph G2["fa:fa-calendar-alt نوبت‌دهی"]
-            UC3(["fa:fa-calendar-check رزرو نوبت آنلاین"]):::patientUC
-            UC4(["fa:fa-list مشاهده نوبت‌های من"]):::doctorUC
-            UC5(["fa:fa-clock مدیریت برنامه کاری کارکنان"]):::adminUC
+        subgraph G2["نوبت‌دهی"]
+            UC3(["رزرو نوبت آنلاین"]):::uc
+            UC4(["مشاهده نوبت‌ها"]):::uc
+            UC5(["برنامه کاری کارکنان"]):::uc
         end
 
-        subgraph G3["fa:fa-robot دستیار هوشمند"]
-            UC6(["fa:fa-comments گفتگو با چت‌بات"]):::patientUC
-            UC7(["fa:fa-route طبقه‌بندی نیت پیام"]):::sysUC
-            UC8(["fa:fa-search پایگاه دانش RAG"]):::sysUC
+        subgraph G3["دستیار هوشمند"]
+            UC6(["گفتگو با چت‌بات"]):::uc
+            UC7(["تشخیص نیت پیام"]):::sysUC
+            UC8(["پایگاه دانش RAG"]):::sysUC
         end
 
-        subgraph G4["fa:fa-heart اکو و علائم حیاتی"]
-            UC9(["fa:fa-video آپلود ویدیوی اکو"]):::doctorUC
-            UC10(["fa:fa-brain پردازش هوشمند ویدیو"]):::sysUC
-            UC11(["fa:fa-chart-line برآورد ریسک قلبی-عروقی"]):::sysUC
-            UC12(["fa:fa-file-medical مشاهده گزارش نهایی اکو"]):::patientUC
-            UC13(["fa:fa-heart-pulse پایش زنده ضربان قلب"]):::patientUC
-            UC14(["fa:fa-broadcast-tower انتشار داده حسگر (MQTT)"]):::sysUC
-        end
-
-        subgraph G5["fa:fa-cogs مدیریت سیستم"]
-            UC15(["fa:fa-users-cog مدیریت پرسنل و تخصص‌ها"]):::adminUC
-            UC16(["fa:fa-briefcase-medical مدیریت خدمات و منابع"]):::adminUC
-            UC17(["fa:fa-building مدیریت چند سازمان"]):::adminUC
+        subgraph G4["اکو و علائم حیاتی"]
+            UC9(["آپلود ویدیوی اکو"]):::uc
+            UC10(["پردازش هوشمند ویدیو"]):::sysUC
+            UC11(["برآورد ریسک قلبی"]):::sysUC
+            UC12(["گزارش نهایی اکو"]):::uc
+            UC13(["پایش زنده ضربان قلب"]):::uc
+            UC14(["انتشار داده حسگر"]):::sysUC
         end
     end
+
+    class G1,G2,G3,G4,SYS grp
 
     Patient --> UC1 & UC2 & UC3 & UC6 & UC12 & UC13
     Doctor --> UC1 & UC4 & UC9 & UC12
     Nurse --> UC13
     Receptionist --> UC3 & UC5
-    Admin --> UC5 & UC15 & UC16
-    SuperAdmin --> UC17
     ESP32 --> UC14
 
     UC6 -.include.-> UC7

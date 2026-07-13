@@ -209,7 +209,7 @@ class MLRiskPredictor:
                 d["age_hypertension_interaction"] = round(float(age) * d["hypertension_grade"], 2)
         return d
 
-    # ── Vector building ───────────────────────────────────────────────────────
+    # ── Vector building ──── با اون ترتیب که مدل میخاد بدیم بهش 
 
     @staticmethod
     def _build_vector(
@@ -258,11 +258,11 @@ class MLRiskPredictor:
         prob = float(model.predict_proba(vec)[0, 1]) # class 1 probability 
         return {
             "model":            model_name,
-            "probability":      round(prob, 4),
-            "probability_pct":  round(prob * 100, 1),
-            "confidence":       conf,
-            "missing_features": missing,
-            "n_features_used":  len(features) - len(missing),
+            "probability": round(prob, 4),           # احتمال پیش‌بینی (بین 0 تا 1)
+            "probability_pct": round(prob * 100, 1), # احتمال به صورت درصد
+            "confidence": conf,                      # کامل بودن داده
+            "missing_features": missing,             # لیست ویژگی‌های ورودی که وجود نداشتند
+            "n_features_used": len(features) - len(missing),  # تعداد ویژگی‌های استفاده‌شده در پیش‌بینی
             "_engineered":      eng,
         }
 
@@ -321,7 +321,7 @@ class MLRiskPredictor:
             if total_conf > 0 else
             (hd["probability"] + cv["probability"]) / 2
         )
-        #combined_prob = (prob_HD × conf_HD + prob_CV × conf_CV) / (conf_HD + conf_CV)
+        #combined_prob = (prob_HD احتمال × conf_HD کامل بودن داده + prob_CV × conf_CV) / (conf_HD + conf_CV)
 
         # level
         if   combined_prob >= 0.70: severity = "HIGH"
@@ -338,7 +338,7 @@ class MLRiskPredictor:
         return {
             "hd_result":      hd,
             "cv_result":      cv,
-            "combined_score": round(combined_prob * 100, 1),
+            "combined_score": round(combined_prob * 100, 1), # ترکیب عه 
             "combined_prob":  round(combined_prob, 4),
             "severity":       severity,
             "risk_factors":   risk_factors,

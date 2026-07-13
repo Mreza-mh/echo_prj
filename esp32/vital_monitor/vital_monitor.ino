@@ -43,24 +43,48 @@ const uint32_t MQTT_LOST_STOP_MS = 20000; // if mqtt is lost, stop the measure a
 uint32_t mqttLostSince = 0;  // from when mqtt is lost?
 
 // ==================== Heart Rate Variables ====================
-const byte RATE_SIZE = 4;
-byte rates[RATE_SIZE]; // 4 samples of heart rate array for average size=4
-byte rateSpot = 0; // index of the current sample
-long lastBeat = 0; //زمان آخرین ضربان
-float beatsPerMinute = 0; //heart rate in beats per minute(BPM)  calculate by last beat
-int beatAvg = 0; // average heart rate
-long lastIRValue = 0; // last LED IR value
-uint32_t lastSensorRead = 0; // last time sensor read
+// IBI method: store the time BETWEEN beats and take the MEDIAN.
+// Median kills noisy/false beats; averaging BPM values does not.
+const byte IBI_SIZE = 8;          // last 8 inter-beat intervals (~6-8 seconds of data)
+uint16_t ibis[IBI_SIZE];          // inter-beat intervals in ms
+byte ibiSpot = 0;                 // ring buffer index
+byte ibiCount = 0;                // how many valid intervals collected
+long lastBeat = 0;                // زمان آخرین ضربان
+long lastValidBeat = 0;           // last beat with a valid interval (noise beats do not count)
+float beatsPerMinute = 0;         // instantaneous BPM (for serial debug only)
+int beatAvg = 0;                  // median-based BPM (the reported value)
+long lastIRValue = 0;             // last LED IR value
+
+// valid interval range: 300ms..1500ms  =>  40..200 BPM
+const uint16_t IBI_MIN_MS = 300;
+const uint16_t IBI_MAX_MS = 1500;
+
+// start reporting after this many valid intervals (~2-3 seconds).
+// median still filters outliers; the value just gets steadier as more beats arrive.
+const byte IBI_MIN_REPORT = 3;
+
+int lastGoodHR = 0; // last trusted average
+uint32_t lastGoodAt = 0; // when we got it
 
 const long FINGER_IR_THRESHOLD = 50000; // if the IR value is less than this value, the finger is not on the sensor => noise
 
-// if no beat is detected for more than 3500ms, the beat is stale > beatAvg = 0
+// if no VALID beat is detected for more than 3500ms, the reading is stale > reset HR state
 const uint32_t BEAT_STALE_MS = 3500;
+
+// while the finger is ON, keep sending the last good HR for up to 15s during a dropout.
+// the finger-on condition (below) makes sure a removed finger still invalidates fast.
+const uint32_t GOOD_HR_HOLD_MS = 15000;
+
+// IR must stay below threshold for 500ms CONTINUOUSLY before we call it "finger off".
+// a single low sample (light pressure change) must not wipe the reading.
+const uint32_t FINGER_OFF_DEBOUNCE_MS = 500;
+uint32_t irLowSince = 0;   // since when IR has been below threshold (0 = it is not)
+bool fingerOn = false;     // debounced finger state, used by publishData
 
 // ==================== SENSOR ====================
 void setLedSafePower() { //setup led power
   sensor.setPulseAmplitudeRed(0x0A);
-  sensor.setPulseAmplitudeIR(0x1F);
+  sensor.setPulseAmplitudeIR(0x3F);  // ~12.6mA: stronger IR = cleaner pulse signal = stable beat detection
   sensor.setPulseAmplitudeGreen(0);
 }
 
@@ -70,7 +94,11 @@ bool initSensor() { // if sensor is not found, return false else setup led power
     Serial.println("MAX30102 NOT FOUND!");
     return false;
   }
-  sensor.setup();
+  // sampleAverage=8: chip averages 8 raw samples per output -> hardware noise filtering
+  // sampleRate=400 / 8 = 50Hz effective, plenty for beat detection
+  // pulseWidth=411 + adcRange=16384: max resolution
+  sensor.setup(0x3F /*ledBrightness*/, 8 /*sampleAverage*/, 2 /*ledMode: Red+IR*/,
+               400 /*sampleRate*/, 411 /*pulseWidth*/, 16384 /*adcRange*/);
   setLedSafePower();
   Serial.println("Sensor READY");
   return true;
@@ -96,12 +124,28 @@ void testSensorStartup() {
 
 // ==================== HR STATE ====================
 void resetHeartRateState() {
-  for (byte i = 0; i < RATE_SIZE; i++) rates[i] = 0;
-  rateSpot = 0;  // index of the current sample
-  lastBeat = 0; 
-  beatsPerMinute = 0; 
-  beatAvg = 0; 
+  for (byte i = 0; i < IBI_SIZE; i++) ibis[i] = 0;
+  ibiSpot = 0;
+  ibiCount = 0;
+  lastBeat = 0;
+  lastValidBeat = 0;
+  beatsPerMinute = 0;
+  beatAvg = 0;
   lastIRValue = 0;
+}
+
+// median of the collected intervals (robust: one bad beat cannot shift it)
+uint16_t medianIBI() {
+  uint16_t sorted[IBI_SIZE];
+  for (byte i = 0; i < ibiCount; i++) sorted[i] = ibis[i];
+  for (byte i = 1; i < ibiCount; i++) {          // insertion sort, max 8 items
+    uint16_t key = sorted[i];
+    int8_t j = i - 1;
+    while (j >= 0 && sorted[j] > key) { sorted[j + 1] = sorted[j]; j--; }
+    sorted[j + 1] = key;
+  }
+  if (ibiCount % 2) return sorted[ibiCount / 2];
+  return (sorted[ibiCount / 2 - 1] + sorted[ibiCount / 2]) / 2;
 }
 
 void startMeasuring(int pid) {
@@ -112,6 +156,10 @@ void startMeasuring(int pid) {
     return;
   } // else => sensorReady 
   resetHeartRateState(); // reset heart rate state
+  lastGoodHR = 0; // new session, forget last patient's value
+  lastGoodAt = 0;
+  fingerOn = false; // new session, re-detect the finger from scratch
+  irLowSince = 0;
   measuring = true;
   measureStartMs = millis();
   lastPublish = 0;
@@ -202,32 +250,49 @@ void connectMqtt() {
 }
 
 // ==================== SENSOR LOGIC ==================== avg of last 4 heart beat
-void updateSensor() { // update sensor data used in loop 
-  if (millis() - lastSensorRead < 20) return; // sample rate is 2s
-  lastSensorRead = millis(); // update last sensor read
+void updateSensor() { // update sensor data used in loop
+  sensor.check(); // read all new samples from sensor FIFO
 
-  lastIRValue = sensor.getIR(); // get IR value from sensor
+  while (sensor.available()) { // process EVERY sample, checkForBeat needs a continuous stream
+    lastIRValue = sensor.getFIFOIR();
 
-  if (checkForBeat(lastIRValue)) { // full heart beat detected
-    long delta = millis() - lastBeat;    // time between last beat and current beat
-    lastBeat = millis();
-    beatsPerMinute = 60 / (delta / 1000.0);
+    if (checkForBeat(lastIRValue)) { // full heart beat detected
+      long delta = millis() - lastBeat;    // time between last beat and current beat
+      lastBeat = millis();
+      beatsPerMinute = 60000.0 / delta;    // instantaneous, debug only
 
-    if (beatsPerMinute > 20 && beatsPerMinute < 255) { // valid heart rate
-      rates[rateSpot++] = (byte)beatsPerMinute; // add heart rate to array
-      rateSpot %= RATE_SIZE; // update index of the current sample
-      beatAvg = 0; // reset beat average
-      for (byte i = 0; i < RATE_SIZE; i++) beatAvg += rates[i]; // calculate average heart rate
-      beatAvg /= RATE_SIZE; // update beat average
+      if (delta >= IBI_MIN_MS && delta <= IBI_MAX_MS && lastValidBeat != 0) {
+        // valid interval (40..200 BPM) AND not the first beat after a reset
+        ibis[ibiSpot++] = (uint16_t)delta;
+        ibiSpot %= IBI_SIZE;
+        if (ibiCount < IBI_SIZE) ibiCount++;
+
+        beatAvg = 60000 / medianIBI(); // BPM from the MEDIAN interval
+
+        if (ibiCount >= IBI_MIN_REPORT) { // enough beats => report it (gets steadier as buffer fills)
+          lastGoodHR = beatAvg;
+          lastGoodAt = millis();
+        }
+      }
+      lastValidBeat = millis(); // any detected beat keeps the stream "fresh"
     }
+
+    sensor.nextSample();
   }
 
+  // debounced finger detection: one low sample is NOT "finger off"
+  if (lastIRValue >= FINGER_IR_THRESHOLD) {
+    irLowSince = 0;
+    fingerOn = true;
+  } else {
+    if (irLowSince == 0) irLowSince = millis();
+    if (millis() - irLowSince > FINGER_OFF_DEBOUNCE_MS) fingerOn = false;
+  }
 
-  bool fingerOff = lastIRValue < FINGER_IR_THRESHOLD;
-  bool beatStale = lastBeat != 0 && millis() - lastBeat > BEAT_STALE_MS; // if no beat is detected for more than 3500ms, the beat is stale > beatAvg = 0    new data is false ...  !chace 
-  if (fingerOff || beatStale) {
-    beatAvg = 0;
-    beatsPerMinute = 0;
+  bool beatStale = lastValidBeat != 0 && millis() - lastValidBeat > BEAT_STALE_MS; // no valid beat for 3500ms
+  if (!fingerOn || beatStale) {
+    resetHeartRateState(); // full reset so old beats never mix into the next reading
+    // note: lastGoodHR / lastGoodAt survive on purpose; publishData holds them while finger is on
   }
 }
 
@@ -237,8 +302,11 @@ void publishData() {
   doc["patient_id"] = patientId;
   doc["device_id"]  = DEVICE_ID;
 
-  bool valid = lastIRValue >= FINGER_IR_THRESHOLD && beatAvg > 0;
-  doc["hr"]       = valid ? beatAvg : -999;
+  // valid while the finger is on and we had a trusted value in the last 15s.
+  // dropouts (missed beats, brief IR dips) keep showing the last good number;
+  // actually removing the finger invalidates within ~500ms (debounce) regardless of hold.
+  bool valid = fingerOn && lastGoodHR > 0 && millis() - lastGoodAt < GOOD_HR_HOLD_MS;
+  doc["hr"]       = valid ? lastGoodHR : -999;
   doc["valid_hr"] = valid;
 
   char buf[128];
@@ -284,7 +352,7 @@ void setup() {
   connectWiFi(); // connect to wifi
   mqtt.setServer(MQTT_BROKER, MQTT_PORT); // set mqtt server
   mqtt.setCallback(onMqttMessage); // set mqtt callback   if message come run onMqttMessage()
-  mqtt.setSocketTimeout(5); // set mqtt socket timeout
+  mqtt.setSocketTimeout(1); // short timeout: a lost broker must not freeze the loop (beat detection dies)
   connectMqtt(); // connect to mqtt
   Serial.println("READY..."); // ready to use
 }

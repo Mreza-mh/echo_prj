@@ -1,28 +1,26 @@
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#f1f5f9','primaryBorderColor':'#334155','primaryTextColor':'#1e293b','lineColor':'#64748b','fontSize':'15px'}}}%%
+%%{init: {'theme':'base', 'flowchart': {'curve':'linear', 'nodeSpacing':45, 'rankSpacing':50, 'padding':10}, 'themeVariables': {'primaryColor':'#eff6ff','primaryBorderColor':'#1e40af','primaryTextColor':'#1e293b','lineColor':'#64748b','fontSize':'14px'}}}%%
 flowchart TD
-    classDef startEnd fill:#334155,stroke:#1e293b,color:#fff,font-weight:bold
+    classDef startEnd fill:#1e40af,stroke:#1e3a8a,color:#ffffff,font-weight:bold
     classDef user fill:#dbeafe,stroke:#1e40af,color:#1e3a8a
-    classDef iot fill:#e5e7eb,stroke:#374151,color:#111827
-    classDef server fill:#e2e8f0,stroke:#475569,color:#1e293b
-    classDef decision fill:#f1f5f9,stroke:#334155,color:#1e293b
-    classDef data fill:#e5e7eb,stroke:#374151,color:#111827
+    classDef iot fill:#e2e8f0,stroke:#475569,color:#1e293b
+    classDef server fill:#eff6ff,stroke:#60a5fa,color:#1e3a8a
+    classDef decision fill:#f8fafc,stroke:#64748b,color:#334155
+    classDef data fill:#e2e8f0,stroke:#475569,color:#1e293b
 
-    Start(["fa:fa-play شروع"]):::startEnd --> A["fa:fa-hand-pointer کاربر جلسه پایش را آغاز می‌کند"]:::user
-    A --> B["fa:fa-broadcast-tower Laravel فرمان start را به MQTT ارسال می‌کند"]:::server
-    B --> C["fa:fa-microchip دستگاه ESP32 فرمان را دریافت می‌کند"]:::iot
-    C --> D["fa:fa-heartbeat سنسور MAX30102 ضربان قلب را می‌خواند"]:::iot
-    D --> E["fa:fa-paper-plane انتشار داده هر ۲ ثانیه\n(devices/ESP32_001/data)"]:::iot
-    E --> F["fa:fa-headphones mqtt:listen داده را در Laravel دریافت می‌کند"]:::server
-    F --> G[("fa:fa-save ذخیره VitalReading در MongoDB")]:::data
-    G --> H["fa:fa-chart-area نمایش زنده در پنل بیمار (Polling هر ۲ ثانیه)"]:::user
+    Start(["شروع"]):::startEnd --> A["آغاز جلسه پایش توسط کاربر"]:::user
+    A --> B["ارسال فرمان start به MQTT<br/>(Laravel)"]:::server
+    B --> C["دریافت فرمان توسط ESP32"]:::iot
+    C --> D["خواندن ضربان قلب<br/>(سنسور MAX30102)"]:::iot
+    D --> E["انتشار داده هر ۲ ثانیه<br/>(devices/ESP32_001/data)"]:::iot
+    E --> F["دریافت داده در Laravel<br/>(mqtt:listen)"]:::server
+    F --> G[("ذخیره در MongoDB")]:::data
+    G --> H["نمایش زنده در پنل بیمار"]:::user
 
-    H --> I{"fa:fa-sync ادامه جلسه؟"}:::decision
-    I -->|"مدت کمتر از ۱۵۰ ثانیه"| D
-    I -->|"توقف توسط کاربر"| J["fa:fa-stop-circle ارسال فرمان stop"]:::server
-    I -->|"قطع MQTT بیش از ۲۰ ثانیه"| J
-    I -->|"رسیدن به سقف زمانی"| J
+    H --> I{"ادامه جلسه؟"}:::decision
+    I -->|"ادامه"| D
+    I -->|"توقف کاربر / قطع MQTT / سقف زمانی"| J["ارسال فرمان stop"]:::server
 
-    J --> K{"fa:fa-save ذخیره در پروفایل؟"}:::decision
-    K -->|"بله"| L["fa:fa-file-medical ذخیره در پروفایل بالینی بیمار"]:::data
-    K -->|"خیر"| End(["fa:fa-stop پایان"]):::startEnd
+    J --> K{"ذخیره در پروفایل؟"}:::decision
+    K -->|"بله"| L["ذخیره در پروفایل بالینی بیمار"]:::data
+    K -->|"خیر"| End(["پایان"]):::startEnd
     L --> End
