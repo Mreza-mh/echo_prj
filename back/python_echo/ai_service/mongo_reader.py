@@ -11,16 +11,13 @@ load_dotenv()
 def get_patient_config(patient_id: str | int) -> dict:
     """
     دریافت کانفیگ بیمار از MongoDB (collection: echo_pipeline.patient_profiles)
-    توسط main.py صدا زده می‌شه — همون اول کار، قبل از هر پردازش ویدیو یا ML.
 
     ورودی:
-        patient_id: user_id بیمار (عدد صحیح، حتی اگه به‌صورت رشته پاس داده بشه)
+        patient_id: user_id 
 
     خروجی:
         دیکشنری اطلاعات بیمار (بدون _id, created_at, updated_at)
 
-    خطا:
-        ValueError اگه patient_id عدد نباشه یا بیماری با این user_id پیدا نشه
     """
     mongo_uri = os.getenv('MONGO_URI', 'mongodb://127.0.0.1:27017')
     client = MongoClient(mongo_uri)

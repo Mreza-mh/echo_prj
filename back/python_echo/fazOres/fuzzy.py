@@ -82,7 +82,7 @@ PARAM_CONFIG = {
 # در حالی که PARAM_CONFIG برای دهلیز چپ فقط la_volume (مساحت/mL بر مترمربع، از
 # a4c_left_atrium_area_cm2 که مسیر جدای segmentation است) آستانه‌ی بالینی دارد. اضافه
 # کردن یک آستانه‌ی جعلی برای این طول خام باعث دسته‌بندی نادرست می‌شد. این اندازه‌گیری‌ها
-# همچنان در گزارش خام pipeline (echo_measurements در report_generator.py) دیده می‌شوند،
+# همچنان در گزارش خام pipeline (echo_measurements در pipeline/results.py) دیده می‌شوند،
 # فقط در ارزیابی فازی شرکت نمی‌کنند.
 _PIPELINE_PARAM_MAP: dict[tuple[str, str, str], str] = {
     # --- plax ---

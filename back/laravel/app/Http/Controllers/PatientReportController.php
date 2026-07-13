@@ -124,48 +124,6 @@ class PatientReportController extends Controller
     }
     
     /**
-     * نمایش گزارش HTML
-     */
-    public function showHtmlReport($patientId, $visitDate)
-    {
-        try {
-            $collection = $this->getMongoCollection();
-            $patient = $collection->findOne(['_id' => $patientId]);
-            
-            if (!$patient) {
-                abort(404, 'بیمار یافت نشد');
-            }
-            
-            $visitData = $patient['visits'][$visitDate] ?? null;
-            
-            if (!$visitData) {
-                abort(404, 'ویزیت یافت نشد');
-            }
-            
-            // جستجوی گزارش HTML
-            foreach ($visitData as $item) {
-                if (isset($item['type']) && $item['type'] === 'llm_final_report') {
-                    $htmlPath = $item['files']['html'] ?? null;
-                    
-                    if ($htmlPath) {
-                        $fullPath = public_path('echos/' . $htmlPath);
-                        
-                        if (file_exists($fullPath)) {
-                            return response()->file($fullPath);
-                        }
-                    }
-                }
-            }
-            
-            abort(404, 'فایل گزارش یافت نشد');
-            
-        } catch (\Exception $e) {
-            Log::error('Error showing HTML report: ' . $e->getMessage());
-            abort(500, 'خطا در نمایش گزارش');
-        }
-    }
-    
-    /**
      * دریافت متن گزارش (برای استفاده در API)
      */
     public function getReportText($patientId, $visitDate)
@@ -190,15 +148,11 @@ class PatientReportController extends Controller
                 ], 404);
             }
             
-            // فقط دکتر/ادمین می‌تونن متن گزارش پزشکی (doctor_report) رو ببینن — نه خود بیمار
-            $isStaff = in_array(auth()->user()->role ?? null, ['doctor', 'admin']);
-
             foreach ($visitData as $item) {
                 if (isset($item['type']) && $item['type'] === 'llm_final_report') {
                     return response()->json([
                         'success' => true,
                         'report_text' => $item['report_text'] ?? '',
-                        'doctor_report' => $isStaff ? ($item['doctor_report'] ?? '') : null,
                         'generated_at' => $item['generated_at'] ?? null,
                         'files' => $item['files'] ?? []
                     ]);

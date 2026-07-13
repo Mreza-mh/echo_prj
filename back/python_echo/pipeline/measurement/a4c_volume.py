@@ -1,13 +1,7 @@
-"""
-محاسبه‌ی مساحت دهلیز چپ/راست (پیکسل + سانتی‌متر مربع) در نمای اپیکال چهار حفره‌ای (A4C).
-
-فقط وقتی processing.process_video ویو رو "a4c" تشخیص بده صدا زده می‌شه.
-ورودی: یک فریم B-mode (BGR) + pixels_per_cm همون کالیبراسیونی که برای اندازه‌گیری‌های خطی استفاده می‌شه.
-"""
 from __future__ import annotations
 
 import json
-import math
+import math     
 import os
 from pathlib import Path
 from typing import Any
@@ -19,8 +13,8 @@ from pipeline.measurement.scale import pixel_area_to_cm2
 
 def _fit_and_clip_ellipse(
     mask: np.ndarray,
-    valve_a: tuple[int, int],
-    valve_b: tuple[int, int],
+    valve_a: tuple[int, int], #best_center
+    valve_b: tuple[int, int], # خط چپ
     clip_x: int,
     keep_left: bool,
 ) -> np.ndarray:
@@ -36,6 +30,7 @@ def _fit_and_clip_ellipse(
       ۴) با clip_x دو دهلیز از هم جدا می‌شن (keep_left=True یعنی سمت راست حذف می‌شه → دهلیز چپ)
       اگر کانتور معتبر (حداقل ۵ نقطه) پیدا نشه، خود mask ورودی بدون تغییر برمی‌گرده
     """
+
     cnts, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     if not cnts:
         return mask
@@ -44,23 +39,27 @@ def _fit_and_clip_ellipse(
         return mask
 
     result = np.zeros_like(mask)
-    cv2.ellipse(result, cv2.fitEllipse(cnt), 1, -1)
+    cv2.ellipse(result, cv2.fitEllipse(cnt), 1, -1) # یه بیضی پیدا میکنه 
 
     h, w = result.shape
     ys, xs = np.mgrid[0:h, 0:w]
 
     # خط دریچه می‌تونه کج باشه؛ علامت cross-product سمت هر پیکسل نسبت به این خط رو مشخص می‌کنه
     dx, dy = valve_b[0] - valve_a[0], valve_b[1] - valve_a[1]
-    side = dx * (ys - valve_a[1]) - dy * (xs - valve_a[0])
+    side = dx * (ys - valve_a[1]) - dy * (xs - valve_a[0]) # خط برای جداسازی هر پیشکل اگر پایین باشه عدد + مییگیره
     # سمت مرجع = همون سمتی که مرکز بیضی توش قرار داره (یعنی سمت حفره، نه سمت بالای دریچه)
     cy_e, cx_e = np.argwhere(result > 0).mean(axis=0)
-    ref_side = dx * (cy_e - valve_a[1]) - dy * (cx_e - valve_a[0])
-    below_line = (np.sign(side) == np.sign(ref_side))    # پایین خط دریچه (سمت حفره)
+    ref_side = dx * (cy_e - valve_a[1]) - dy * (cx_e - valve_a[0]) # مرکز ستی که اعداد+ هستن برای عکس های روتیت شد ههم جوابه 
+    below_line = (np.sign(side) == np.sign(ref_side))    #  خط دریچه (سمت حفره)
 
     # پر کردن شکاف: هر ستونی که بیضی توش پیکسل داره، از خط دریچه تا اولین پیکسل بیضی پر می‌شه
+    # اون بالا ها پر میشه 
     has_px = np.any(result > 0, axis=0)
-    cum    = np.cumsum(result, axis=0)
+    cum    = np.cumsum(result, axis=0) # برای فهمیدن فضای خالی تا بطن
     gap    = (cum == 0) & has_px & below_line            # فاصله‌ی خالی بین خط دریچه و بیضی
+    #هنوز خالی‌اند
+    # در ستونی هستند که بیضی دارد
+    # در سمت دهلیز هستند
     result = np.maximum(result, gap.astype(np.uint8))
 
     result[~below_line] = 0      # حذف هر چیزی بالای خط دریچه
@@ -110,8 +109,8 @@ def _flood_fill_chamber(seed: tuple[int, int], boundary_mask: np.ndarray) -> np.
     """
     flood = boundary_mask.copy()
     h, w = flood.shape
-    cv2.floodFill(flood, np.zeros((h + 2, w + 2), np.uint8), seed, 128)
-    chamber = (flood == 128).astype(np.uint8)
+    cv2.floodFill(flood, np.zeros((h + 2, w + 2), np.uint8), seed, 128) # 128 یعنی ناحیه پیدا شده 
+    chamber = (flood == 128).astype(np.uint8) #128=1
     return chamber if cv2.countNonZero(chamber) > 0 else None
 
 
@@ -153,14 +152,14 @@ def run_a4c_atrial_areas(
     def best_ray(cx: int, cy: int, angles: range, length: int) -> tuple[float, tuple[int, int]]:
         maxv, best_end = -1.0, (cx, cy)
         for a in angles:
-            rad = math.radians(a)
+            rad = math.radians(a) # تبدیل به رادیان
             dx, dy = length * math.cos(rad), length * math.sin(rad)
-            xs = np.linspace(cx, cx + dx, int(length)).astype(int)
+            xs = np.linspace(cx, cx + dx, int(length)).astype(int) # ساخت پیکسل ها روی خط
             ys = np.linspace(cy, cy + dy, int(length)).astype(int)
             valid = (xs >= 0) & (xs < w) & (ys >= 0) & (ys < h)
             if not np.any(valid):
                 continue
-            val = float(np.mean(blur_rays[ys[valid], xs[valid]]))
+            val = float(np.mean(blur_rays[ys[valid], xs[valid]])) # یانگین روشنایی
             if val > maxv:
                 maxv = val
                 best_end = (int(cx + dx), int(cy + dy))
@@ -185,12 +184,12 @@ def run_a4c_atrial_areas(
                 best_rays   = [e_r, e_d, e_l, e_u]
 
     # --------------------------------------------------------------------------
-    # مرحله ۲: تشخیص دیواره‌ها — آستانه‌گذاری (۷۵) خون تیره رو از دیواره‌ی روشن جدا می‌کنه
+    #  ۲: تشخیص دیواره‌ها — آستانه‌گذاری (۷۵) خون تیره رو از دیواره‌ی روشن جدا می‌کنه
     # --------------------------------------------------------------------------
     blur = cv2.GaussianBlur(gray, (7, 7), 0)
-    _, thresh = cv2.threshold(blur, 75, 255, cv2.THRESH_BINARY)
-    kernel_open = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
-    cleaned = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel_open)
+    _, thresh = cv2.threshold(blur, 75, 255, cv2.THRESH_BINARY)#باینری بالای 75 میشه 255
+    kernel_open = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5)) # ساخت کرنلون
+    cleaned = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel_open) # moise
 
     # --------------------------------------------------------------------------
     # مرحله ۳: پیدا کردن نقاط انتهایی هر کانتور بزرگ و bridge زدن شکاف‌های بین آن‌ها
@@ -198,7 +197,7 @@ def run_a4c_atrial_areas(
     contours, _ = cv2.findContours(cleaned, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     endpoints: list[tuple[int, int]] = []
     for cnt in contours:
-        if cv2.contourArea(cnt) > 200:
+        if cv2.contourArea(cnt) > 200: # بزرگتر از ۲۰۰ پیکسل
             endpoints.extend([
                 tuple(cnt[cnt[:, :, 0].argmin()][0]),  # چسبیده‌ترین نقطه‌ی چپ
                 tuple(cnt[cnt[:, :, 0].argmax()][0]),  # چسبیده‌ترین نقطه‌ی راست
@@ -218,15 +217,15 @@ def run_a4c_atrial_areas(
             ):
                 continue
             d = math.hypot(pt1[0] - pt2[0], pt1[1] - pt2[1])
-            if 20 < d < 80:
+            if 20 < d < 80: # شرط فاصله که خیلی نزدیک به هم وصل نشه
                 cv2.line(bridged, pt1, pt2, 255, 3)
 
     # --------------------------------------------------------------------------
     # مرحله ۴: بستن حلقه‌ها (close) و کشیدن پرتوها روی mask به‌عنوان دیواره‌ی مصنوعی بین دهلیز و بطن
     # --------------------------------------------------------------------------
-    kernel_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15))
+    kernel_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (15, 15)) # اندازه ضخامت حلقه
     closed = cv2.morphologyEx(bridged, cv2.MORPH_CLOSE, kernel_close)
-    for ep in best_rays:
+    for ep in best_rays: # اون بخش اتصال بین دهلیز و بطن و خودون از خط جدا کننده ها میایم جدا میکنیم
         cv2.line(closed, best_center, ep, 255, 3)
 
     # --------------------------------------------------------------------------
@@ -242,6 +241,10 @@ def run_a4c_atrial_areas(
     # clip_x = مرز عمودی جداکننده‌ی دو دهلیز (ستون x مرکز)
     # --------------------------------------------------------------------------
     e_r, _e_d, e_l, _e_u = best_rays
+    #el خط چپ 
+    #raw l خام نقاط دهلیز 
+    # best center مرکز انتخاب شده اصلی 
+    # clip_x مرز عمودی بین دو دهلیز (ستون x مرکز)
     clip_x = best_center[0]
     mask_l = _fit_and_clip_ellipse(raw_l, best_center, e_l, clip_x, keep_left=True)  if raw_l is not None else None
     mask_r = _fit_and_clip_ellipse(raw_r, best_center, e_r, clip_x, keep_left=False) if raw_r is not None else None

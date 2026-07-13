@@ -182,7 +182,7 @@ def _save_outputs(
         "pixels_per_cm": pixels_per_cm,
         "area_px": area_px,
         "area_cm2": area_cm2,
-        "view": "a4c/a2c",
+        "view": "a4c",
     }
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2)
@@ -194,7 +194,7 @@ def _save_outputs(
 
 
 # ==============================================================================
-# run_lv_segmentation — نقطه‌ی ورود این ماژول؛ processing.process_video فقط برای a4c/a2c صداش می‌زنه
+# run_lv_segmentation — نقطه‌ی ورود این ماژول؛ processing.process_video فقط برای a4c صداش می‌زنه
 # ==============================================================================
 
 def run_lv_segmentation(

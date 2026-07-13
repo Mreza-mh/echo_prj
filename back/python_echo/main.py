@@ -32,14 +32,12 @@ from pipeline.results import (
     aggregate_and_evaluate_fuzzy,
     ensure_dir,
     generate_and_save_final_report,
-    safe_name,
 )
 
 # پوشه‌ی جاری (back/python_echo) رو به sys.path اضافه می‌کنیم تا پکیج ai_service پیدا بشه
 sys.path.insert(0, str(Path(__file__).parent))
 from ai_service.mongo_reader import get_patient_config
 from ai_service.ml_predictor import MLRiskPredictor
-from ai_service.report_generator import build_final_report, save_report
 
 _ml_predictor: MLRiskPredictor | None = None
 
@@ -55,9 +53,7 @@ def get_ml_predictor() -> MLRiskPredictor:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Echo pipeline")
-    parser.add_argument("video",        nargs="?",           default=None, help="Input video folder path.")
-    parser.add_argument("--patient-id",                      default=None, help="شناسه بیمار (برای --ml-only)")
-    parser.add_argument("--ml-only",    action="store_true",               help="فقط ML prediction، بدون پردازش ویدیو.")
+    parser.add_argument("video", help="Input video folder path.")
     return parser
 
 
@@ -97,18 +93,8 @@ def main() -> None:
     visit_date  = datetime.now().strftime("%Y-%m-%d")         
 
 
-    if args.ml_only:
-        if not args.patient_id:
-            print(" خطا: برای --ml-only باید --patient-id مشخص شود")
-            return
-        patient_id = args.patient_id
-        input_path = None
-    else:
-        if not args.video:
-            print(" خطا: مسیر پوشه ویدیو الزامی است")
-            return
-        input_path = Path(args.video).expanduser().resolve()
-        patient_id = input_path.name
+    input_path = Path(args.video).expanduser().resolve()
+    patient_id = input_path.name
 
 
     patient_config = get_patient_config(patient_id)
@@ -116,15 +102,6 @@ def main() -> None:
 
 
     ml_result = run_ml_analysis(patient_config)
-
-    if args.ml_only:
-        if ml_result:
-            report = build_final_report(
-                patient_config=patient_config, ml_result=ml_result,
-                fuzzy_result=None, visit_date=visit_date,
-            )
-            save_report(report, ensure_dir(output_root / safe_name(patient_id) / visit_date / "ml_only_report"), patient_id, visit_date)
-        return
 
 
     if not input_path.is_dir():
@@ -163,3 +140,7 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+
+# python main.py echo_input/2

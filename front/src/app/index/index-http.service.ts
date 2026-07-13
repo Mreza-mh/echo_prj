@@ -82,9 +82,4 @@ export class IndexHttpService {
   getPatientSummary(patientId: string): Observable<any> {
     return this.genericHttpService.get(`/patient-report/summary/${patientId}`);
   }
-
-  getPatientReportHtmlUrl(patientId: string, visitDate: string): string {
-    // Return the URL for opening in browser/iframe
-    return `${this.genericHttpService.getBaseUrl()}/patient-report/html/${patientId}/${visitDate}`;
-  }
 }

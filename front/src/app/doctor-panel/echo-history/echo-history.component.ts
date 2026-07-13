@@ -211,9 +211,9 @@ export class EchoHistoryComponent implements OnInit {
   private loadLlmReport(patientId: string, visitDate: string): void {
     this.indexHttp.getPatientReportText(patientId, visitDate).subscribe({
       next: (response: any) => {
-        // پنل دکتر: گزارش فنی/بالینی (doctor_report) نشون داده می‌شه، نه گزارش ساده‌شده‌ی بیمار
-        if (response.success && response.doctor_report) {
-          this.llmReportText = response.doctor_report;
+        // پنل دکتر همان گزارش LLM بیمار (report_text) را نشان می‌دهد
+        if (response.success && response.report_text) {
+          this.llmReportText = response.report_text;
           this.hasLlmReport = true;
           this.llmReportData = response;
         } else {
@@ -233,16 +233,6 @@ export class EchoHistoryComponent implements OnInit {
     if (this.patientInfo?.id) {
       this.loadLlmReport(this.patientInfo.id, newDate);
     }
-  }
-
-  viewFullHtmlReport(): void {
-    if (!this.patientInfo?.id || !this.selectedDate) return;
-    const htmlUrl = this.indexHttp.getPatientReportHtmlUrl(this.patientInfo.id, this.selectedDate);
-    window.open(htmlUrl, '_blank');
-  }
-
-  downloadReportPdf(): void {
-    this.toast.error('قابلیت دانلود PDF به زودی اضافه خواهد شد');
   }
 
   // ── Heart Visualization (همان تبدیل داشبورد کاربر) ─────────

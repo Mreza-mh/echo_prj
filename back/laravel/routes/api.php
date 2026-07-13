@@ -109,10 +109,7 @@ Route::group(['prefix' => 'patient-report'], function () {
     
     // دریافت فقط متن گزارش (برای نمایش سریع)
     Route::get('text/{patient_id}/{visit_date}', [PatientReportController::class, 'getReportText'])->middleware('auth:api');
-    
-    // نمایش گزارش HTML (بدون نیاز به احراز هویت برای نمایش در مرورگر)
-    Route::get('html/{patient_id}/{visit_date}', [PatientReportController::class, 'showHtmlReport']);
-    
+
     // دریافت خلاصه وضعیت بیمار (برای داشبورد)
     Route::get('summary/{patient_id}', [PatientReportController::class, 'getPatientSummary'])->middleware('auth:api');
 });

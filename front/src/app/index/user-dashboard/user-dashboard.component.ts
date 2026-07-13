@@ -574,19 +574,4 @@ export class UserDashboardComponent implements OnInit {
     }
   }
 
-  viewFullHtmlReport(): void {
-    if (!this.patientInfo?.id || !this.selectedDate) return;
-    
-    const htmlUrl = this.indexHttp.getPatientReportHtmlUrl(
-      this.patientInfo.id, 
-      this.selectedDate
-    );
-    
-    window.open(htmlUrl, '_blank');
-  }
-
-  downloadReportPdf(): void {
-    // Future implementation for PDF download
-    this.toast.error('قابلیت دانلود PDF به زودی اضافه خواهد شد');
-  }
 }

@@ -83,7 +83,6 @@ php artisan mqtt:listen
 cd back/python_echo
 python -m pip install -r requirements.txt
 python main.py C:/path/to/patient_folder          # پردازش کامل ویدیو + ML
-python main.py --ml-only --patient-id 123         # فقط پیش‌بینی ML بدون ویدیو
 ```
 پیش‌نیازها:
 - فایل `.env` با کلیدهای `ECHO_MONGO_URI`, `ECHO_MONGO_DB`, `ECHO_MONGO_COLLECTION`, `LARAVEL_PUBLIC_RESULT_PATH`, `ARVAN_AI_API_KEY`, `ARVAN_AI_BASE_URL`, `ARVAN_AI_MODEL` — مقادیر را از دستگاه قبلی/تیم بگیرید (سکرت هستند، در گیت قرار ندهید).

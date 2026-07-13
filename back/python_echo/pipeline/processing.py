@@ -22,8 +22,15 @@ from pipeline.results import (
     setup_video_session,
 )
 
-def build_measurement_fields(summary: dict[str, Any]) -> dict[str, Any]:
+# ==============================================================================
+# هر «row» یک اندازه‌گیری از یک ویدیو است و دو نسخه دارد:
+#   internal_row : همه‌ی فیلدها (مسیرهای داخلی، پیکسل، دیباگ) — در run_report.json ذخیره می‌شود
+#   public_row   : زیرمجموعه‌ی امن برای فرانت — در result.json و MongoDB ذخیره می‌شود
+# ساختِ internal_row = row_base (مشترکِ همه‌ی اندازه‌گیری‌های یک ویدیو) + measurement_fields (خاصِ هر اندازه‌گیری)
+# ==============================================================================
 
+def build_measurement_fields(summary: dict[str, Any]) -> dict[str, Any]:
+    # فیلدهای خاصِ یک اندازه‌گیری منفرد (خروجی مدل YOLO روی یک فریم)
     return {
         "measurement_value": summary.get("measurement_value"),
         "measurement_unit":  summary.get("measurement_unit"),
@@ -40,7 +47,7 @@ def build_internal_row_base(
     classification_result: dict[str, Any],
     output_root: Path,
 ) -> dict[str, Any]:
-
+    # فیلدهای مشترکِ همه‌ی اندازه‌گیری‌های یک ویدیو (ویو، مسیر سشن، اطمینان طبقه‌بندی)
     return {
         "video_name":             video_path.name,
         "video_path":             str(video_path),
@@ -54,7 +61,7 @@ def build_internal_row_base(
 
 
 def build_public_measurement_row(row: dict[str, Any]) -> dict[str, Any]:
-
+    # internal_row → public_row: فقط فیلدهای لازم برای فرانت (بدون مسیرهای داخلی/دیباگ)
     return {
         "event_name":               row.get("event_name"),
         "event_frame_number":       row.get("event_frame_number"),
@@ -78,10 +85,18 @@ def process_video(
     *,
     patient_config: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
+    """
+    پردازش کامل یک ویدیو و خروجی: لیست internal_rows (سطرهای اندازه‌گیری این ویدیو).
+    main.py این rowها را از همه‌ی ویدیوها جمع می‌کند و به fuzzy/گزارش نهایی می‌دهد.
 
-
-    # --------------------------------------------------------------------------
-    # (view classification) 
+    مراحل:
+      ۱. تشخیص ویو (plax/a4c)          → اگر پشتیبانی‌نشده بود، یک row با unsupported_view برمی‌گردد
+      ۲. استخراج رویدادها (End Diastol/Sistol/LVOT) و محاسبه‌ی مقیاس (pixels_per_cm)
+      ۳. اندازه‌گیری هر پارامتر با مدل YOLO روی فریمِ هر رویداد → internal/public rows
+      ۴. (فقط a4c) محاسبه‌ی حجم دهلیز/بطن
+      ۵. ذخیره (save_reports): CSV + result.json + run_report.json + entry مونگو
+    """
+    # --- مرحله ۱: تشخیص ویو ---
     classification_result = run_classification(video_path)
     detected_view         = classification_result["prediction"]
 
@@ -89,11 +104,10 @@ def process_video(
     if not patient_id:
         patient_id = video_path.parent.name if video_path.parent.name != "." else safe_name(video_path.stem)
 
-    # --------------------------------------------------------------------------
-    # pipeline.results و ساختار پوشه‌های این سشن (internal/public) رو می‌سازه
-    # --------------------------------------------------------------------------
+    # ساخت پوشه‌های این سشن (internal/public) در pipeline.results
     session_paths = setup_video_session(output_root, video_path, patient_id, classification_result)
 
+    # ویو پشتیبانی‌نشده: یک row با unsupported_view ذخیره و برگردان (بدون ادامه‌ی اندازه‌گیری)
     if detected_view not in VIEW_PIPELINES:
         unsupported_row = {
             "video_name": video_path.name,
@@ -102,7 +116,7 @@ def process_video(
             "measurement_message": f"View '{detected_view}' is not wired in the pipeline yet.",
         }
         save_reports(
-            video_path=video_path, output_root=output_root, session_paths=session_paths,
+            video_path=video_path, session_paths=session_paths,
             patient_id=patient_id, patient_config=patient_config,
             classification_result=classification_result,
             events_result={"event_frames": {}},
@@ -112,12 +126,11 @@ def process_video(
         )
         return [unsupported_row]
 
+    # --- مرحله ۲: استخراج رویدادها ---
+    # a4c → ["End Diastol", "End Sistol"] | plax → ["End Diastol", "End Sistol", "LVOT"]
     pipeline_config = VIEW_PIPELINES[detected_view]
     required_events = pipeline_config["events"]
-    # مثال:  a4c  → ["End Diastol", "End Sistol"]
-    #        plax → ["End Diastol", "End Sistol", "LVOT"]
 
-    # --------------------------------------------------------------------------
     events_result = extract_events(video_path, session_paths["internal_events_dir"], required_events)
     row_base      = build_internal_row_base(video_path, session_paths, classification_result, output_root)
 
@@ -127,8 +140,7 @@ def process_video(
         Path(session_paths["public_events_dir"]) / "ecg_plot.png",
     )
 
-    # --------------------------------------------------------------------------
-    # (pixels_per_cm) 
+    # محاسبه‌ی مقیاس تصویر (pixels_per_cm) از روی خط‌کش داخل فریم اول
     cap = cv2.VideoCapture(str(video_path))
     ret, original_frame = cap.read()
     cap.release()
@@ -147,9 +159,10 @@ def process_video(
     )
 
 
+    # --- مرحله ۳: اندازه‌گیری هر پارامتر روی فریمِ هر رویداد ---
     internal_rows: list[dict] = []
     public_rows:   list[dict] = []
-    volume_context = None  
+    volume_context = None   # اولین فریم a4c برای محاسبه‌ی حجم در مرحله ۴ نگه داشته می‌شود
 
     for event_name in required_events:
         frame_number = events_result["event_frames"].get(event_name)
@@ -170,11 +183,11 @@ def process_video(
 
         segment_height, segment_width = frame_bgr.shape[:2]
 
-        # اولین فریم a4c/a2c رو برای مراحل بعدی (محاسبه‌ی حجم) نگه می‌داریم
-        if detected_view in ("a4c", "a2c") and volume_context is None:
+        # اولین فریم a4c رو برای مراحل بعدی (محاسبه‌ی حجم) نگه می‌داریم
+        if detected_view == "a4c" and volume_context is None:
             volume_context = {"bgr": frame_bgr, "pixels_per_cm": float(global_pixels_per_cm)}
 
-        # --- ۵.۲: به ازای هر مدل اندازه‌گیری تعریف‌شده برای این رویداد ---
+        # به ازای هر مدل اندازه‌گیری تعریف‌شده برای این رویداد
         for measurement_name in pipeline_config["event_models"].get(event_name, []):
             measurement_dir       = ensure_dir(
                 Path(session_paths["internal_measurements_dir"]) / safe_name(event_name) / measurement_name
@@ -239,35 +252,29 @@ def process_video(
             internal_rows.append(row)
             public_rows.append(build_public_measurement_row(row))
 
-    # --------------------------------------------------------------------------
-    # مرحله ۶: محاسبه‌ی حجم دهلیز و بطن — فقط برای ویوهای a4c / a2c، با استفاده از volume_context
-    # --------------------------------------------------------------------------
+    # --- مرحله ۴: محاسبه‌ی حجم دهلیز و بطن — فقط برای ویو a4c ---
     a4c_volume_report = None
     lv_volume_report  = None
 
-    if volume_context is not None:
-        if detected_view == "a4c":
-            a4c_volume_report = run_a4c_atrial_areas(
+    if volume_context is not None and detected_view == "a4c":
+        a4c_volume_report = run_a4c_atrial_areas(
+            volume_context["bgr"],
+            float(volume_context["pixels_per_cm"]),
+            output_dir=str(Path(session_paths["internal_reports_dir"]) / "a4c_volume"),
+        )
+
+        # اگه وزن مدل سگمنتیشن LV موجود بود → می‌ره داخل measurement.lv_segmentation
+        weights_path = Path(__file__).parent / "measurement" / "models" / "best.pth"
+        if weights_path.exists():
+            lv_volume_report = run_lv_segmentation(
                 volume_context["bgr"],
                 float(volume_context["pixels_per_cm"]),
-                output_dir=str(Path(session_paths["internal_reports_dir"]) / "a4c_volume"),
+                model_path=str(weights_path),
+                output_dir=str(Path(session_paths["internal_reports_dir"]) / "lv_volume"),
             )
 
-        if detected_view in ("a4c", "a2c"):
-            # اگه وزن مدل سگمنتیشن LV موجود بود → می‌ره داخل measurement.lv_segmentation
-            weights_path = Path(__file__).parent / "measurement" / "models" / "best.pth"
-            if weights_path.exists():
-                lv_volume_report = run_lv_segmentation(
-                    volume_context["bgr"],
-                    float(volume_context["pixels_per_cm"]),
-                    model_path=str(weights_path),
-                    output_dir=str(Path(session_paths["internal_reports_dir"]) / "lv_volume"),
-                )
-
-    # --------------------------------------------------------------------------
-    # مرحله ۷: مساحت‌های دهلیز/بطن رو به تمام سطرهای این ویدیو می‌چسبونیم
-    # تا بعداً aggregate_and_evaluate_fuzzy مستقیم از این رو‌ها استفاده کنه
-    # --------------------------------------------------------------------------
+    # مساحت‌های دهلیز/بطن به تمام سطرهای این ویدیو چسبانده می‌شوند
+    # تا بعداً aggregate_and_evaluate_fuzzy مستقیم از همین rowها استفاده کند
     la_area_cm2 = ra_area_cm2 = None
     if a4c_volume_report:
         areas_cm2   = a4c_volume_report.get("areas_cm2", {})
@@ -279,12 +286,9 @@ def process_video(
         row["a4c_right_atrium_area_cm2"] = ra_area_cm2
         row["lv_area_cm2"]               = lv_area_cm2
 
-    # --------------------------------------------------------------------------
-    # مرحله ۸ (آخر): می‌ره داخل pipeline.results و همه‌ی گزارش‌های این سشن (internal + public) رو ذخیره می‌کنه
-    # --------------------------------------------------------------------------
+    # --- مرحله ۵ (آخر): ذخیره‌ی همه‌ی گزارش‌های این سشن (internal + public + مونگو) ---
     save_reports(
         video_path=video_path,
-        output_root=output_root,
         session_paths=session_paths,
         patient_id=patient_id,
         patient_config=patient_config,

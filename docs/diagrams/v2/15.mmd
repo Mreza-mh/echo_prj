@@ -1,0 +1,99 @@
+%%{init: {'theme':'base', 'flowchart': {'curve':'linear', 'nodeSpacing':25, 'rankSpacing':45, 'padding':10}, 'themeVariables': {'primaryColor':'#eff6ff','primaryBorderColor':'#1e40af','primaryTextColor':'#1e293b','lineColor':'#64748b','fontSize':'13px'}}}%%
+flowchart TB
+    classDef gateway fill:#1e3a8a,stroke:#172554,stroke-width:2px,color:#ffffff,font-weight:bold
+    classDef front fill:#dbeafe,stroke:#1e40af,stroke-width:1.5px,color:#1e3a8a
+    classDef laravel fill:#eff6ff,stroke:#60a5fa,stroke-width:1.5px,color:#1e3a8a
+    classDef api fill:#1e40af,stroke:#1e3a8a,stroke-width:1.5px,color:#ffffff,font-weight:bold
+    classDef faiss fill:#dbeafe,stroke:#1e40af,stroke-width:1.5px,color:#1e3a8a
+    classDef py fill:#eff6ff,stroke:#60a5fa,stroke-width:1.5px,color:#1e3a8a
+    classDef db fill:#e2e8f0,stroke:#475569,stroke-width:1.5px,color:#1e293b
+    classDef iot fill:#e2e8f0,stroke:#475569,stroke-width:1.5px,color:#1e293b
+    classDef grp fill:#f8fafc,stroke:#cbd5e1,stroke-width:1px,color:#475569
+
+    %% ==================== فرانت‌اند (دو ستون) ====================
+    subgraph SG_FE["فرانت‌اند — Angular"]
+        direction TB
+        FE1["پنل بیمار"]:::front
+        FE2["پنل پزشک"]:::front
+        FE3["پنل مدیریت"]:::front
+        FE4["دستیار هوشمند"]:::front
+        FE5["پایش زنده ضربان"]:::front
+        FE1 ~~~ FE2 ~~~ FE3
+        FE4 ~~~ FE5
+    end
+
+    KONG["درگاه API — Kong Gateway"]:::gateway
+
+    %% ==================== بک‌اند اصلی (دو ستون) ====================
+    subgraph SG_BE1["بک‌اند اصلی — Laravel"]
+        direction TB
+        L0["REST API / JWT"]:::api
+        L1["احراز هویت<br/>(OTP / Passport)"]:::laravel
+        L2["نوبت‌دهی و<br/>مدیریت پرسنل"]:::laravel
+        L3["هماهنگ‌کننده<br/>چت‌بات"]:::laravel
+        L4["گزارش و<br/>تاریخچه اکو"]:::laravel
+        L5["گوش‌دهنده<br/>MQTT"]:::laravel
+        L0 --> L1
+        L0 --> L3
+        L1 ~~~ L2
+        L3 ~~~ L4 ~~~ L5
+        L0 --> L2
+        L0 --> L4
+        L0 --> L5
+    end
+
+    %% ==================== سرویس هوش مصنوعی ====================
+    subgraph SG_BE2["سرویس هوش مصنوعی — FastAPI"]
+        direction TB
+        F1["تشخیص نیت پیام<br/>(FAISS)"]:::faiss
+        F2["جستجوی برداری RAG"]:::faiss
+        F1 --> F2
+    end
+
+    %% ==================== خط پردازش اکو ====================
+    subgraph SG_BE3["خط پردازش اکو — Python"]
+        direction TB
+        P1["طبقه‌بندی نمای اکو<br/>(CNN)"]:::py
+        P2["استخراج چرخه قلبی<br/>و مقیاس تصویر"]:::py
+        P3["قطعه‌بندی و اندازه‌گیری<br/>حفرات قلب"]:::py
+        P4["تجمیع فازی و<br/>سطح ریسک"]:::py
+        P5["برآورد ریسک<br/>(CatBoost / LR)"]:::py
+        P6["گزارش نهایی<br/>(ArvanCloud LLM)"]:::py
+        P1 --> P2 --> P3 --> P4 --> P5 --> P6
+    end
+
+    %% ==================== اینترنت اشیا ====================
+    subgraph SG_IOT["اینترنت اشیا"]
+        direction TB
+        MQTTNODE["بروکر<br/>Mosquitto MQTT"]:::iot
+        ESP["ESP32 +<br/>MAX30102"]:::iot
+        MQTTNODE <--> ESP
+    end
+
+    %% ==================== پایگاه‌های داده ====================
+    subgraph SG_DB["پایگاه‌های داده"]
+        direction LR
+        DB1[("MySQL")]:::db
+        DB2[("MongoDB")]:::db
+        DB3[("Qdrant")]:::db
+    end
+
+    class SG_FE,SG_BE1,SG_BE2,SG_BE3,SG_IOT,SG_DB grp
+
+    %% ==================== ارتباطات ====================
+    FE1 --> KONG
+    FE2 --> KONG
+    FE3 --> KONG
+    FE4 --> KONG
+    FE5 --> KONG
+
+    KONG ==>|"مسیریابی درخواست"| L0
+
+    L3 ==>|"Route + RAG"| F1
+    L4 ==>|"اجرای پردازش"| P1
+    L5 <==>|"start / stop / data"| MQTTNODE
+
+    L2 --> DB1
+    L4 --> DB2
+    P6 --> DB2
+    F2 --> DB3
