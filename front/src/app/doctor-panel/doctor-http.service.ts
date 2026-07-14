@@ -1,8 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { GenericHttpService } from '../@shared/services/generic-http.service';
-import { environment } from '../../environments/environment';
 import { AuthHTTPService } from '../auth/auth-http.service';
 
 @Injectable({
@@ -10,7 +8,6 @@ import { AuthHTTPService } from '../auth/auth-http.service';
 })
 export class DoctorHttpService {
   private genericHttp = inject(GenericHttpService);
-  private http = inject(HttpClient);
   private authHttp = inject(AuthHTTPService);
 
   getCurrentUser(): Observable<any> {
@@ -32,21 +29,6 @@ export class DoctorHttpService {
 
   getEchoHistoryByPatient(patientId: string | number): Observable<any> {
     return this.genericHttp.get(`/echo-history/info-doctor/${patientId}`);
-  }
-
-  getEchoFile(address: string): Observable<any> {
-    const token = sessionStorage.getItem('credentials') || localStorage.getItem('credentials');
-    let headers: any = {};
-    if (token) {
-      const parsed = JSON.parse(token);
-      headers = {
-        headers: new HttpHeaders({
-          Authorization: `Bearer ${parsed?.token}`,
-        }),
-        responseType: 'blob' as const,
-      };
-    }
-    return this.http.get(environment.apiUrl + `/echo-history/file/${address}`, headers);
   }
 
   getCalendarDashboard(data: { start_date: string; end_date?: string; staff_ids?: number[] }): Observable<any> {

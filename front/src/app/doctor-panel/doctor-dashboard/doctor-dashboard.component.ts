@@ -290,7 +290,6 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
           mobile: this.currentAppointment.user?.mobile || '',
           echo_date: '-',
           details: 'هیچ اکو یافت نشد',
-          file_address: '',
         };
 
         if (res.success && res.data && res.data.visits) {
@@ -319,10 +318,6 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
                 mobile: this.currentAppointment.user?.mobile || '',
                 echo_date: latestDate,
                 details: detailsParts.join(' | '),
-                file_address:
-                  latestVisit.files?.result_json_address ||
-                  latestVisit.files?.classification_json_address ||
-                  '',
               };
             }
           }
@@ -337,7 +332,6 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
           mobile: this.currentAppointment.user?.mobile || '',
           echo_date: '-',
           details: 'خطا در بارگذاری اطلاعات',
-          file_address: '',
         };
         this.cdr.markForCheck();
       },
@@ -352,14 +346,6 @@ export class DoctorDashboardComponent implements OnInit, OnDestroy {
       completed: '#6366f1',
     };
     return colors[status] || '#94a3b8';
-  }
-
-  viewEchoFile(file_address: string): void {
-    if (!file_address) return;
-    this.doctorHttp.getEchoFile(file_address).subscribe({
-      next: (blob: Blob) => window.open(window.URL.createObjectURL(blob), '_blank'),
-      error: () => this.toast.error(this.getTranslation('errorFetchingEchoFile')),
-    });
   }
 
   getTranslation(key: string): string {

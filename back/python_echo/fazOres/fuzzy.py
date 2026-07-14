@@ -71,19 +71,6 @@ PARAM_CONFIG = {
     # قطر شریان ریوی (mm): نرمال ≤25, Mild ≤30, Severe >30
 }
 
-# نگاشت (detected_view, event_name, measurement_name) → نام پارامتر PARAM_CONFIG
-# فقط با measurement_name نگاشت نمی‌کنیم چون بعضی اندازه‌گیری‌ها در چند نما/رویداد جدا
-# تکرار می‌شوند (مثلاً lvid هم در End Diastol هم End Sistol در plax) — این‌ها باید
-# پارامترهای فازی جدا باشند نه اینکه یکی روی دیگری overwrite شود.
-# فعلاً فقط نماهای a4c و plax پوشش داده شده‌اند (تنها نماهایی که در حال حاضر استفاده می‌شوند).
-#
-# نکته درباره‌ی "la": اندازه‌گیری خطی measurement_name="la" (هم در plax هم در a4c، از مدل
-# YOLO) عمداً اینجا نگاشت نشده و وارد موتور فازی نمی‌شود — چون این یک قطر/طول خام است،
-# در حالی که PARAM_CONFIG برای دهلیز چپ فقط la_volume (مساحت/mL بر مترمربع، از
-# a4c_left_atrium_area_cm2 که مسیر جدای segmentation است) آستانه‌ی بالینی دارد. اضافه
-# کردن یک آستانه‌ی جعلی برای این طول خام باعث دسته‌بندی نادرست می‌شد. این اندازه‌گیری‌ها
-# همچنان در گزارش خام pipeline (echo_measurements در pipeline/results.py) دیده می‌شوند،
-# فقط در ارزیابی فازی شرکت نمی‌کنند.
 _PIPELINE_PARAM_MAP: dict[tuple[str, str, str], str] = {
     # --- plax ---
     ("plax", "End Diastol", "ivs"):          "ivs_thickness",
@@ -455,7 +442,7 @@ def evaluate_patient(patient_data, patient_name="Patient", show_plot=False):
 
 
 # ==============================================================================
-# ۳. مصورسازی (نمودارها)
+#   (نمودارها)
 # ==============================================================================
 
 def _plot_inputs_fuzzification(fuzzy_inputs, param_degrees, patient_name, save_dir):
@@ -569,12 +556,3 @@ def _plot_rule_aggregation(
         plt.show()
 
 
-# اجرای تستی کد در صورت نیاز
-if __name__ == "__main__":
-    test_patient = {
-        'gender': 'male', 'weight': 80, 'height': 180,
-        'lv_edv': 120,       # کمی بالا (نرمال ≤74)
-        'rv_diameter': 48    # کمی بالا (نرمال ≤41)
-    }
-    result = evaluate_patient(test_patient, "Test_Patient", show_plot=True)
-    print(result['text'])

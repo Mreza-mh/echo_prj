@@ -7,15 +7,18 @@ pipeline.results — ذخیره‌سازی تمام خروجی‌های پایپ
   ۲. لایه‌ی MongoDB             : _mongo_upsert_visit — تنها نقطه‌ی نوشتن در مونگو
   ۳. خروجی هر ویدیو (per-view) : setup_video_session → save_reports
   ۴. جمع‌بندی فازی               : aggregate_and_evaluate_fuzzy   (entry: fuzzy_summary)
-  ۵. گزارش نهایی + LLM          : generate_and_save_final_report (entry: llm_final_report)
+  ۵. ساخت داده‌ی گزارش نهایی    : _build_final_report_data
+  ۶. تولید متن گزارش با LLM     : _generate_llm_patient_report
+  ۷. گزارش نهایی                : generate_and_save_final_report (entry: llm_final_report)
 
-هر خروجی دو نسخه دارد: internal (کامل، برای دیباگ) و public (چیزی که فرانت نشان می‌دهد).
+MongoDB منبع اصلی داده‌ی فرانت است؛ فایل‌های روی دیسک فقط چیزهایی هستند که ذاتاً
+نمی‌توانند در مونگو بنشینند (تصاویر/ویدیوهای public) — هیچ JSON/TXT آرشیوی/دیباگی
+دیگر نوشته نمی‌شود.
 
 ──────────────────────────────────────────────────────────────────────────────
 فایل‌های روی دیسک (زیرِ  <output_root>/<patient_id>/<visit_date>/ ):
-  <view>/                        ← هر ویدیو (بخش ۳): result.json + measurements.csv + internal/
-  summary_<views>_<HH_MM>/       ← فازی (بخش ۴):   fuzzy_summary.json + نمودارها
-  final_report/                  ← گزارش نهایی (بخش ۵): final_report.json + llm_patient_report.txt
+  <view>/                        ← هر ویدیو (بخش ۳): media/ (تصاویر public) + reports/classification.json
+  summary_<views>_<HH_MM>/       ← فازی (بخش ۴):   media/summary/*.png (نمودارها)
 
 سند MongoDB (collection «patients»، یکی به‌ازای هر بیمار):
   { _id, patient_info, last_updated,
@@ -38,7 +41,7 @@ from pathlib import Path
 from shutil import copy2
 from typing import Any
 
-import pandas as pd
+import requests
 from dotenv import load_dotenv
 
 load_dotenv(dotenv_path=Path(__file__).resolve().parent.parent / ".env")
@@ -234,13 +237,13 @@ def setup_video_session(
 
 def _build_public_volume_report(
     volume_report: dict[str, Any] | None,
-    overlay_destination: Path,
+    overlay_destination: Path, # destination
     fields: tuple[str, ...],
 ) -> dict[str, Any] | None:
-    # نسخه‌ی public گزارش حجم (a4c یا lv): فیلدهای انتخابی + کپی تصویر overlay به public
+#تمیز میکنه و فقط اون هایی ک ورودی بهش داده و برمیگردونه 
     if not volume_report:
         return None
-    overlay_src = volume_report.get("saved_paths", {}).get("overlay_png")
+    overlay_src = volume_report.get("saved_paths", {}).get("overlay_png") # مسیر اون عکس
     return {
         **{field: volume_report.get(field) for field in fields},
         "overlay_image": copy_public_file(overlay_src, overlay_destination) if overlay_src else None,
@@ -263,19 +266,9 @@ def save_reports(
 ) -> None:
     """
     ورودی:  تمام نتایج پردازش یک ویدیو (extra_public_files: مسیرهای اضافی مثل ecg_plot/scale_debug)
-    خروجی روی دیسک: measurements.csv + result.json (public) و نسخه‌ی کامل‌ترشان (internal)
     خروجی مونگو:   یک entry per-view (کلید dedup: view_instance)
     """
-    internal_csv_path    = Path(session_paths["internal_reports_dir"]) / "measurement_results_full.csv"
-    public_csv_path      = Path(session_paths["public_reports_dir"])   / "measurements.csv"
-    internal_report_path = Path(session_paths["internal_reports_dir"]) / "run_report.json"
-    public_result_path   = Path(session_paths["public_reports_dir"])   / "result.json"
-
-    # --- مرحله ۱: نوشتن دو CSV (نسخه‌ی کامل داخلی + نسخه‌ی عمومی) ---
-    pd.DataFrame(internal_rows).to_csv(internal_csv_path, index=False)
-    pd.DataFrame(public_rows).to_csv(public_csv_path, index=False)
-
-    # --- مرحله ۲: نسخه‌ی public گزارش‌های حجم دهلیز/بطن (اگر موجود بودند) ---
+    # --- مرحله ۱: نسخه‌ی public گزارش‌های حجم دهلیز/بطن (اگر موجود بودند) ---
     measurements_dir = Path(session_paths["public_measurements_dir"])
     public_a4c = _build_public_volume_report(
         a4c_volume_report, measurements_dir / "a4c_atrial_overlay.png", ("pixels_per_cm", "areas_cm2")
@@ -284,67 +277,34 @@ def save_reports(
         lv_volume_report, measurements_dir / "lv_segmentation_overlay.png", ("pixels_per_cm", "area_cm2")
     )
 
-    # --- مرحله ۳: result.json عمومی (همان چیزی که فرانت مستقیم مصرف می‌کند) ---
-    public_result = {
-        "patient": {"id": patient_id, **(patient_config or {})},
-        "study": {
-            "video_name":    video_path.name,
-            "processed_at":  datetime.now().isoformat(timespec="seconds"),
-            "detected_view": classification_result.get("prediction"),
-            "session_dir":   path_for_frontend(session_paths["public_session_dir"]),
-            "view_instance": session_paths["view_name"],
-        },
-        "classification": build_public_classification_result(classification_result),
-        "measurements":   public_rows,
-        "a4c_volume":     public_a4c,
-        "lv_volume":      public_lv,
-        "files": {
-            "classification_json": path_for_frontend(
-                Path(session_paths["public_reports_dir"]) / "classification.json"
-            ),
-            "measurements_csv": path_for_frontend(public_csv_path),
-            "result_json":      path_for_frontend(public_result_path),
-            # فایل‌های تصویری اضافی (ecg_plot, scale_debug, ...) — فقط موارد موجود
-            **{k: v for k, v in (extra_public_files or {}).items() if v},
-        },
-    }
-    write_json(public_result, public_result_path)
-
-    # --- مرحله ۴: آپسرت در MongoDB — فقط فیلدهایی که فرانت مصرف می‌کند ---
+    # --- مرحله ۲ (آخر): آپسرت در MongoDB — فقط فیلدهایی که فرانت مصرف می‌کند ---
     view_instance = session_paths["view_name"]
-    mongo_result = _mongo_upsert_visit(
-        patient_id   = public_result["patient"].get("id", "unknown"),
-        visit_date   = public_result["study"]["processed_at"].split("T")[0],
+    patient_info  = {"id": patient_id, **(patient_config or {})}
+    processed_at  = datetime.now().isoformat(timespec="seconds")
+
+    _mongo_upsert_visit(
+        patient_id   = patient_info.get("id") or "unknown",
+        visit_date   = processed_at.split("T")[0],
         entry        = {
             "view_instance":  view_instance,
             "video_name":     video_path.name,
             "detected_view":  classification_result.get("prediction"),
-            "processed_at":   public_result["study"]["processed_at"],
+            "processed_at":   processed_at,
             "measurements":   public_rows,
             "a4c_volume":     public_a4c,
             "lv_volume":      public_lv,
-            "classification": public_result["classification"],
-            "files":          public_result["files"],
+            "classification": build_public_classification_result(classification_result),
+            "files": {
+                "classification_json": path_for_frontend(
+                    Path(session_paths["public_reports_dir"]) / "classification.json"
+                ),
+                # فایل‌های تصویری اضافی (ecg_plot, scale_debug, ...) — فقط موارد موجود
+                **{k: v for k, v in (extra_public_files or {}).items() if v},
+            },
         },
-        patient_info = public_result["patient"],
+        patient_info = patient_info,
         pull_filter  = {"view_instance": view_instance},
     )
-
-    # --- مرحله ۵ (آخر): run_report.json داخلی — نسخه‌ی کامل برای دیباگ ---
-    write_json({
-        "video_name": video_path.name,
-        "video_path": str(video_path),
-        "patient":    {"id": patient_id, **(patient_config or {})},
-        "classification": classification_result,
-        "events": {
-            "event_frames": events_result.get("event_frames", {}),
-        },
-        "measurements":     internal_rows,
-        "a4c_volume":       a4c_volume_report,
-        "lv_volume":        lv_volume_report,
-        "mongo_store":      mongo_result,
-        "public_result_json": path_for_frontend(public_result_path),
-    }, internal_report_path)
 
 
 # ==============================================================================
@@ -384,41 +344,25 @@ def aggregate_and_evaluate_fuzzy(
     fuzzy_result = evaluate_patient(aggregated_data, patient_name=patient_id, show_plot=agg_dir)
     created_at   = datetime.now().isoformat()
 
-    # --- مرحله ۳: ذخیره‌ی خروجی خام روی دیسک (internal، برای دیباگ/آرشیو) ---
-    internal_summary_json = agg_dir / "fuzzy_summary.json"
-    write_json({
-        "aggregated_input":     aggregated_data,
-        "fuzzy_result":         fuzzy_result,
-        "processed_views":      processed_views,
-        "rows_used_for_fuzzy":  aggregation["rows_used"],
-        "timestamp":            created_at,
-    }, internal_summary_json)
-
-    # --- مرحله ۴: کپی خروجی‌ها (json + نمودارهای png) به public ---
+    # --- مرحله ۳: کپی نمودارهای png به public (تنها فایل‌های این مرحله که فرانت مصرف می‌کند) ---
     public_summary_dir = ensure_dir(
         get_public_output_root(output_root) / safe_name(patient_id) / visit_date / agg_folder_name
     )
     public_media_dir = ensure_dir(public_summary_dir / "media" / "summary")
-    public_files: dict[str, Any] = {
-        "fuzzy_summary_json": copy_public_file(
-            internal_summary_json, public_summary_dir / "reports" / "fuzzy_summary.json"
-        ),
-        "plots": [
-            copied for plot_file in sorted(agg_dir.glob("*.png"))
-            if (copied := copy_public_file(plot_file, public_media_dir / plot_file.name))
-        ],
-    }
+    plots = [
+        copied for plot_file in sorted(agg_dir.glob("*.png"))
+        if (copied := copy_public_file(plot_file, public_media_dir / plot_file.name))
+    ]
 
-    # --- مرحله ۵ (آخر): آپسرت در MongoDB ---
+    # --- مرحله ۴ (آخر): آپسرت در MongoDB ---
     # فرانت از visit.result (score/category/reasons/plots) و visit.aggregated_data می‌خواند
     _mongo_upsert_visit(
         patient_id   = patient_id,
         visit_date   = visit_date,
         entry        = {
             "type":             "fuzzy_summary",
-            "result":           {**fuzzy_result, "plots": public_files["plots"]},
+            "result":           {**fuzzy_result, "plots": plots},
             "aggregated_data":  aggregated_data,
-            "files":            public_files,
             "created_at":       created_at,
         },
         patient_info = {"id": patient_id, **(patient_config or {})},
@@ -429,8 +373,7 @@ def aggregate_and_evaluate_fuzzy(
 
 
 # ==============================================================================
-# ۵) گزارش نهایی (ML + Fuzzy + LLM) — entry مونگو: type="llm_final_report"
-#    این entry تنها چیزی است که فرانت به کاربر و پزشک نمایش می‌دهد.
+# ۵) ساخت داده‌ی ساختاریافته‌ی گزارش نهایی (ML + Fuzzy) — ورودی پرامپت LLM
 # ==============================================================================
 
 _SEVERITY_FA       = {"LOW": "پایین", "MODERATE": "متوسط", "HIGH": "بالا"}
@@ -458,7 +401,7 @@ def _build_final_report_data(
     fuzzy_result:   dict[str, Any] | None,
     echo_rows:      list[dict[str, Any]],
     visit_date:     str,
-) -> dict[str, Any]:
+    ) -> dict[str, Any]:
     """
     ترکیب ML + Fuzzy + اطلاعات بیمار در یک دیکشنری ساختاریافته.
     فقط فیلدهایی که مصرف‌کننده دارند (پرامپت و HTML گزارش LLM) نگه داشته می‌شوند.
@@ -522,6 +465,124 @@ def _build_final_report_data(
     }
 
 
+# ==============================================================================
+# ۶) تولید متن گزارش با LLM (آروان کلود) — فقط مصرف‌کننده‌ی generate_and_save_final_report
+# ==============================================================================
+
+_LLM_SYSTEM_PROMPT = (
+    "تو متخصص قلب هستی و نتیجه‌ی اکوکاردیوگرافی را برای بیمار توضیح می‌دهی.\n"
+    "به فارسی، محترمانه و ساده (بدون اصطلاح پیچیده) بنویس.\n"
+    "۳ تا ۴ پاراگراف کوتاه: وضعیت کلی قلب، معنی نتایج، توصیه‌های عملی و لزوم پیگیری.\n"
+    "فقط متن گزارش را بنویس، بدون عنوان یا header."
+)
+
+# ترجمه‌ی نام پارامترهای فازی (لاتین) و سطح شدت به فارسی، برای جایگزینی داخل reasons
+_LLM_TERM_FA = {
+    "la_volume":     "حجم دهلیز چپ",
+    "ra_volume":     "حجم دهلیز راست",
+    "lv_edv":        "حجم بطن چپ در انتهای دیاستول",
+    "lv_esv":        "حجم بطن چپ در انتهای سیستول",
+    "ivs_thickness": "ضخامت دیواره بین بطنی",
+    "pw_thickness":  "ضخامت دیواره خلفی",
+    "lv_diameter":   "قطر بطن چپ",
+    "aortic_root":   "ریشه آئورت",
+    "aortic_asc":    "آئورت صعودی",
+    "rv_diameter":   "قطر بطن راست",
+    "rv_wall":       "دیواره بطن راست",
+    "pa_diameter":   "قطر شریان ریوی",
+    "SEVERE":        "به طور قابل توجهی بزرگتر از حد طبیعی",
+    "MILD":          "کمی بزرگتر از حد طبیعی",
+    "NORMAL":        "در محدوده طبیعی",
+}
+
+
+def _build_llm_prompt(data: dict[str, Any]) -> str:
+    patient    = data.get("patient", {})
+    assessment = data.get("overall_assessment", {})
+    echo       = data.get("echo_analysis", {})
+    # print("data : ", data)
+    gender_raw = patient.get("gender", "male")
+    gender     = "مرد" if gender_raw in ("male", "مرد", "m", 1, 2) else "زن"
+
+    lines = [
+        f"بیمار: {patient.get('age', 'نامشخص')} ساله، {gender}",
+        f"امتیاز ریسک: {assessment.get('risk_score', 0):.1f} از ۱۰۰ ({assessment.get('severity_fa', 'نرمال')})",
+        f"نتیجه اکو: {echo.get('fuzzy_category_fa', 'نرمال')}",
+    ]
+
+    reasons = echo.get("reasons", [])
+    if reasons:
+        lines.append("یافته‌های اکو:") # همون fuzzy_result عه 
+        for r in reasons:
+            r = r.replace(" is ", " ")  # reasons به شکل "la_volume is MILD" می‌آیند
+            for eng, persian in _LLM_TERM_FA.items():
+                r = r.replace(eng, persian)
+            lines.append(f"- {r}")
+
+    risk_factors = data.get("risk_factors", [])
+    if risk_factors:
+        lines.append("عوامل خطر بالینی:")
+        for rf in risk_factors:
+            label = rf.get("label_fa") if isinstance(rf, dict) else rf
+            if label:
+                lines.append(f"- {label}")
+
+    print("\n\nlines : " , lines)
+    return "\n".join(lines)
+
+
+def _call_llm(prompt: str, max_tokens: int = 600) -> str:
+    api_key  = os.getenv("ARVAN_AI_API_KEY", "")
+    api_base = os.getenv("ARVAN_AI_BASE_URL", "https://api.arvancloud.ir/llm/v1/chat/completions")
+    model    = os.getenv("ARVAN_AI_MODEL",    "gpt-4o-mini")
+    if not api_key:
+        print("Error calling LLM: ARVAN_AI_API_KEY not found in .env")
+        return ""
+
+    payload = {
+        "model": model,
+        "messages": [
+            {"role": "system", "content": _LLM_SYSTEM_PROMPT},
+            {"role": "user", "content": prompt},
+        ],
+        "temperature": 0.7,
+        "max_tokens":  max_tokens,
+    }
+    try:
+        response = requests.post(
+            api_base,
+            headers={"Content-Type": "application/json", "Authorization": f"Bearer {api_key}"},
+            json=payload,
+            timeout=60,
+        )
+        if response.status_code == 200:
+            content = response.json().get("choices", [{}])[0].get("message", {}).get("content", "")
+            return re.sub(r"<think>[\s\S]*?(</think>|\Z)", "", content).strip()
+        print(f"LLM API Error: {response.status_code} - {response.text}")
+    except Exception as exc:
+        print(f"Error calling LLM: {exc}")
+    return ""
+
+
+def _generate_llm_patient_report(final_report_data: dict[str, Any]) -> str:
+    # اگه LLM جواب نداد (متن خالی)، یک متن fallback ثابت جایگزین می‌شود
+    text = _call_llm(_build_llm_prompt(final_report_data))
+    if text:
+        return text
+
+    severity = final_report_data.get("overall_assessment", {}).get("severity_fa", "نرمال")
+    return (
+        f"با سلام و احترام،\n\n"
+        f"نتایج بررسی اکوکاردیوگرافی شما نشان می‌دهد که وضعیت قلب شما در وضعیت {severity} قرار دارد.\n\n"
+        "لطفاً برای دریافت توضیحات کامل با پزشک معالج خود مشورت کنید.\n\nبا آرزوی سلامتی"
+    )
+
+
+# ==============================================================================
+# ۷) گزارش نهایی — تولید متن با LLM و ذخیره در MongoDB
+#    entry مونگو (type="llm_final_report") تنها چیزی است که فرانت به کاربر و پزشک نمایش می‌دهد
+# ==============================================================================
+
 def generate_and_save_final_report(
     output_root:    Path,
     patient_id:     str,
@@ -533,50 +594,21 @@ def generate_and_save_final_report(
 ) -> None:
     """
     ورودی:  تمام نتایج پایپ‌لاین برای یک بیمار/ویزیت (ML + Fuzzy + سطرهای echo)
-    خروجی روی دیسک: final_report.json + متن گزارش LLM
-    خروجی مونگو:   entry با type="llm_final_report" (فرانت report_text را نمایش می‌دهد)
+    خروجی مونگو:   entry با type="llm_final_report" (فرانت report_text را مستقیم می‌خواند)
     """
-    # --- مرحله ۱: ساخت داده‌ی ساختاریافته + ذخیره‌ی final_report.json (آرشیو/دیباگ) ---
-    report     = _build_final_report_data(patient_config, ml_result, fuzzy_result, all_rows, visit_date)
-    report_dir = ensure_dir(output_root / safe_name(patient_id) / visit_date / "final_report")
-    write_json(report, report_dir / "final_report.json")
+    report = _build_final_report_data(patient_config, ml_result, fuzzy_result, all_rows, visit_date)
+    llm_report_text = _generate_llm_patient_report(report)
 
-    try:
-        # --- مرحله ۲: تولید متن گزارش با LLM — خطا کل پایپ‌لاین را متوقف نمی‌کند ---
-        from pipeline.llm_report_generator import LLMReportGenerator
-
-        try:
-            llm_report_text = LLMReportGenerator().generate_patient_report(report)
-        except Exception as exc:
-            # شکست LLM → متن پیش‌فرض جایگزین می‌شود
-            print(f"Error generating LLM report: {exc}")
-            llm_report_text = "خطا در تولید گزارش."
-
-        # --- مرحله ۳: ذخیره روی دیسک (internal) + کپی به public ---
-        llm_text_path = report_dir / "llm_patient_report.txt"
-        llm_text_path.write_text(llm_report_text, encoding="utf-8")
-
-        public_report_dir = ensure_dir(
-            get_public_output_root(output_root.expanduser().resolve()) / safe_name(patient_id) / visit_date / "final_report"
-        )
-        public_text_rel = copy_public_file(llm_text_path, public_report_dir / "llm_patient_report.txt")
-
-        # --- مرحله ۴ (آخر): آپسرت در MongoDB ---
-        _mongo_upsert_visit(
-            patient_id   = patient_id,
-            visit_date   = visit_date,
-            entry        = {
-                "type":            "llm_final_report",
-                "generated_at":    datetime.now().isoformat(),
-                "report_text":     llm_report_text,
-                "files":           {"text": public_text_rel},
-            },
-            # همان شکل patient_info که save_reports ذخیره می‌کند (weight/height/smoker/...)
-            # تا فیلدهایی که فرانت (heart-visualization) مصرف می‌کند overwrite نشوند
-            patient_info = {"id": patient_id, **(patient_config or {})},
-            pull_filter  = {"type": "llm_final_report"},
-        )
-    except Exception as exc:
-        import traceback
-        print(f"    خطا در تولید گزارش LLM: {exc}")
-        traceback.print_exc()
+    _mongo_upsert_visit(
+        patient_id   = patient_id,
+        visit_date   = visit_date,
+        entry        = {
+            "type":            "llm_final_report",
+            "generated_at":    datetime.now().isoformat(),
+            "report_text":     llm_report_text,
+        },
+        # همان شکل patient_info که save_reports ذخیره می‌کند (weight/height/smoker/...)
+        # تا فیلدهایی که فرانت (heart-visualization) مصرف می‌کند overwrite نشوند
+        patient_info = {"id": patient_id, **(patient_config or {})},
+        pull_filter  = {"type": "llm_final_report"},
+    )

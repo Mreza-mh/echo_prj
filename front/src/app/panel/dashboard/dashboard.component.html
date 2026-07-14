@@ -192,9 +192,9 @@
                   <span class="res-name">{{ res.resource_name }}</span>
                   <span class="res-type">{{ res.resource_type }}</span>
                 </div>
-                <span class="res-badge" [class.busy]="res.usage?.length">
+                <!-- <span class="res-badge" [class.busy]="res.usage?.length">
                   {{ res.usage?.length ? getTranslation('busyStatus') : getTranslation('freeStatus') }}
-                </span>
+                </span> -->
               </div>
               @for (usage of res.usage; track $index) {
                 <div class="res-usage-row">

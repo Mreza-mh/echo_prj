@@ -85,17 +85,6 @@ def process_video(
     *,
     patient_config: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
-    """
-    پردازش کامل یک ویدیو و خروجی: لیست internal_rows (سطرهای اندازه‌گیری این ویدیو).
-    main.py این rowها را از همه‌ی ویدیوها جمع می‌کند و به fuzzy/گزارش نهایی می‌دهد.
-
-    مراحل:
-      ۱. تشخیص ویو (plax/a4c)          → اگر پشتیبانی‌نشده بود، یک row با unsupported_view برمی‌گردد
-      ۲. استخراج رویدادها (End Diastol/Sistol/LVOT) و محاسبه‌ی مقیاس (pixels_per_cm)
-      ۳. اندازه‌گیری هر پارامتر با مدل YOLO روی فریمِ هر رویداد → internal/public rows
-      ۴. (فقط a4c) محاسبه‌ی حجم دهلیز/بطن
-      ۵. ذخیره (save_reports): CSV + result.json + run_report.json + entry مونگو
-    """
     # --- مرحله ۱: تشخیص ویو ---
     classification_result = run_classification(video_path)
     detected_view         = classification_result["prediction"]
