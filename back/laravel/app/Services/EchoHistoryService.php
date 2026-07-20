@@ -257,7 +257,7 @@ class EchoHistoryService
             // اگر مسیر نسبی است، آن را نسبت به basePath ساخته و چک می‌کنیم
             $fullPath = $basePath . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $path);
             $absoluteCandidate = realpath($fullPath);
-            
+
             if ($absoluteCandidate && $this->isPathInside($absoluteCandidate, $basePath)) {
                 // تبدیل به مسیر نسبی نسبت به basePath
                 $path = ltrim(str_replace('\\', '/', substr($absoluteCandidate, strlen($basePath))), '/');

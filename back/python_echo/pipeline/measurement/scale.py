@@ -39,7 +39,7 @@ def euclidean_pixel_distance(x1: float, y1: float, x2: float, y2: float) -> floa
 
     مثال: euclidean_pixel_distance(158, 266, 299, 268) = 141.014...
     """
-    return float(math.hypot(x2 - x1, y2 - y1))
+    return float(math.hypot(x2 - x1, y2 - y1))   #رادیکال فاصله ایکس ها بتوان دو بعلاوه فاصله وای ها بتوان دو
 
 
 def pixel_length_to_cm(pixel_length: float, pixels_per_cm: float) -> float:
@@ -141,7 +141,7 @@ def length_cm_from_model_line(
 # بخش دوم: استخراج خط‌کش (ruler) و تخمین pixels_per_cm
 # ==============================================================================
 
-def _extract_ruler_info(
+def _extract_ruler_info(     #از طریق خطکش کناری میگه هر سانتی متر چند پیکسله
     image_bgr: np.ndarray,
     ruler_width_ratio: float = 0.25,
 ) -> tuple[float | None, list[int], int, int]:
@@ -173,17 +173,17 @@ def _extract_ruler_info(
 
     # تبدیل به grayscale و افزایش کنتراست
     gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-    gray = cv2.equalizeHist(gray)
+    gray = cv2.equalizeHist(gray)   #Histogram Equalization: اگه نور کم بود یخش خط کش رو واضح میکنه
 
     # آستانه‌گذاری: پیکسل‌های خیلی روشن → سفید (خط‌کش)
     _, th = cv2.threshold(gray, 200, 255, cv2.THRESH_BINARY)
 
     # ستونی که بیشترین پیکسل سفید را دارد → موقعیت خط‌کش در ROI
-    column_sum = np.sum(th, axis=0)
+    column_sum = np.sum(th, axis=0)    #تعداد پیکسلهای سفید هر ستون
     if np.max(column_sum) == 0:
         return None, [], 0, x_start                   # هیچ پیکسل سفیدی پیدا نشد
 
-    x_ruler = int(np.argmax(column_sum))
+    x_ruler = int(np.argmax(column_sum))   #اندیس بیشترین مقدار ارایه یعنی میگه کدوم ستون بیشترین سفید رو داره
 
     # برش باند ±۲۵ پیکسلی اطراف محور خط‌کش برای جستجوی tickها
     band = 25

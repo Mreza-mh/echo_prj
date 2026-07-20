@@ -9,9 +9,9 @@ use Illuminate\Routing\Controller as BaseController;
 
 /**
  * @OA\Info(
- * title="Acaree Project API",
+ * title="EchoMind Project API",
  * version="1.0.0",
- * description="مستندات ای‌پی‌آی پروژه آکاری",
+ * description="مستندات ای‌پی‌آی پروژه اکومایند",
  * @OA\Contact(
  * email="admin@example.com"
  * )

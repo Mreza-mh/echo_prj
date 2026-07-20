@@ -163,7 +163,7 @@ def aggregate_patient_rows_for_fuzzy(
         # چون همین اندازه‌گیری در نمای/رویداد دیگری ممکن است دوباره تکرار شده باشد
         # (مثلاً lvid در End Diastol و End Sistol، یا la در plax و a4c) و نباید روی هم
         # overwrite شوند؛ هرکدام پارامتر فازی جدای خودش را دارد.
-        map_key = (str(view_name), str(event_name), str(row.get("measurement_name")))
+        map_key = (str(view_name), str(event_name), str(row.get("measurement_name")))  # با این سه تا کلید اسم اون پارامتر واسه بخش فازی رو پیدا میکنه
         mapped_key = _PIPELINE_PARAM_MAP.get(map_key)
         measurement_cm = _as_float(row.get("length_cm"))
         if mapped_key and measurement_cm is not None:
@@ -269,8 +269,15 @@ def evaluate_patient(patient_data, patient_name="Patient", show_plot=False):
 
     bsa = calculate_bsa(patient_data.get('weight'), patient_data.get('height'))
 
+
+
+
+    #Antecedent : ورودی فازی
+    #Consequent : خروجی فازی
+
+
     # ========================================================================
-    # قدم ۲: تعریف خروجی فازی (Risk)
+    # قدم ۲: تعریف خروجی فازی (Risk) 
     # ========================================================================
     # risk: متغیر خروجی از ۰ تا ۱۰۰
     #   - Normal [0, 0, 40]  : مثلثی با قله در ۰
@@ -292,7 +299,7 @@ def evaluate_patient(patient_data, patient_name="Patient", show_plot=False):
     # ========================================================================
     fuzzy_inputs = {}  # {param_name: Antecedent}
 
-    for param, config in PARAM_CONFIG.items():
+    for param, config in PARAM_CONFIG.items():                  #برای هر پارامتری که در patient_data وجود دارد
         if param not in patient_data:
             continue
 
@@ -344,7 +351,7 @@ def evaluate_patient(patient_data, patient_name="Patient", show_plot=False):
     severe_condition, mild_condition, normal_condition = None, None, None
     for antecedent in fuzzy_inputs.values():
         if severe_condition is None:
-            severe_condition = antecedent['Severe']
+            severe_condition = antecedent['Severe']    #درجه عضویتشه
             mild_condition   = antecedent['Mild']
             normal_condition = antecedent['Normal']
         else:
@@ -358,20 +365,20 @@ def evaluate_patient(patient_data, patient_name="Patient", show_plot=False):
         ctrl.Rule(severe_condition, risk['Severe']),
     ]
 
-    risk_ctrl = ctrl.ControlSystem(rules)
-    risk_sim = ctrl.ControlSystemSimulation(risk_ctrl)
+    risk_ctrl = ctrl.ControlSystem(rules)          #قوانین رو وارد سیستم میکنیم
+    risk_sim = ctrl.ControlSystemSimulation(risk_ctrl)           #حالا شبیه ساز چیکار میکنه؟ ورودی میگیره قوانین روش اجرا میکنه
 
     # ========================================================================
     # قدم ۵: اعمال مقادیر بیمار به شبیه‌سازی
     # ========================================================================
     for param in fuzzy_inputs:
-        risk_sim.input[param] = patient_data[param + '_processed']
+        risk_sim.input[param] = patient_data[param + '_processed']          #مقادیر بیمار وارد سیستم فازی میشه
 
     # ========================================================================
     # قدم ۶: محاسبه و تفسیر نتیجه
     # ========================================================================
     try:
-        risk_sim.compute()
+        risk_sim.compute()           #کل کار سیستم انجام میشه مقادیر رو میگیره و قوانین رو اعمال میکنه بعد خروجی فازی رو به عدد تبدیل میکنه و نمره رو میده
         score = risk_sim.output['risk']
 
         # ----- محاسبه درجات عضویت هر پارامتر (برای گزارش و نمودار) -----
