@@ -40,7 +40,7 @@ def load_classifier_model():
     """
     if not CLASSIFIER_MODEL.exists():
         raise FileNotFoundError(f"Classifier model not found: {CLASSIFIER_MODEL}")
-    os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+    os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"         #حذف اینفو و وارنینگ
 
     try:
         import tensorflow as tf
@@ -67,12 +67,12 @@ def preprocess_frame(frame: np.ndarray) -> np.ndarray:
     ورودی:  یک فریم ndarray به‌صورت BGR، grayscale یا BGRA
     خروجی:  ndarray به شکل (224, 224, 3) float32 RGB — دقیقاً چیزی که مدل انتظار داره
     """
-    if frame.ndim == 2:
+    if frame.ndim == 2:                #ndim:تعداد ابعاد ارایه
         frame = cv2.cvtColor(frame, cv2.COLOR_GRAY2BGR)
     elif frame.ndim == 3 and frame.shape[2] == 4:
-        frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
-    resized = cv2.resize(frame, DEFAULT_INPUT_SIZE, interpolation=cv2.INTER_AREA)
-    return cv2.cvtColor(resized, cv2.COLOR_BGR2RGB).astype(np.float32)
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)   #A:شفافیت(الفا)
+    resized = cv2.resize(frame, DEFAULT_INPUT_SIZE, interpolation=cv2.INTER_AREA)   #INTER_AREA:"وقتی داریم تصویرو کوچیک مکینیم ماینگین بگیریم یعنی مثلا 4 تا پیکسل بشه یدونه"
+    return cv2.cvtColor(resized, cv2.COLOR_BGR2RGB).astype(np.float32)  #cv:bgr    mode:rgb
 
 
 # ==============================================================================
