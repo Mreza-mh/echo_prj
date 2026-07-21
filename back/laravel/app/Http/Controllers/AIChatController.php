@@ -204,7 +204,6 @@ class AIChatController extends Controller
     $this->logAi('کاربر: ' . $this->stripAiSyntax($lastUserMessage));
 
     try {
-        // --- بخش اصلاح شده (Logic Logic) ---
 
         // بررسی اینکه آیا کاربر در حال طی کردن مراحل رزرو است؟
         // اگر نام دکتر یا خدمت از قبل مشخص شده، یعنی کاربر در "جریان رزرو" قرار دارد.
@@ -216,10 +215,11 @@ class AIChatController extends Controller
         }
 
         // اگر کاربر تازه مکالمه را شروع کرده یا هیچ اسلاتی پر نشده، حالا مسیریابی کن
-        $routeResponse = Http::timeout(20)->post("{$this->pythonServiceUrl}/route", [
+        $routeResponse = Http::timeout(20)->post("{$this->pythonServiceUrl}/route", [  // فیز
             'sentence' => $lastUserMessage
         ]);
 
+        //فیز چه تشخیصی داده
         $routeData = $routeResponse->json();
         $intent = $routeData['intent'] ?? 'appointment';
         $score = $routeData['score'] ?? 0;
@@ -253,12 +253,12 @@ class AIChatController extends Controller
 
         $retrievedTexts = [];
         if ($qdrantResponse->successful() && isset($qdrantResponse->json()['results'])) {
-            foreach ($qdrantResponse->json()['results'] as $row) {
-                $retrievedTexts[] = $row['sentence'];
+            foreach ($qdrantResponse->json()['results'] as $row) {               //خروجی فیز ممکنه چندین جمله باشه که به جمله کاربر مرتبطه
+                $retrievedTexts[] = $row['sentence'];              // همرو میریزه تو یه ارایه
             }
         }
 
-        if (empty($retrievedTexts)) {
+        if (empty($retrievedTexts)) {   //اگه فیز هیچ جمله ای پیدا نکنه:
             return response()->json([
                 'choices' => [[
                     'message' => [
@@ -268,6 +268,7 @@ class AIChatController extends Controller
                 ]]
             ]);
         }
+        //حالا جملات فیزو میه به مدل تا یه خروجی ترکیبی و نهایی بگیره و بده کاربر
 
         // ۲. ساخت پرامپت به شدت مینی‌مال فقط برای پاسخ متنی
         $systemPrompt = 'تو بخش پشتیبانی و روابط عمومی کلینیک پزشکی آکاری هستی.
@@ -303,9 +304,9 @@ class AIChatController extends Controller
 
         // برای بهینه‌سازی، فقط پیام آخر کاربر را همراه با وضعیت قبلی به مدل می‌دهیم
         $aiResponse = $this->callLLMRaw([['role' => 'user', 'content' => $lastUserMessage]], $systemPrompt, 'استخراج اطلاعات رزرو');
-        $aiContent = preg_replace('/<think>[\s\S]*?<\/think>/', '', $aiResponse['choices'][0]['message']['content'] ?? '');
+        $aiContent = preg_replace('/<think>[\s\S]*?<\/think>/', '', $aiResponse['choices'][0]['message']['content'] ?? ''); //حذف تگهای اضافی خروجی مدل
 
-        if (preg_match('/\{[\s\S]*\}/', $aiContent, $matches)) {
+        if (preg_match('/\{[\s\S]*\}/', $aiContent, $matches)) {  //جیسون رو از داخل متن پیدا میکنه
             $jsonData = json_decode($matches[0], true);
         } else {
             $jsonData = $previousState; // فال‌بک به وضعیت قبلی در صورت خطای مدل
@@ -401,54 +402,6 @@ class AIChatController extends Controller
             }
         }
 
-        // // ۲. شناسایی خدمت (طبق کد قبلی شما)
-        // // ۲. شناسایی خدمت (طبق کد قبلی شما با یک اصلاح کوچک)
-        // $serviceFound = null;
-        // if (!empty($slots['service_name'])) {
-        //     $serviceFound = \App\Models\Service::where('title', 'like', "%{$slots['service_name']}%")->first();
-        //     if ($serviceFound) {
-        //         $slots['service_name'] = $serviceFound->title;
-        //     } else {
-        //         $allServices = \App\Models\Service::pluck('title')->toArray();
-        //         $serviceHelperText = 'خدمت انتخاب شده نامعتبر است. لیست خدمات واقعی ما: [' . implode('، ', $allServices) . ']';
-        //         $slots['service_name'] = null;
-        //     }
-        // } else {
-        //     // --- این بخش اضافه شد: اگر کاربر هنوز خدمتی انتخاب نکرده، لیست رو براش بفرست ---
-        //     $allServices = \App\Models\Service::pluck('title')->toArray();
-        //     if (!empty($allServices)) {
-        //         $serviceHelperText = 'کاربر هنوز خدمتی انتخاب نکرده است. حتماً این لیست دقیق را به کاربر نشان بده تا انتخاب کند: [' . implode('، ', $allServices) . ']';
-        //     }
-        // }
-
-        // ۳. بررسی تاریخ و استخراج زمان‌های خالی
-        // if ($staffFound && $serviceFound && !empty($slots['date'])) {
-        //     // تبدیل تاریخ "فردا" یا "شنبه" به تاریخ میلادی استاندارد Y-m-d
-        //     $standardDate = $this->convertRelativeDateToStandard($slots['date']);
-
-        //     // ساخت یک Request فیک برای پاس دادن به سرویس نوبت‌دهی شما
-        //     $availableSlotsRequest = new \App\Http\Requests\Appointment\AvailableSlotsRequest([
-        //         'staff_id' => $staffFound->id,
-        //         'service_id' => $serviceFound->id,
-        //         'date' => $standardDate
-        //     ]);
-
-        //     try {
-        //         $availableData = $this->appointmentService->getAvailableSlots($availableSlotsRequest);
-        //         $availableSlots = $availableData['data'];
-
-        //         if (empty($availableSlots)) {
-        //             $slotsText = "متاسفانه برای تاریخ {$slots['date']} هیچ زمان خالی پیدا نشد. لطفاً روز دیگری را بپرسید.";
-        //             $slots['date'] = null; // ریست تاریخ برای پرسش مجدد
-        //         } else {
-        //             // تبدیل لیست زمان‌ها به یک رشته متنی برای هوش مصنوعی
-        //             $times = collect($availableSlots)->map(fn($s) => $s['start_time'])->take(8)->implode('، ');
-        //             $slotsText = "زمان‌های خالی پیدا شده برای {$slots['date']}: [{$times}]. از کاربر بخواه یکی را انتخاب کند.";
-        //         }
-        //     } catch (\Exception $e) {
-        //         $slotsText = 'خطا در استخراج زمان‌های خالی.';
-        //     }
-        // }
 
         // ۳. بررسی تاریخ و استخراج زمان‌های خالی
         $timeSlotOptions = []; // برای نمایش لیست زمان‌های خالی در فرانت (UI tag)
@@ -687,7 +640,7 @@ class AIChatController extends Controller
                 [['role' => 'system', 'content' => $systemPrompt]],
                 $messages
             ),
-            'temperature' => 0.2,
+            'temperature' => 0.2,   //خلاقیت کم و پاسخ ها منطقی
             'max_tokens' => 400, // کاهش تعداد توکن خروجی برای بهینه‌سازی سرعت
         ];
 
@@ -720,10 +673,8 @@ class AIChatController extends Controller
         Log::channel('ai_chat')->info($line);
     }
 
-    /**
-     * حذف تگ‌های فنی (UI/BTN/think) از متن، فقط برای خوانایی در لاگ — متن اصلی دست‌نخورده می‌ماند
-     */
-    private function stripAiSyntax(string $text): string
+
+    private function stripAiSyntax(string $text): string                  //خروجی مدلو میگیرهو یسری تگارو حذف میکنه تا فقط متن معمولی بمونه
     {
         $text = preg_replace('/<think>[\s\S]*?<\/think>/', '', $text) ?? $text;
         $text = preg_replace('/\[UI:[A-Z_]+:[\s\S]*\]/', '', $text) ?? $text;

@@ -15,7 +15,7 @@ from typing import Any
 import cv2
 import numpy as np
 import torch
-import segmentation_models_pytorch as smp
+import segmentation_models_pytorch as smp   #کتابخونه های اماده برای سگمنتیشن مثلا یونت++ یا deeplab
 
 from pipeline.measurement.scale import pixel_area_to_cm2
 
@@ -23,7 +23,7 @@ from pipeline.measurement.scale import pixel_area_to_cm2
 MODEL_INPUT_SIZE = (256, 256)
 
 # آستانه‌ی تبدیل خروجی sigmoid به ماسک باینری؛ مقدار پایین یعنی recall بالاتر
-PROB_THRESHOLD = 0.1
+PROB_THRESHOLD = 0.1   #اگه خروجی مدل بیشتر از 0.1 باشه بطنه اگه کمتر باشه پس زمینس
 
 # شفافیت لایه‌ی قرمز در تصویر overlay
 OVERLAY_ALPHA = 0.4
@@ -67,12 +67,12 @@ def load_lv_model(
     resolved_device = _resolve_device(device)
 
     # checkpoint ممکن است خودِ state_dict باشد یا زیر کلید "model" ذخیره شده باشد
-    checkpoint = torch.load(model_path, map_location=resolved_device)
+    checkpoint = torch.load(model_path, map_location=resolved_device)         #best.pth
     state_dict = checkpoint.get("model", checkpoint) if isinstance(checkpoint, dict) else checkpoint
-    model.load_state_dict(state_dict)
+    model.load_state_dict(state_dict)        #وزن داخل مدل
 
-    model.to(resolved_device)
-    model.eval()
+    model.to(resolved_device) 
+    model.eval()         #ارزیابی evaluation
     return model
 
 
@@ -90,8 +90,8 @@ def _preprocess_image(image_bgr: np.ndarray) -> torch.Tensor:
     """
     image_gray = cv2.cvtColor(image_bgr, cv2.COLOR_BGR2GRAY)
     image_resized = cv2.resize(image_gray, MODEL_INPUT_SIZE)
-    image_normalized = (image_resized.astype(np.float32) / 255.0 - 0.5) / 0.5
-    return torch.from_numpy(image_normalized).unsqueeze(0).unsqueeze(0)
+    image_normalized = (image_resized.astype(np.float32) / 255.0 - 0.5) / 0.5  #0-255 -> 0-1 -> -1 - 1     چون مدل با این اموزش دیده
+    return torch.from_numpy(image_normalized).unsqueeze(0).unsqueeze(0)   #torch -> numpy (256*256) -> +bach  (1,256,256) -> +channel  (1,1,256,256)
 
 
 def _predict_mask(model: torch.nn.Module, image_bgr: np.ndarray) -> np.ndarray:
@@ -101,10 +101,10 @@ def _predict_mask(model: torch.nn.Module, image_bgr: np.ndarray) -> np.ndarray:
     device = next(model.parameters()).device
     input_tensor = _preprocess_image(image_bgr).to(device)
 
-    with torch.no_grad():
-        probs = torch.sigmoid(model(input_tensor))
+    with torch.no_grad():   #بدون گرادیانه چون اموزش نداریم فقط پیش بینی
+        probs = torch.sigmoid(model(input_tensor))      #feed forward -> activation function sigmoid -> 0-1
 
-    mask = (probs.cpu().numpy()[0, 0] > PROB_THRESHOLD).astype(np.uint8)
+    mask = (probs.cpu().numpy()[0, 0] > PROB_THRESHOLD).astype(np.uint8)        #خروجی سیگموید یه عدد بین 0 و 1 هست -> میاد برحسب اون ترشولد0.1 میگه -> اگه کمتر بود 0 میشه اگه بیشتر بود ماسک بطنه
 
     # برگرداندن ماسک به ابعاد اصلی تصویر
     h, w = image_bgr.shape[:2]
@@ -119,20 +119,20 @@ def _postprocess_mask(mask: np.ndarray) -> np.ndarray:
     خروجی:
         ماسک uint8 با مقادیر 0/255
     """
-    mask = (mask * 255).astype(np.uint8)
-    mask = cv2.GaussianBlur(mask, (5, 5), 0)
-    _, mask = cv2.threshold(mask, 127, 255, cv2.THRESH_BINARY)
+    mask = (mask * 255).astype(np.uint8)  #0-1 -> 0-255   unit:unsigned int 8bit
+    mask = cv2.GaussianBlur(mask, (5, 5), 0)                  #لبه ها صاف میشه، تصویر کمی محو میشه
+    _, mask = cv2.threshold(mask, 127, 255, cv2.THRESH_BINARY)  #تصویر رو باینری میکنه اگه پیکسل کتر از 127 باشه : 0 و اگه بیشتر باشه 255 میشه
 
-    kernel = np.ones((5, 5), np.uint8)
-    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
-    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+    kernel = np.ones((5, 5), np.uint8)              #یه کرنل میسازیم تا عملیات مورفولوژی اعمال شه: ارایه 5در5 از یک ها
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)         #close: Dilation->Erosion : اول بخش سفید(بطن) بزرگ میکنه بعد دوباره یکم کوچیکش میکنه : تا سوراخای ریزی که تو بطن هست پر بشه
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)          #open: Erosion->Dilation :اول بخشای کوچیک سفید رو که نویز هستن بزرگ میکنه بعد کوچیک میکنه تا از بین برن و فقط خود بطن بمونه
 
     # نواحی کوچک جدا از LV (نویز مدل) حذف می‌شوند
-    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    clean_mask = np.zeros_like(mask)
-    if contours:
-        largest = max(contours, key=cv2.contourArea)
-        cv2.drawContours(clean_mask, [largest], -1, 255, thickness=cv2.FILLED)
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)   #کانتور : مرز جسم
+    clean_mask = np.zeros_like(mask)   #یه تصویر سیاه اندازه ماسک
+    if contours:   #اگه کانتور پیدا شد
+        largest = max(contours, key=cv2.contourArea)         #از بین همه کانتورا بزرگترین رو انتخاب میکنه و این معیار بزرگتر از روی مساحته
+        cv2.drawContours(clean_mask, [largest], -1, 255, thickness=cv2.FILLED)         #کانتور رو میسازه: درواقع میخوایم ماسک نهایی رو برگردونیم
     return clean_mask
 
 
@@ -147,15 +147,15 @@ def _create_overlay(image_bgr: np.ndarray, mask: np.ndarray, area_cm2: float) ->
     """
     result = image_bgr.copy()
 
-    red_layer = np.zeros_like(image_bgr)
-    red_layer[:, :, 2] = 255
-    mask_bool = mask > 0
+    red_layer = np.zeros_like(image_bgr)     #به اندازه تصویر یه ماتریس سیاه میسازیم
+    red_layer[:, :, 2] = 255        #برای همه ردیف ها و همه ستونها کانال سومشو 255 کن (قرمز)
+    mask_bool = mask > 0            #کدوم پیکسلا از 0 بیشتره و داخل بطن هست: ترو
     if np.any(mask_bool):
-        blended = cv2.addWeighted(image_bgr, 1 - OVERLAY_ALPHA, red_layer, OVERLAY_ALPHA, 0)
-        result[mask_bool] = blended[mask_bool]
+        blended = cv2.addWeighted(image_bgr, 1 - OVERLAY_ALPHA, red_layer, OVERLAY_ALPHA, 0)    #ترکیب : blended = image_bgr * (1 - OVERLAY_ALPHA)  +  red_layer * OVERLAY_ALPHA  + 0
+        result[mask_bool] = blended[mask_bool]  #فقط بخشایی که ماسک هست ترکیب میشه یعنی فقط قرمز رو بطن میفته و کل تصویر مثل قبل میمونه
 
-    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cv2.drawContours(result, contours, -1, (0, 255, 0), 2)
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)  
+    cv2.drawContours(result, contours, -1, (0, 255, 0), 2)   #دور بطن یه نوار با ضخامت  و به رنگ سبز میکشه
 
     text = f"LV Area: {area_cm2:.2f} cm2"
     cv2.putText(result, text, (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 255, 255), 2, cv2.LINE_AA)
@@ -235,7 +235,7 @@ def run_lv_segmentation(
     clean_mask = _postprocess_mask(raw_mask)
 
     # --- مرحله ۴: شمارش پیکسل‌های ماسک و تبدیل به cm² با pixel_area_to_cm2 ---
-    area_px = int(np.sum(clean_mask > 0))
+    area_px = int(np.sum(clean_mask > 0))  #تعداد پیکسلهایی که متعلق به بطن چپ هستن
     area_cm2 = pixel_area_to_cm2(area_px, pixels_per_cm)
 
     # --- مرحله ۵: ساخت تصویر overlay برای نمایش/دیباگ ---

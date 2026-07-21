@@ -1,8 +1,8 @@
 {
     "openapi": "3.0.0",
     "info": {
-        "title": "Acaree Project API",
-        "description": "مستندات ای‌پی‌آی پروژه آکاری",
+        "title": "EchoMind Project API",
+        "description": "مستندات ای‌پی‌آی پروژه اکومایند",
         "contact": {
             "email": "admin@example.com"
         },

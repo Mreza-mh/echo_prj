@@ -75,14 +75,14 @@ class VitalController extends Controller
 
         $since = $request->query('since');
         if ($since && ctype_digit((string)$since)) {
-            $filter['recorded_at'] = ['$gte' => new \MongoDB\BSON\UTCDateTime((int)$since)];
+            $filter['recorded_at'] = ['$gte' => new \MongoDB\BSON\UTCDateTime((int)$since)];                //recorded_at >= since
         }
 
         $readings = $this->db->vital_readings->find(
             $filter,
             [
-                'sort'  => ['_id' => -1],
-                'limit' => 200,
+                'sort'  => ['_id' => -1],           //جدیدا اول
+                'limit' => 200,                   //حداکثر 200 رکورد
             ]
         )->toArray();
 
@@ -149,10 +149,10 @@ class VitalController extends Controller
 
         try {
             $mqtt = new MqttClient($host, $port, 'laravel-publisher-' . uniqid());
-            $settings = (new ConnectionSettings())->setConnectTimeout(3);
-            $mqtt->connect($settings);
-            $mqtt->publish($topic, json_encode($payload), 0);
-            $mqtt->disconnect();
+            $settings = (new ConnectionSettings())->setConnectTimeout(3);              //تنظیمات اتصال با تایم اوت 3
+            $mqtt->connect($settings);                                  //اتصال
+            $mqtt->publish($topic, json_encode($payload), 0);   //ارسال پیام
+            $mqtt->disconnect();                                       //قطعاتصال
         } catch (\Exception $e) {
             \Log::warning("MQTT publish failed: " . $e->getMessage());
         }

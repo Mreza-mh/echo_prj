@@ -58,7 +58,7 @@
 **هیچ‌جا به‌صورت مستقل ذخیره نمی‌شود** — نه فایل `ml_result.json` جدا، نه entry جدا در MongoDB.
 
 `ml_result` فقط در حافظه می‌ماند و مستقیم به گام ۴ پاس داده می‌شود. آنجا داخل
-`_build_final_report_data` مصرف می‌شود و فقط **عصاره‌اش** وارد `final_report.json` می‌شود:
+`_build_final_report_data` مصرف می‌شود و فقط **عصاره‌اش** وارد دیکشنری `report` (ورودی پرامپت LLM) می‌شود:
 - `risk_factors` → به‌طور کامل
 - `combined_score` و `severity` → **بعد از میانگین/ترکیب با نتیجه‌ی فازی**
 
@@ -79,13 +79,8 @@
 
 ### ذخیره‌سازی (تابع `save_reports`)
 
-روی دیسک، زیر `<patient_id>/<visit_date>/<view>/`:
-| فایل | نسخه | برای چه؟ |
-|---|---|---|
-| `reports/result.json` | public | چیزی که فرانت مستقیم مصرف می‌کند |
-| `reports/measurements.csv` | public | جدول اندازه‌گیری‌ها |
-| `internal/reports/run_report.json` | internal | نسخه‌ی کامل برای دیباگ |
-| `internal/reports/measurement_results_full.csv` | internal | CSV کامل داخلی |
+روی دیسک فقط تصاویر/ویدیوهای public (`media/`) و `reports/classification.json` نوشته می‌شوند.
+هیچ JSON/CSV خلاصه‌ای دیگر روی دیسک نوشته نمی‌شود — MongoDB منبع اصلی است.
 
 در MongoDB: یک **entry per-view** (دارای `view_instance`، بدون `type`) شامل
 `measurements`, `a4c_volume`, `lv_volume`, `classification`, `files`.
@@ -110,11 +105,8 @@
 
 ### خروجی فازی کجا ذخیره می‌شود؟
 
-روی دیسک، زیر `<patient_id>/<visit_date>/summary_<views>_<HH_MM>/`:
-| فایل | برای چه؟ |
-|---|---|
-| `reports/fuzzy_summary.json` | خروجی کامل فازی + `aggregated_data` + نمودارها |
-| `media/summary/*.png` | نمودارهای تحلیل فازی |
+روی دیسک، زیر `<patient_id>/<visit_date>/summary_<views>_<HH_MM>/media/summary/*.png`
+فقط نمودارهای تحلیل فازی نوشته می‌شوند (چون تصویرند و نمی‌توانند در مونگو بنشینند).
 
 در MongoDB: یک entry با `type = "fuzzy_summary"` شامل:
 - `result` → همان `fuzzy_result` (score/category/reasons) + مسیر نمودارها (`plots`)
@@ -128,10 +120,9 @@
 
 اینجا سه منبع کنار هم می‌آیند: `ml_result` + `fuzzy_result` + `all_rows`
 
-1. `_build_final_report_data(...)` همه را در یک دیکشنری تمیز ترکیب می‌کند
-2. این دیکشنری در `final_report/final_report.json` ذخیره می‌شود
-3. همین دیکشنری به LLM داده می‌شود → متن فارسی
-4. متن در `llm_patient_report.txt` + entry مونگو (`type = "llm_final_report"`)
+1. `_build_final_report_data(...)` همه را در یک دیکشنری تمیز ترکیب می‌کند (فقط در حافظه)
+2. همین دیکشنری مستقیم به LLM داده می‌شود → متن فارسی
+3. متن مستقیم در entry مونگو ذخیره می‌شود (`type = "llm_final_report"`, بدون نوشتن روی دیسک)
 
 ### به LLM دقیقاً چه چیزی می‌دهیم؟
 
@@ -195,7 +186,6 @@
 
 ### آنچه در فرانت دیده نمی‌شود
 - درصد تفکیکی دو مدل ML (`hd_result`/`cv_result`) — فقط امتیاز ترکیبی در دل گزارش LLM.
-- فایل‌های internal (`run_report.json`, CSVهای کامل) — فقط برای دیباگ.
 
 ---
 
@@ -203,9 +193,9 @@
 
 | خروجی | محل | مصرف‌کننده |
 |---|---|---|
-| `result.json` (per-view) | دیسک public + مونگو | فرانت: جدول + گالری |
-| `run_report.json` (per-view) | دیسک internal | دیباگ |
-| `fuzzy_summary.json` | دیسک + مونگو (`fuzzy_summary`) | فرانت: خلاصه + مدل سه‌بعدی |
-| `final_report.json` | دیسک | آرشیو/دیباگ + ورودی LLM |
-| `llm_patient_report.txt` | دیسک + مونگو (`llm_final_report`) | فرانت: کارت متن AI |
-| `ml_result` | **فقط حافظه** | عصاره‌اش → `final_report.json` |
+| per-view entry (`measurements`, `a4c_volume`, ...) | مونگو | فرانت: جدول + گالری |
+| نمودارهای فازی (`*.png`) | دیسک (public) + مسیرشان در مونگو (`fuzzy_summary.result.plots`) | فرانت: گالری تحلیل فازی |
+| `result` / `aggregated_data` (فازی) | **فقط مونگو** | فرانت: خلاصه + مدل سه‌بعدی |
+| `report` (final report data) | **فقط حافظه** | ورودی مستقیم پرامپت LLM |
+| `report_text` | **فقط مونگو** (`llm_final_report`) | فرانت: کارت متن AI |
+| `ml_result` | **فقط حافظه** | عصاره‌اش → دیکشنری `report` |
