@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Http\Responses\ApiResponse;
 use Illuminate\Support\Facades\Validator;
 use MongoDB\Client as MongoClient;
 
-class PatientDataController extends Controller
+class PatientDataController extends Controller  #ذخیره و بازیابی اطلاعات پزشکی بیماران از مونگو
 {
     private $collection;
 
@@ -15,12 +16,12 @@ class PatientDataController extends Controller
     {
         $mongoUri = env('MONGO_URI', 'mongodb://127.0.0.1:27017');
         $client = new MongoClient($mongoUri);
-        $this->collection = $client->echo_pipeline->patient_profiles;
+        $this->collection = $client->echo_pipeline->patient_profiles;  #اتصال به کالکشن
     }
 
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [  #اعتبارسنجی
             'age' => 'nullable|integer|min:18|max:120',
             'gender' => 'nullable|integer|in:1,2',
             'sex' => 'nullable|integer|in:0,1',
@@ -56,8 +57,8 @@ class PatientDataController extends Controller
             'chol', 'fbs', 'restecg', 'thalach', 'exang', 'oldpeak', 'slope', 'ca', 'thal'
         ]);
 
-        $userId = $request->input('user_id') ?? auth()->id();
-        
+        $userId = $request->input('user_id') ?? Auth::id();
+
         if (!$userId) {
             return ApiResponse::error('شناسه کاربر یافت نشد', 401);
         }
@@ -73,7 +74,7 @@ class PatientDataController extends Controller
 
         $existing = $this->collection->findOne(['user_id' => (int)$userId]);
 
-        if ($existing) {
+        if ($existing) {  #اگه کاربر قبلا وجود داشته باشه اپدیت میکنه درغیراینصورت یه کاربر جدید میسازه
             $this->collection->updateOne(
                 ['user_id' => (int)$userId],
                 ['$set' => $data]
@@ -96,7 +97,7 @@ class PatientDataController extends Controller
             return ApiResponse::error('اطلاعات بیمار یافت نشد', 404);
         }
 
-        $data = json_decode(json_encode($patient), true);
+        $data = json_decode(json_encode($patient), true);  #_id رو که ایدی خود مونگوعه حذف میکنه
         unset($data['_id']);
 
         return ApiResponse::success($data);

@@ -22,7 +22,7 @@ def get_embedding(text, tokenizer, model):
     return normalized_embedding[0].cpu().numpy().tolist()
 
 
-# تابع تولید دیتاست بهبود یافته با دو دسته‌بندی اصلی: support و appointment
+# تابع تولید دیتاست  با دو دسته‌بندی اصلی: support و appointment
 def generate_expanded_knowledge_base():
     kb = []
 
@@ -217,7 +217,7 @@ def generate_expanded_knowledge_base():
     return all_items
 
 
-# ۱. داده‌های دستی اولیه (به‌روزرسانی شده)
+# داده‌های دستی اولیه (به‌روزرسانی شده)
 knowledge_base = [
     # اطلاعات اصلی پشتیبانی
     {"category": "support", "text": "کلینیک قلب ما با بیمه‌های تامین اجتماعی، سلامت و نیروهای مسلح طرف قرارداد است."},
@@ -249,13 +249,13 @@ knowledge_base = [
     {"category": "support", "text": "پارکینگ اختصاصی برای بیماران وجود دارد."},
 ]
 
-# ۲. لود کردن مدل
+#  لود کردن مدل
 print("در حال لود کردن مدل...")
 tokenizer = AutoTokenizer.from_pretrained("./local_model")
 model = AutoModel.from_pretrained("./local_model")
 vector_size = model.config.hidden_size
 
-# ۳. اتصال به Qdrant
+#  اتصال به Qdrant
 client = QdrantClient(path="./embed_database")
 collection_name = "embeds"
 if client.collection_exists(collection_name):
@@ -263,28 +263,28 @@ if client.collection_exists(collection_name):
 
 client.create_collection(
     collection_name=collection_name,
-    vectors_config=VectorParams(size=vector_size, distance=Distance.COSINE),
+    vectors_config=VectorParams(size=vector_size, distance=Distance.COSINE),  #معیار محاسبه شباهت برداری: کسینوس
 )
 
-# ۴. ترکیب داده‌ها و ذخیره‌سازی
+#  ترکیب داده‌ها و ذخیره‌سازی
 print("در حال تولید دیتاست گسترده و امبدینگ‌ها...")
 auto_kb = generate_expanded_knowledge_base()
 final_kb = knowledge_base + auto_kb  # ترکیب لیست دستی و خودکار
 
 points = []
 for i, item in enumerate(final_kb):
-    vector = get_embedding(item["text"], tokenizer, model)
-    points.append(PointStruct(
-        id=i + 1,
-        vector=vector,
-        payload={"sentence_text": item["text"], "category": item["category"]}
+    vector = get_embedding(item["text"], tokenizer, model) #هررجمله متنی به یک بردار عددی تبدیل می‌شود
+    points.append(PointStruct(   #ساختار دیتابیس برای ذخیره سازی
+        id=i + 1,  # هر بردار یه ایدی یونیک داره
+        vector=vector,  # بردار امبد
+        payload={"sentence_text": item["text"], "category": item["category"]} # متن اصلی جمله و دسته بندیش
     ))
 
-client.upsert(collection_name=collection_name, points=points)
-print(f"✅ تعداد {len(final_kb)} جمله با موفقیت ذخیره شد.")
+client.upsert(collection_name=collection_name, points=points) #معادل insert یا update در دیتابیس، ذخیره سازی بردارها و اطلاعاتشون
+print(f"تعداد {len(final_kb)} جمله با موفقیت ذخیره شد.")
 
-# ۵. بازبینی و نمایش نمونه‌ها از هر دسته‌بندی
-print("\n📊 نمونه‌هایی از هر دسته‌بندی:")
+#  بازبینی و نمایش نمونه‌ها از هر دسته‌بندی
+print("\nنمونه‌هایی از هر دسته‌بندی:")
 records, _ = client.scroll(collection_name=collection_name, limit=20)
 categories_seen = set()
 
@@ -295,8 +295,8 @@ for r in records:
         print(f"\n[{category.upper()}]:")
     print(f"  • {r.payload['sentence_text']}")
 
-# ۶. آمار دسته‌بندی‌ها
-print(f"\n📈 آمار دیتاست:")
+#  آمار دسته‌بندی‌ها
+print(f"\n آمار دیتاست:")
 print(f"• کل جملات: {len(final_kb)}")
 category_counts = {}
 for item in final_kb:
@@ -306,4 +306,4 @@ for category, count in sorted(category_counts.items()):
     print(f"• {category}: {count} جمله")
 
 client.close()
-print("\n🎉 دیتاست با موفقیت بهبود یافت و ذخیره شد!")
+print("\nدیتاست با موفقیت بهبود یافت و ذخیره شد!")
