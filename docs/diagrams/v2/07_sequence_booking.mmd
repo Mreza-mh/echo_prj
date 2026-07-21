@@ -1,12 +1,12 @@
 %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#f1f5f9','primaryBorderColor':'#334155','primaryTextColor':'#1e293b','lineColor':'#64748b','fontSize':'14px','actorBkg':'#e2e8f0','actorBorder':'#334155','actorTextColor':'#1e293b'}}}%%
 sequenceDiagram
     autonumber
-    actor P as fa:fa-user بیمار
-    participant FE as fa:fa-window-maximize فرانت‌اند
-    participant BE as fa:fa-server Laravel API
-    participant AI as fa:fa-brain سرویس FAISS
-    participant LLM as fa:fa-robot LLM (Arvan)
-    participant DB as fa:fa-database پایگاه‌داده
+    actor P as بیمار
+    participant FE as فرانت‌اند
+    participant BE as Laravel API
+    participant AI as سرویس FAISS
+    participant LLM as LLM (Arvan)
+    participant DB as پایگاه‌داده
 
     P->>FE: پیام "می‌خوام نوبت بگیرم"
     FE->>BE: POST /ai/chat

@@ -4,17 +4,19 @@ id: 6307fd6a-09bb-47e0-a076-52e4f14145c4
 %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#f1f5f9','primaryBorderColor':'#334155','primaryTextColor':'#1e293b','lineColor':'#64748b','fontSize':'14px','actorBkg':'#e2e8f0','actorBorder':'#334155','actorTextColor':'#1e293b'}}}%%
 sequenceDiagram
     autonumber
-    actor D as fa:fa-user-md پزشک / اپراتور
-    participant BE as fa:fa-server Laravel
-    participant PY as fa:fa-code خط پردازش اکو
-    participant DB as fa:fa-leaf MongoDB
-    participant CV as fa:fa-eye مدل‌های بینایی ماشین
-    participant ML as fa:fa-chart-line مدل‌های ریسک
-    participant LLM as fa:fa-robot LLM گزارش‌نویس
+    actor D as پزشک / اپراتور
+    participant FS as پوشه اشتراکی ویدیو
+    participant PY as خط پردازش اکو
+    participant DB as MongoDB
+    participant CV as مدل‌های بینایی ماشین
+    participant ML as مدل‌های ریسک
+    participant LLM as LLM گزارش‌نویس
+    participant BE as Laravel
 
-    D->>BE: آپلود ویدیوی اکو بیمار
-    BE->>PY: اجرای CLI با شناسه بیمار
+    D->>FS: قرار دادن ویدیوی اکو بیمار در پوشه ورودی
+    D->>PY: اجرای دستی CLI با شناسه بیمار
     activate PY
+    PY->>FS: خواندن ویدیوی بیمار
     PY->>DB: خواندن پروفایل بالینی بیمار
     DB-->>PY: داده‌های بالینی
 
@@ -33,6 +35,10 @@ sequenceDiagram
     LLM-->>PY: متن گزارش نهایی
 
     PY->>DB: ذخیره نتیجه کامل
+    PY->>FS: نوشتن رسانه‌ی خروجی در مسیر اشتراکی Laravel
     deactivate PY
-    PY-->>BE: اعلام پایان پردازش
+
+    D->>BE: مشاهده گزارش در پنل
+    BE->>DB: خواندن نتیجه کامل بیمار
+    DB-->>BE: نتیجه و گزارش
     BE-->>D: نمایش گزارش نهایی در پنل

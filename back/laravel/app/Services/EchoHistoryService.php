@@ -318,7 +318,7 @@ class EchoHistoryService
     {
         $encoded = implode('/', array_map('rawurlencode', explode('/', $address)));
 
-        return url('/api/echo-history/file/' . $encoded);
+        return '/api/echo-history/file/' . $encoded;
     }
 
     private function publicFileExists(string $address): bool
