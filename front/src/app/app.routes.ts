@@ -10,19 +10,14 @@ export const routes: Routes = [
     path: 'panel',
     loadChildren: () => import('./panel/panel.routes').then((m) => m.routes),
     canActivate: [authGuard],
-    // data: { roles: ['admin', 'super_admin'] },
+    data: { roles: ['admin', 'doctor'] },
   },
-  {
-    path: 'super-panel',
-    loadChildren: () => import('./super-panel/super-panel.routes').then((m) => m.routes),
-    canActivate: [authGuard],
-    data: { roles: ['super_admin'] },
-  },
+
   {
     path: 'dr-panel',
     loadChildren: () => import('./doctor-panel/doctor-panel.routes').then((m) => m.routes),
     canActivate: [authGuard],
-    data: { roles: ['admin', 'doctor'] },
+    data: { roles: ['doctor'] },
   },
   {
     path: 'auth',

@@ -55,16 +55,16 @@ class EchoHistoryService
 
     public function getInfo($patient_id = null): array
     {
-        $patientId = $this->resolvePatientId($patient_id);
-        $document = $this->findPatientDocument($patientId);
+        $patientId = $this->resolvePatientId($patient_id);  # یا ایدی که بعنوان پارامتر اومده میاد یا ایدی کاربر لاگین شده(خود بیمار)
+        $document = $this->findPatientDocument($patientId); #داکیومنت بیمار رو میره از مونگو میکشه بیرون
 
         if (!$document) {
             throw new ErrorException('Echo history not found');
         }
 
-        $data = $this->normalizeMongoValue($document);
+        $data = $this->normalizeMongoValue($document);   #تبدیل خروجی مونگو به فرمت ph
         $data['patient_id'] = (string) ($data['_id'] ?? $patientId);
-        $data = $this->appendFileLinks($data);
+        $data = $this->appendFileLinks($data);  #دیتای خام رو به دیتای قابل استفاده برای فرانت‌اند تبدیل می‌کنه، بدون اینکه لازم باشه برنامه‌نویس فرانت‌اند دستی مسیرها رو پردازش کنه.
 
         return [
             'message' => 'Echo history loaded successfully',
@@ -72,18 +72,19 @@ class EchoHistoryService
         ];
     }
 
-    public function getFile($address): string
+    public function getFile($address): string   #مسیرو فایلو میگیره ، ادرسش رو سرور روو برمیگردونه : برای دانلود
     {
-        $basePath = realpath(public_path('echos'));
+        $basePath = realpath(public_path('echos'));  # مسیرش از public رو میگیره
         if (!$basePath) {
             throw new ErrorException('Echo public directory not found');
         }
 
-        $normalizedAddress = $this->normalizeFileAddress($address);
+        $normalizedAddress = $this->normalizeFileAddress($address); #ادرس نسبی شو میسازه
         if (!$normalizedAddress) {
             throw new ErrorException('Invalid file path');
         }
 
+        #مسیر رو از بابت ایمنی چک میکنه
         $candidate = realpath($basePath . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $normalizedAddress));
         if (!$candidate || !$this->isPathInside($candidate, $basePath)) {
             throw new ErrorException('Invalid file path');
@@ -109,11 +110,13 @@ class EchoHistoryService
     private function findPatientDocument(string $patientId)
     {
         // مقادیر Mongo ممکن است رشته‌ای یا عددی ذخیره شده باشند؛ هر دو نوع را امتحان می‌کنیم
+        #پس یه ارایه میسازیم که هم مقدار رشته ای رو بگیره هم مقدار عددی رو
         $candidates = [$patientId];
         if (ctype_digit($patientId)) {
             $candidates[] = (int) $patientId;
         }
 
+        #ایدی بیمار ممکنه تو یکی از این سه جا ذخیره شده باشه پس سهتاشو بررسی میکنیم
         foreach (['_id', 'patient_info.id', 'patient_id'] as $field) {
             foreach ($candidates as $candidate) {
                 $document = $this->findOne([$field => $candidate]);
@@ -130,7 +133,7 @@ class EchoHistoryService
     {
         try {
             $query = new \MongoDB\Driver\Query($filter, ['limit' => 1]);
-            $cursor = $this->manager()->executeQuery($this->collectionNamespace(), $query);
+            $cursor = $this->manager()->executeQuery($this->collectionNamespace(), $query); #یه کوئری مزنه رو کالکشن و اولین سندی که برای اون ایدی بیماره برمیگردونه
 
             foreach ($cursor as $document) {
                 return $document;
@@ -142,29 +145,29 @@ class EchoHistoryService
         return null;
     }
 
-    private function normalizeMongoValue($value)
+    private function normalizeMongoValue($value)  #تبدیل خروجی های مونگو به ساختاارهای مناسب تو php,api response
     {
-        if ($value instanceof \Illuminate\Support\Collection) {
+        if ($value instanceof \Illuminate\Support\Collection) {  # اگه از نوع کالکشن لاراول بود به ارایه ساده تبدیل کن
             $value = $value->all();
         }
 
-        if ($value instanceof \MongoDB\Model\BSONDocument || $value instanceof \MongoDB\Model\BSONArray) {
+        if ($value instanceof \MongoDB\Model\BSONDocument || $value instanceof \MongoDB\Model\BSONArray) { #اگه از نوع ابجکت های مدرن تو مونگو بود به ارایه تبدیل کن
             $value = $value->getArrayCopy();
         }
 
-        if ($value instanceof \MongoDB\BSON\ObjectId) {
+        if ($value instanceof \MongoDB\BSON\ObjectId) { # ObjectId("507f1f77bcf86cd799439011") => "507f1f77bcf86cd799439011"
             return (string) $value;
         }
 
-        if ($value instanceof \MongoDB\BSON\UTCDateTime) {
+        if ($value instanceof \MongoDB\BSON\UTCDateTime) {  #تاریخ هایی که تو فرمت مونگو هست رو به فرمت استاندارد خودمون تبدیل میکنه
             return $value->toDateTime()->format(DATE_ATOM);
         }
 
-        if (is_object($value)) {
+        if (is_object($value)) {  # اگه هیچ کدوم از بالاییا نبود ولی از نوع ابجکت بود ارایه کن
             $value = get_object_vars($value);
         }
 
-        if (is_array($value)) {
+        if (is_array($value)) {  #پردازش بازگشتی برای مقادیر تو در تو
             foreach ($value as $key => $item) {
                 $value[$key] = $this->normalizeMongoValue($item);
             }
@@ -175,34 +178,34 @@ class EchoHistoryService
 
     private function appendFileLinks($value, ?string $parentKey = null)
     {
-        if (!is_array($value)) {
+        if (!is_array($value)) { #اگه ورودی ارایه نبود که برگردونش
             return $value;
         }
 
         foreach ($value as $key => $item) {
-            if (is_array($item)) {
+            if (is_array($item)) {  #اگه ارایه تو در تو بود بازگشتی بزن
                 $value[$key] = $this->appendFileLinks($item, is_string($key) ? $key : $parentKey);
                 continue;
             }
 
-            if (!is_string($item) || !$this->looksLikePublicFilePath($item)) {
+            if (!is_string($item) || !$this->looksLikePublicFilePath($item)) { #اگه شبیه فایلای عمومی و معتبر نبود ردش کن
                 continue;
             }
 
-            $address = $this->normalizeFileAddress($item);
-            if (!$address) {
+            $address = $this->normalizeFileAddress($item); #مسیر نسبی استانداردشو بساز
+            if (!$address) { #اگهمیر نامعتبر شد ردش کن
                 continue;
             }
 
-            if (is_string($key)) {
-                $value[$key . '_address'] = $address;
-                $value[$key . '_url'] = $this->fileUrl($address);
-                $value[$key . '_exists'] = $this->publicFileExists($address);
+            if (is_string($key)) { #تکمیل اطلاعات
+                $value[$key . '_address'] = $address;  #اضافه کردن ادرس نسبی
+                $value[$key . '_url'] = $this->fileUrl($address);  #لینک دانلود
+                $value[$key . '_exists'] = $this->publicFileExists($address);  #ایا فایل رو سروره؟
             }
         }
 
-        if ($this->isStringList($value) && $this->looksLikeFileList($parentKey, $value)) {
-            return [
+        if ($this->isStringList($value) && $this->looksLikeFileList($parentKey, $value)) { # اگه کل فایل یه لیست از ادرسها یا رشته های سادس
+            return [ #فرمت خروجی متفاوت میشه
                 'items' => array_values($value),
                 'links' => array_values(array_filter(array_map(function ($path) {
                     $address = $this->normalizeFileAddress($path);
@@ -224,7 +227,7 @@ class EchoHistoryService
         return $value;
     }
 
-    private function normalizeFileAddress(?string $path): ?string
+    private function normalizeFileAddress(?string $path): ?string  #پاکسازی مسیر فایلا برای اینکه یه مسیر نسبی استاندارد برای فایلا بسازه
     {
         if (!$path) {
             return null;
@@ -272,7 +275,7 @@ class EchoHistoryService
         return $path;
     }
 
-    private function looksLikePublicFilePath(string $path): bool
+    private function looksLikePublicFilePath(string $path): bool  #ایا فایل معتبره؟ ایا مسیر فایل معتبره؟
     {
         $normalized = str_replace('\\', '/', $path);
         $hasDirectory = str_contains($normalized, '/');
@@ -284,22 +287,22 @@ class EchoHistoryService
         return (bool) (($hasDirectory || $hasKnownRoot) && $hasExtension);
     }
 
-    private function looksLikeFileList(?string $parentKey, array $items): bool
+    private function looksLikeFileList(?string $parentKey, array $items): bool  #یه ارایه از لیست فایل های عمومی؟
     {
         if (!$parentKey || !$this->isStringList($items)) {
             return false;
         }
 
         foreach ($items as $item) {
-            if ($this->looksLikePublicFilePath($item)) {
+            if ($this->looksLikePublicFilePath($item)) {  #اگه مسیرش شبیه فایلای عمومی معتبر بود
                 return true;
             }
         }
 
-        return in_array($parentKey, ['plots', 'files', 'images'], true);
+        return in_array($parentKey, ['plots', 'files', 'images'], true);  #یا اگه اسم فایل جز اینا بود
     }
 
-    private function isStringList(array $items): bool
+    private function isStringList(array $items): bool  #چک میکنه ارایه یه لیستی از رشته باشه فقط
     {
         if (array_keys($items) !== range(0, count($items) - 1)) {
             return false;
@@ -314,14 +317,14 @@ class EchoHistoryService
         return true;
     }
 
-    private function fileUrl(string $address): string
+    private function fileUrl(string $address): string  #ساخت url برای دانلود فایل
     {
         $encoded = implode('/', array_map('rawurlencode', explode('/', $address)));
 
-        return url('/api/echo-history/file/' . $encoded);
+        return '/api/echo-history/file/' . $encoded;
     }
 
-    private function publicFileExists(string $address): bool
+    private function publicFileExists(string $address): bool  #بررسی وجود فایل روی سرور
     {
         $basePath = realpath(public_path('echos'));
         if (!$basePath) {
@@ -333,7 +336,7 @@ class EchoHistoryService
         return (bool) ($candidate && $this->isPathInside($candidate, $basePath) && file_exists($candidate));
     }
 
-    private function isPathInside(string $path, string $basePath): bool
+    private function isPathInside(string $path, string $basePath): bool  #چک میکنه ای این مسیر تو پوشه مدنظر هست یا نه
     {
         $path = rtrim(str_replace('\\', '/', $path), '/');
         $basePath = rtrim(str_replace('\\', '/', $basePath), '/');

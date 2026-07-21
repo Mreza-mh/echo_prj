@@ -14,92 +14,92 @@ flowchart LR
     classDef grp fill:#f8fafc,stroke:#cbd5e1,stroke-width:1px,color:#475569
     classDef sub fill:#ffffff,stroke:#dbe3ee,stroke-width:1px,color:#64748b
 
-    ROOT("fa:fa-heartbeat سامانه Echo"):::root
+    ROOT("سامانه Echo"):::root
 
     %% ==================== فرانت‌اند ====================
-    subgraph SG_FE["fa:fa-window-maximize فرانت‌اند — Angular"]
+    subgraph SG_FE["فرانت‌اند — Angular"]
         direction TB
-        FE1("fa:fa-user پنل بیمار"):::front
-        FE2("fa:fa-user-md پنل پزشک"):::front
-        FE3("fa:fa-user-tie پنل مدیریت"):::front
-        FE4("fa:fa-comments نوبت‌گیری هوشمند و چت‌بات"):::front
-        FE5("fa:fa-file-medical سابقه و گزارش اکو"):::front
-        FE6("fa:fa-heart-pulse پایش زنده ضربان قلب"):::front
+        FE1("پنل بیمار"):::front
+        FE2("پنل پزشک"):::front
+        FE3("پنل مدیریت"):::front
+        FE4("نوبت‌گیری هوشمند و چت‌بات"):::front
+        FE5("سابقه و گزارش اکو"):::front
+        FE6("پایش زنده ضربان قلب"):::front
         FE1 ~~~ FE2 ~~~ FE3 ~~~ FE4 ~~~ FE5 ~~~ FE6
     end
 
-    KONG{{"fa:fa-shield-alt درگاه API — Kong Gateway"}}:::gateway
+    KONG{{"درگاه API — Kong Gateway"}}:::gateway
 
     %% ==================== بک‌اند ۱: لاراول ====================
-    subgraph SG_BE1["fa:fa-server بک‌اند ۱ — Laravel (اصلی)"]
+    subgraph SG_BE1["بک‌اند ۱ — Laravel (اصلی)"]
         direction TB
-        L1("fa:fa-lock احراز هویت (Passport / OTP)"):::laravel
-        L2("fa:fa-calendar-check نوبت‌دهی و برنامه کاری"):::laravel
-        L3("fa:fa-users-cog مدیریت پرسنل و خدمات"):::laravel
-        L4("fa:fa-comment-dots هماهنگ‌کننده چت‌بات"):::laravel
-        L5("fa:fa-file-medical گزارش و تاریخچه اکو"):::laravel
-        L6("fa:fa-satellite-dish گوش‌دهنده MQTT"):::laravel
+        L1("احراز هویت (Passport / OTP)"):::laravel
+        L2("نوبت‌دهی و برنامه کاری"):::laravel
+        L3("مدیریت پرسنل و خدمات"):::laravel
+        L4("هماهنگ‌کننده چت‌بات"):::laravel
+        L5("گزارش و تاریخچه اکو"):::laravel
+        L6("گوش‌دهنده MQTT"):::laravel
         L1 ~~~ L2 ~~~ L3
         L4 ~~~ L5 ~~~ L6
     end
 
     %% ==================== بک‌اند ۲: سرویس هوش مصنوعی ====================
-    subgraph SG_BE2["fa:fa-brain بک‌اند ۲ — سرویس FAISS (FastAPI)"]
+    subgraph SG_BE2["بک‌اند ۲ — سرویس FAISS (FastAPI)"]
         direction TB
-        F1("fa:fa-route تشخیص نیت پیام"):::faiss
-        F2("fa:fa-vector-square Embedding محلی"):::faiss
-        F3("fa:fa-dna جستجوی برداری RAG"):::faiss
+        F1("تشخیص نیت پیام"):::faiss
+        F2("Embedding محلی"):::faiss
+        F3("جستجوی برداری RAG"):::faiss
         F1 ~~~ F2 ~~~ F3
     end
 
     %% ==================== بک‌اند ۳: خط پردازش اکو ====================
-    subgraph SG_BE3["fa:fa-code بک‌اند ۳ — خط پردازش اکو (Python)"]
+    subgraph SG_BE3["بک‌اند ۳ — خط پردازش اکو (Python CLI، اجرای دستی)"]
         direction TB
 
-        subgraph SG_CV["fa:fa-eye بینایی ماشین"]
+        subgraph SG_CV["بینایی ماشین"]
             direction TB
-            PCV1("fa:fa-tags طبقه‌بندی نما (A4C/A2C/PLAX)"):::cvmodel
-            PCV2("fa:fa-map-marker-alt استخراج چرخه قلبی"):::cvmodel
-            PCV3("fa:fa-ruler برآورد مقیاس تصویر"):::cvmodel
-            PCV4("fa:fa-puzzle-piece قطعه‌بندی حفرات"):::cvmodel
-            PCV5("fa:fa-ruler-combined اندازه‌گیری LV / دهلیز / LVOT"):::cvmodel
+            PCV1("طبقه‌بندی نما (A4C/A2C/PLAX)"):::cvmodel
+            PCV2("استخراج چرخه قلبی"):::cvmodel
+            PCV3("برآورد مقیاس تصویر"):::cvmodel
+            PCV4("قطعه‌بندی حفرات"):::cvmodel
+            PCV5("اندازه‌گیری LV / دهلیز / LVOT"):::cvmodel
         end
 
-        subgraph SG_FUZZY["fa:fa-random منطق فازی"]
+        subgraph SG_FUZZY["منطق فازی"]
             direction TB
-            PF1("fa:fa-sliders-h تجمیع معیارها"):::fuzzy
-            PF2("fa:fa-exclamation-triangle سطح ریسک ساختاری"):::fuzzy
+            PF1("تجمیع معیارها"):::fuzzy
+            PF2("سطح ریسک ساختاری"):::fuzzy
         end
 
-        subgraph SG_ML["fa:fa-chart-line مدل‌های ریسک"]
+        subgraph SG_ML["مدل‌های ریسک"]
             direction TB
-            PML1("fa:fa-tree CatBoost"):::mlmodel
-            PML2("fa:fa-square-root-alt Logistic Regression"):::mlmodel
+            PML1("CatBoost"):::mlmodel
+            PML2("Logistic Regression"):::mlmodel
         end
 
-        subgraph SG_LLM["fa:fa-robot تولید گزارش"]
+        subgraph SG_LLM["تولید گزارش"]
             direction TB
-            PLLM1("fa:fa-cloud ArvanCloud LLM"):::llm
-            PLLM2("fa:fa-file-alt گزارش متنی نهایی"):::llm
+            PLLM1("ArvanCloud LLM"):::llm
+            PLLM2("گزارش متنی نهایی"):::llm
         end
 
         SG_CV --> SG_FUZZY --> SG_ML --> SG_LLM
     end
 
     %% ==================== اینترنت اشیا ====================
-    subgraph SG_IOT["fa:fa-broadcast-tower اینترنت اشیا"]
+    subgraph SG_IOT["اینترنت اشیا"]
         direction TB
-        MQTTNODE("fa:fa-broadcast-tower بروکر Mosquitto MQTT"):::iot
-        ESP("fa:fa-microchip ESP32 + MAX30102"):::iot
+        MQTTNODE("بروکر Mosquitto MQTT"):::iot
+        ESP("ESP32 + MAX30102"):::iot
         MQTTNODE <--> ESP
     end
 
     %% ==================== پایگاه‌های داده ====================
-    subgraph SG_DB["fa:fa-database پایگاه‌های داده"]
+    subgraph SG_DB["پایگاه‌های داده"]
         direction TB
-        DB1[("fa:fa-table MySQL<br/>کاربران و نوبت‌ها")]:::db
-        DB2[("fa:fa-leaf MongoDB<br/>داده بالینی و اکو")]:::db
-        DB3[("fa:fa-dna Qdrant<br/>پایگاه دانش")]:::db
+        DB1[("MySQL<br/>کاربران و نوبت‌ها")]:::db
+        DB2[("MongoDB<br/>داده بالینی و اکو")]:::db
+        DB3[("Qdrant<br/>پایگاه دانش")]:::db
     end
 
     class SG_FE,SG_BE1,SG_BE2,SG_BE3,SG_IOT,SG_DB grp
@@ -121,13 +121,13 @@ flowchart LR
     FE6 --> KONG
     KONG ==>|"مسیریابی درخواست"| SG_BE1
     SG_BE1 ==>|"Route + RAG"| SG_BE2
-    SG_BE1 ==>|"اجرای پردازش"| SG_BE3
     SG_BE1 <==>|"start / stop / data"| SG_IOT
 
     %% ==================== اتصال پایگاه‌های داده ====================
     SG_BE1 --> DB1
     SG_BE1 --> DB2
     SG_BE2 --> DB3
-    SG_BE3 --> DB2
+    SG_BE3 ==>|"خواندن/نوشتن مستقیم (بدون واسطه Laravel)"| DB2
+    SG_BE3 -.->|"ذخیره خروجی در مسیر اشتراکی"| SG_BE1
 
     PLLM1 -.->|"سرویس LLM مشترک"| L4

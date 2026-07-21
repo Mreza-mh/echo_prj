@@ -1,5 +1,10 @@
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e2e8f0','primaryBorderColor':'#334155','primaryTextColor':'#1e293b','lineColor':'#64748b','fontSize':'15px'}}}%%
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#eff6ff','primaryBorderColor':'#1e40af','primaryTextColor':'#1e293b','lineColor':'#64748b','fontSize':'15px'}}}%%
 stateDiagram-v2
+    classDef pending fill:#eff6ff,stroke:#60a5fa,color:#1e3a8a
+    classDef active fill:#dbeafe,stroke:#1e40af,color:#1e3a8a
+    classDef success fill:#1e40af,stroke:#1e3a8a,color:#ffffff,font-weight:bold
+    classDef failure fill:#e2e8f0,stroke:#475569,color:#1e293b
+
     [*] --> Pending : ثبت درخواست نوبت
 
     Pending --> Confirmed : تأیید منشی/مدیر
@@ -15,6 +20,11 @@ stateDiagram-v2
     Completed --> [*]
     Cancelled --> [*]
     NoShow --> [*]
+
+    class Pending pending
+    class Confirmed,Reminded,InProgress active
+    class Completed success
+    class Cancelled,NoShow failure
 
     note right of Pending
         در انتظار تأیید

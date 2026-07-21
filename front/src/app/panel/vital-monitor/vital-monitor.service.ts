@@ -24,7 +24,11 @@ export class VitalMonitorService {
       device_id: this.DEVICE_ID,
     });
   }
-
+  // {
+  //     "device_id":"ESP32_001",
+  //     "patient_id":15,
+  //     "started_at":"1753045678000"
+  // }
   stopSession(): Observable<any> {
     return this.http.post('/vitals/stop', { device_id: this.DEVICE_ID });
   }

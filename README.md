@@ -11,7 +11,7 @@
 | سرویس FAISS AI | `back/faiss` | FastAPI + uvicorn (Python) | 9000 |
 | پردازش ویدیو/ML اکو | `back/python_echo` | Python (CLI، نه سرویس دائمی) | - |
 | فرانت‌اند | `front` | Angular 20 | 4200 |
-| Kong Gateway | `kong-gateway` | Kong + Postgres (Docker) — **فعلاً غیرفعال** | proxy 9098 / admin 9099 / Konga 9338 |
+| Kong Gateway | `kong-gateway` | Kong + Postgres (Docker) — **فعلاً غیرفعال** | proxy 9198 / admin 9199 / Konga 9338 |
 | فرمور دستگاه | `esp32/vital_monitor` | Arduino/ESP32 (جدا آپلود می‌شود، بخشی از این راهنما نیست) | - |
 
 نیازمندی‌های زیرساختی مشترک که **خودِ پروژه نصب نمی‌کند** و باید از قبل روی دستگاه باشند: MySQL و MongoDB (هردو لوکال، داکرایز نشده‌اند).
@@ -48,7 +48,7 @@ docker compose -f mqtt-broker/docker-compose.yml up -d
 ```powershell
 docker compose -f kong-gateway/docker-compose.yml up -d
 ```
-`proxy=9098  admin=9099  Konga=9338`. در `start.ps1` کامنت است؛ فقط اگر لازم شد فعال کنید.
+`proxy=9198  admin=9199  Konga=9338`. در `start.ps1` کامنت است؛ فقط اگر لازم شد فعال کنید.
 
 ### ۳. سرویس FAISS AI
 ```powershell
