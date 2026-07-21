@@ -120,7 +120,7 @@ def build_backbone():
     ساخت مدل DeepLabV3+ با backbone ResNet50.
     
     خروجی:
-        مدل با ۲ کلاس خروجی (پس‌زمینه و شیء)
+        مدل با ۲ کلاس خروجی 
     
     نکته:
         سه حالت try/except برای سازگاری با نسخه‌های مختلف torchvision
