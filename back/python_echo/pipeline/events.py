@@ -152,7 +152,7 @@ def _extract_ecg_signal(video_path: Path) -> pd.DataFrame:
         previous_mask = current_mask
 
         # حذف نویز با morphological opening
-        new_pixels = cv2.morphologyEx(new_pixels, cv2.MORPH_OPEN, noise_kernel)
+        new_pixels = cv2.morphologyEx(new_pixels, cv2.MORPH_OPEN, noise_kernel) #erosion->dilation
 
         # ستون‌هایی که حداقل یک پیکسل فعال دارند
         active_xs = np.where(np.sum(new_pixels, axis=0) > 0)[0]
