@@ -248,4 +248,10 @@ class StaffController
         $result = $this->staffService->addStaffSchedule($request, $staff_id);
         return ApiResponse::success($result['data'], $result['message']);
     }
+
+    public function deleteStaffSchedule($staff_id)
+    {
+        $result = $this->staffService->deleteStaffSchedule($staff_id);
+        return ApiResponse::success($result['data'], $result['message']);
+    }
 }

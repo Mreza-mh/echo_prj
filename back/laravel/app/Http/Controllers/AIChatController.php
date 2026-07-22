@@ -203,7 +203,7 @@ class AIChatController extends Controller
     $this->logAi(str_repeat('─', 50));
     $this->logAi('کاربر: ' . $this->stripAiSyntax($lastUserMessage));
 
-    try {
+    try { //------------------------------------------------------------------------------------------------
 
         // بررسی اینکه آیا کاربر در حال طی کردن مراحل رزرو است؟
         // اگر نام دکتر یا خدمت از قبل مشخص شده، یعنی کاربر در "جریان رزرو" قرار دارد.
@@ -271,12 +271,12 @@ class AIChatController extends Controller
         //حالا جملات فیزو میه به مدل تا یه خروجی ترکیبی و نهایی بگیره و بده کاربر
 
         // ۲. ساخت پرامپت به شدت مینی‌مال فقط برای پاسخ متنی
-        $systemPrompt = 'تو بخش پشتیبانی و روابط عمومی کلینیک پزشکی آکاری هستی.
-با استفاده از اطلاعات مستند زیر، به سوال کاربر پاسخ کوتاه، محترمانه و صمیمی به زبان فارسی بده.
-حق نداری اطلاعاتی خارج از متن زیر ارائه کنی یا حدس بزنی.
+        $systemPrompt = 'تو بخش پشتیبانی و روابط عمومی کلینیک پزشکی اکومایند هستی.
+        با استفاده از اطلاعات مستند زیر، به سوال کاربر پاسخ کوتاه، محترمانه و صمیمی به زبان فارسی بده.
+        حق نداری اطلاعاتی خارج از متن زیر ارائه کنی یا حدس بزنی.
 
-مستندات کلینیک:
-' . implode("\n", $retrievedTexts);
+        مستندات کلینیک:
+        ' . implode("\n", $retrievedTexts);
 
         // ارسال به مدل بدون تعریف هیچ نوع ابزاری (کاهش شدید حجم توکن)
         return $this->callLLMRaw($messages, $systemPrompt, 'پشتیبانی');
@@ -295,12 +295,12 @@ class AIChatController extends Controller
         $dayOfWeek = now()->dayName;
 
         $systemPrompt = "تو یک استخراج‌کننده فرم هوشمند هستی.
-    {$stateContext}
-    وظیفه داری با توجه به آخرین پیام کاربر، اطلاعات را بروزرسانی کنی.
-    فقط JSON برگردان شامل کلیدهای: doctor_name, service_name, date, start_time.
-    اگر فیلدی تغییر نکرده، همان مقدار قبلی را برگردان. ساعت را به فرمت HH:mm (انگلیسی) تبدیل کن.
-    امروز {$dayOfWeek} تاریخ {$today} است.
-اگر کاربر از کلمات نسبی مثل 'فردا' استفاده کرد، تو عیناً کلمه 'فردا' را در فیلد date بنویس و خودت تبدیل نکن.";
+        {$stateContext}
+            وظیفه داری با توجه به آخرین پیام کاربر، اطلاعات را بروزرسانی کنی.
+            فقط JSON برگردان شامل کلیدهای: doctor_name, service_name, date, start_time.
+            اگر فیلدی تغییر نکرده، همان مقدار قبلی را برگردان. ساعت را به فرمت HH:mm (انگلیسی) تبدیل کن.
+            امروز {$dayOfWeek} تاریخ {$today} است.
+        اگر کاربر از کلمات نسبی مثل 'فردا' استفاده کرد، تو عیناً کلمه 'فردا' را در فیلد date بنویس و خودت تبدیل نکن.";
 
         // برای بهینه‌سازی، فقط پیام آخر کاربر را همراه با وضعیت قبلی به مدل می‌دهیم
         $aiResponse = $this->callLLMRaw([['role' => 'user', 'content' => $lastUserMessage]], $systemPrompt, 'استخراج اطلاعات رزرو');
@@ -331,9 +331,9 @@ class AIChatController extends Controller
     {
         // ۱. دریافت وضعیت قبلی از درخواستی که به کنترلر اومده
         // (فرض می‌کنیم اسم فیلد رو در ریکوئست گذاشتی current_slots)
-        $previousSlots = request()->input('current_slots', []);
-
-        // ۲. ادغام اسلات‌های جدید با قبلی (Merge)
+        $previousSlots = request()->input('current_slots', []);  
+ 
+        // ۲. ادغام اسلات‌های جدید با قبلی (Merge)// mergeeeeee -----------------------
         // با این کار، اگر کاربر قبلاً گفته "دکتر احمدی" و الان فقط بگه "اکو"،
         // مقدار دکتر احمدی از بین نمی‌ره.
         $slots = array_merge([
@@ -476,15 +476,15 @@ class AIChatController extends Controller
         $currentStatus = 'اطلاعات استخراج شده: ' . json_encode($slots, JSON_UNESCAPED_UNICODE);
 
         $finalPrompt = "تو دستیار رزرو نوبت کلینیک هستی.
-وضعیت: {$currentStatus}
-{$staffHelperText}
-{$serviceHelperText}
-{$slotsText}
+        وضعیت: {$currentStatus}
+        {$staffHelperText}
+        {$serviceHelperText}
+        {$slotsText}
 
-قوانین:
-1. اگر لیست زمان‌های خالی (slotsText) وجود دارد، آن‌ها را به کاربر نمایش بده و بگو یکی را انتخاب کند.
-2. اگر زمان‌های خالی وجود ندارد، محترمانه بگو وقت‌ها پر است.
-3. پاسخ صمیمی، بسیار کوتاه و به زبان فارسی باشد.";
+        قوانین:
+        1. اگر لیست زمان‌های خالی (slotsText) وجود دارد، آن‌ها را به کاربر نمایش بده و بگو یکی را انتخاب کند.
+        2. اگر زمان‌های خالی وجود ندارد، محترمانه بگو وقت‌ها پر است.
+        3. پاسخ صمیمی، بسیار کوتاه و به زبان فارسی باشد.";
 
         $aiFinalResponse = $this->callLLMRaw($messages, $finalPrompt, 'وضعیت رزرو');
 
@@ -557,7 +557,7 @@ class AIChatController extends Controller
         // مدل زبانی گاهی خودش یک تگ [UI:...] ناقص/جعلی در متن می‌نویسد؛ قبل از افزودن تگ واقعی حذفش می‌کنیم
         // تا فرانت با دو تگ (یکی نامعتبر، یکی معتبر) مواجه نشود.
         $content = preg_replace('/\[UI:[A-Z_]+:[\s\S]*/', '', $content) ?? $content;
-
+        // [UI:SELECT_STAFF:[{"id":1,"name":"دکتر احمدی","expertise":"قلب"}]]
         $tag = "[UI:{$uiType}:" . json_encode($data, JSON_UNESCAPED_UNICODE) . ']';
         $llmResult['choices'][0]['message']['content'] = trim($content) . "\n" . $tag;
 

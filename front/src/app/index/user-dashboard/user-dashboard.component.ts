@@ -177,7 +177,7 @@ export class UserDashboardComponent implements OnInit {
     
     // Transform echoData to PatientEchoData format for heart visualization
     this.heartVisualizationData = this.transformToHeartVisualizationData();
-    console.log('🫀 Heart visualization data transformed:', this.heartVisualizationData);
+    console.log(' Heart visualization data transformed:', this.heartVisualizationData);
   }
 
   private transformToHeartVisualizationData(): PatientEchoData | null {

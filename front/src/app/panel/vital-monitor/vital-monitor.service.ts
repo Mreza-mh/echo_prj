@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, interval, switchMap, startWith, share } from 'rxjs';
+import { Observable, interval, exhaustMap, startWith, share } from 'rxjs';
 import { GenericHttpService } from '../../@shared/services/generic-http.service';
 
 export interface VitalReading {
@@ -37,8 +37,9 @@ export class VitalMonitorService {
     const since = sinceMs ? `?since=${sinceMs}` : '';
     return interval(this.POLL_MS).pipe(
       startWith(0), // first req
-      switchMap(() => this.http.get(`/vitals/live/${patientId}${since}`)),
-      // share(),
+      // exhaustMap: تا جواب قبلی نیامده، تیک جدید نادیده گرفته می‌شود (نه کنسل)
+      // این از NS_BINDING_ABORTED جلوگیری می‌کند وقتی جواب کمی دیرتر از 2s برسد
+      exhaustMap(() => this.http.get(`/vitals/live/${patientId}${since}`)),
     );
   }
 

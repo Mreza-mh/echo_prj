@@ -11,6 +11,7 @@ from pathlib import Path
 
 # کنسول ویندوز پیش‌فرض روی cp1252 هست و متن‌های فارسی رو نمی‌تونه چاپ کنه (UnicodeEncodeError)
 # پس stdout/stderr رو دستی روی utf-8 ری‌کانفیگ می‌کنیم
+
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8")
     sys.stderr.reconfigure(encoding="utf-8")
