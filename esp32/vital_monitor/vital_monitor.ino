@@ -1,5 +1,6 @@
 #include <Wire.h>  // i2c library
 #include <WiFi.h>  // wifi library
+#include <ESPmDNS.h>  // resolve MQTT_BROKER_HOST -> IP via mDNS
 #include <PubSubClient.h>  // mqtt library
 #include <ArduinoJson.h>  // json library
 
@@ -14,7 +15,14 @@ const char* WIFI_SSID = "Kk";
 const char* WIFI_PASSWORD = "11111111";
 
 // ==================== MQTT ====================
-const char* MQTT_BROKER = "10.179.144.84";
+// روش اول: IP ثابت (اگر لپ‌تاپ همیشه همین IP رو داره، سریع‌تر و بدون وابستگی به mDNS)
+// اگر IP عوض شد یا اینجا خالی/اشتباه بود، خودکار fallback به mDNS با MQTT_BROKER_HOST می‌شود
+const char* MQTT_BROKER_STATIC_IP = "172.28.43.84";
+
+// روش دوم (fallback): نام لپ‌تاپ روی mDNS — بدون پسوند .local
+const char* MQTT_BROKER_HOST = "DESKTOP-I889UM3";
+
+char MQTT_BROKER[16]; // در setup() پر می‌شود (یا از IP ثابت، یا از resolve با mDNS)
 const int MQTT_PORT = 1883;
 const char* DEVICE_ID = "ESP32_001";
 
@@ -60,7 +68,7 @@ long lastIRValue = 0;             // last LED IR value
 const uint16_t IBI_MIN_MS = 300;
 const uint16_t IBI_MAX_MS = 1500;
 
-const byte IBI_MIN_REPORT = 3; // تا وقتی 3 ضربان نداشته باشیم خروجی نده
+const byte IBI_MIN_REPORT = 2; // تا وقتی 2 ضربان نداشته باشیم خروجی نده (سریع‌تر از 3، پایدارتر از 1)
 
 int lastGoodHR = 0; // last trusted average
 uint32_t lastGoodAt = 0; 
@@ -70,9 +78,11 @@ const uint32_t BEAT_STALE_MS = 3500; // 3.5 ثانیه ضربان معتبری �
 
 const uint32_t GOOD_HR_HOLD_MS = 15000; // تا 15 ثانیه مقدار اخر نگه میداریم البت هاینو تو فرانت هم هندل کردم که نشون بده داره نمیگیره 
 
-const uint32_t FINGER_OFF_DEBOUNCE_MS = 500; // اگر بیشتر از نیم ث بود بگو انگشت رفت 
-uint32_t irLowSince = 0;   // ir از کی اومده پایین 
-bool fingerOn = false;     
+const uint32_t FINGER_OFF_DEBOUNCE_MS = 500; // اگر بیشتر از نیم ث بود بگو انگشت رفت
+uint32_t irLowSince = 0;   // ir از کی اومده پایین
+bool fingerOn = false;
+
+bool freshHrReady = false; // اولین HR معتبر session آماده شد؛ نباید منتظر تیک بعدی publish بمانیم
 
 // ==================== SENSOR ====================
 void setLedSafePower() { //setup led power
@@ -105,9 +115,8 @@ void shutdownSensor() { //shutdown led power
 // ==================== TEST ====================
 
 void testSensorStartup() {
-  Serial.println("=== TEST MODE (2s) ===");
-  if (initSensor()) { // if sensor is found, delay 2 seconds and shutdown sensor
-    delay(2000);
+  Serial.println("=== TEST MODE ===");
+  if (initSensor()) { // if sensor is found, shutdown right away (no need to wait 2s here)
     shutdownSensor();
   }
   Serial.println("=== TEST DONE ===");
@@ -146,7 +155,7 @@ void startMeasuring(int pid) {
     Serial.println("START FAILED: sensor not found");
     return;
   } // else => sensorReady 
-  resetHeartRateState(); // reset 
+  resetHeartRateState(); // reset
   lastGoodHR = 0; // new session, forget last patient's value
   lastGoodAt = 0;
   fingerOn = false; // new session, re-detect the finger from scratch
@@ -182,6 +191,42 @@ bool connectWiFi() {
   }
   Serial.println("\nWiFi FAILED, will keep retrying");
   return false;
+}
+
+// تست سریع: آیا IP ثابت روی پورت MQTT جواب می‌دهد؟ (بدون نیاز به resolve)
+bool staticIpReachable() {
+  WiFiClient testClient;
+  bool ok = testClient.connect(MQTT_BROKER_STATIC_IP, MQTT_PORT, 1500); // 1.5s timeout
+  testClient.stop();
+  return ok;
+}
+
+// آی‌پی لپ‌تاپ را با mDNS پیدا می‌کند (fallback وقتی IP ثابت کار نکند)
+bool resolveBrokerHostViaMDNS() {
+  if (!MDNS.begin("esp32-vital")) {
+    Serial.println("mDNS init failed");
+    return false;
+  }
+  IPAddress ip = MDNS.queryHost(MQTT_BROKER_HOST, 5000);
+  if (ip == IPAddress(0, 0, 0, 0)) {
+    Serial.printf("mDNS: %s.local peyda nashod\n", MQTT_BROKER_HOST);
+    return false;
+  }
+  snprintf(MQTT_BROKER, sizeof(MQTT_BROKER), "%s", ip.toString().c_str());
+  Serial.printf("mDNS: %s.local -> %s\n", MQTT_BROKER_HOST, MQTT_BROKER);
+  return true;
+}
+
+// روش اول IP ثابت، اگر جواب نداد روش دوم mDNS
+bool resolveBrokerHost() {
+  Serial.printf("Testing static IP %s:%d ...\n", MQTT_BROKER_STATIC_IP, MQTT_PORT);
+  if (staticIpReachable()) {
+    snprintf(MQTT_BROKER, sizeof(MQTT_BROKER), "%s", MQTT_BROKER_STATIC_IP);
+    Serial.printf("Static IP OK -> %s\n", MQTT_BROKER);
+    return true;
+  }
+  Serial.println("Static IP javab nadad, mDNS emtehan mishavad...");
+  return resolveBrokerHostViaMDNS();
 }
 
 uint32_t lastWifiRetry = 0;
@@ -267,7 +312,7 @@ void updateSensor() { // update loop
       }
       lastValidBeat = millis(); // any detected beat keeps the stream "fresh"
     }
-
+  
     sensor.nextSample();
   }
 
@@ -291,7 +336,7 @@ void publishData() {
   doc["patient_id"] = patientId;
   doc["device_id"]  = DEVICE_ID;
 
-  // یه هذت بیت معتر داریم و ازش بیشتر از 15 ث نگذشته 
+  // یه هذت بیت معتر داریم و ازش بیشتر از 15 ث نگذشته
   bool valid = fingerOn && lastGoodHR > 0 && millis() - lastGoodAt < GOOD_HR_HOLD_MS;
   doc["hr"]       = valid ? lastGoodHR : -999;
   doc["valid_hr"] = valid;
@@ -337,6 +382,12 @@ void setup() {
   snprintf(DATA_TOPIC, sizeof(DATA_TOPIC), "devices/%s/data", DEVICE_ID); // devices/ESP32_001/data
 
   connectWiFi(); // connect to wifi
+
+  while (!resolveBrokerHost()) {
+    Serial.println("Retrying broker resolve in 2s...");
+    delay(2000);
+  }
+
   mqtt.setServer(MQTT_BROKER, MQTT_PORT); // set mqtt server
   mqtt.setCallback(onMqttMessage); // set mqtt callback   if message come run onMqttMessage()
   mqtt.setSocketTimeout(1); // short timeout
@@ -364,3 +415,13 @@ void loop() {
 
 
 
+
+
+
+// START
+// IR=0 | BPM=0.00 | AVG=0
+// IR=0 | BPM=0.00 | AVG=0
+// IR=72011 | BPM=0.00 | AVG=0
+// IR=72185 | BPM=0.00 | AVG=0
+// IR=72301 | BPM=1.98 | AVG=0
+// IR=72397 | BPM=62.31 | AVG=65

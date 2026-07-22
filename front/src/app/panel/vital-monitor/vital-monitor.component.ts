@@ -192,7 +192,7 @@ export class VitalMonitorComponent implements OnInit, OnDestroy {
 
   // ── اندازه‌گیری ───────────────────────────────────────────
   startMeasuring(): void {
-    if (!this.selectedPatient) return;
+    if (!this.selectedPatient || this.measuring || this.loading) return;
     this.loading = true;
 
     this.vitalService.startSession(this.selectedPatient.id).subscribe({
@@ -205,11 +205,15 @@ export class VitalMonitorComponent implements OnInit, OnDestroy {
         // زمان شروع session از ساعت «سرور» — تا فقط داده‌های همین session نمایش داده شود
         const sinceMs = parseInt(res?.data?.started_at) || Date.now();
 
+        // اگر session قبلی به هر دلیلی هنوز باز مانده، اول بستش کن
+        // (وگرنه چند تا polling موازی همزمان اجرا می‌شوند و به سرور فشار می‌آورند)
+        this.liveSub?.unsubscribe();
         this.liveSub = this.vitalService.liveData$(this.selectedPatient.id, sinceMs).subscribe({
           next: (r: any) => { this.readings = r?.data ?? []; },
         });
 
         // countdown + auto-stop
+        clearInterval(this.countdownRef);
         this.countdownRef = setInterval(() => {
           this.countdown--;
           if (this.countdown <= 0) {

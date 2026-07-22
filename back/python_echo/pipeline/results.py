@@ -612,3 +612,8 @@ def generate_and_save_final_report(
         patient_info = {"id": patient_id, **(patient_config or {})},
         pull_filter  = {"type": "llm_final_report"},
     )
+
+
+
+
+

@@ -9,6 +9,7 @@ use App\Http\Requests\Staff\StaffFilterRequest;
 use App\Http\Requests\Staff\StaffCreateRequest;
 use App\Http\Requests\Staff\StaffEditRequest;
 use App\Http\Requests\Staff\StaffScheduleRequest;
+use App\Models\Appointment;
 use App\Models\Staff;
 use Illuminate\Support\Facades\Auth;
 
@@ -92,6 +93,24 @@ class StaffService
         ];
     }
 
+    public function deleteStaffSchedule($staff_id)
+    {
+        $staff = Staff::where('id', $staff_id)->first();
+
+        if ($staff == null) {
+            throw new ErrorException('پرسنل وجود ندارد!');
+        }
+
+        $staff->fill([
+            'schedule' => null
+        ])->save();
+
+        return [
+            'message' => 'برنامه کاری با موفقیت حذف شد',
+            'data'    => $staff
+        ];
+    }
+
     //    public function StaffScheduleList(StaffFilterRequest $request)
 //    {
 //        $staff = Staff::where('id', $staff_id)->first();
@@ -137,6 +156,8 @@ class StaffService
         if ($staff == null) {
             throw new ErrorException('پرسنل وجود ندارد!');
         }
+
+        Appointment::where('staff_id', $staff_id)->delete();
 
         $staff->delete();
 

@@ -69,7 +69,7 @@ def route_request(request: UserRequest):
         has_appointment_keyword = any(keyword in user_text for keyword in APPOINTMENT_KEYWORDS) #ایا کلمه کلیدی نوبت گیری تو متن هست یا نه
 
         #  پردازش برداری
-        query_vector = encode_text(request.sentence)  #تبدیل جمله کاربر به بردار عددی
+        query_vector = encode_text(request.sentence)  #تبدیل جمله کاربر به بردار عددی توکنایز 
         search_result = client.query_points(
             collection_name=collection_name,   #اسم کالکشن دیتابیس که بردارها توش ذخیره شدن
             query=query_vector,  #بردار جمله کاربر که میخوایم نزدیکترین بردارها بهش رو پیدا کنیم

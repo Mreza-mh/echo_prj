@@ -42,31 +42,31 @@ def _fit_and_clip_ellipse(
     cv2.ellipse(result, cv2.fitEllipse(cnt), 1, -1) # یه بیضی پیدا میکنه 
 
     h, w = result.shape
-    ys, xs = np.mgrid[0:h, 0:w]
+    ys, xs = np.mgrid[0:h, 0:w] # همه پیکسل ها 
 
-    # خط دریچه می‌تونه کج باشه؛ علامت cross-product سمت هر پیکسل نسبت به این خط رو مشخص می‌کنه
     dx, dy = valve_b[0] - valve_a[0], valve_b[1] - valve_a[1]
-    side = dx * (ys - valve_a[1]) - dy * (xs - valve_a[0]) # خط برای جداسازی هر پیشکل اگر پایین باشه عدد + مییگیره
-    # سمت مرجع = همون سمتی که مرکز بیضی توش قرار داره (یعنی سمت حفره، نه سمت بالای دریچه)
+    side = dx * (ys - valve_a[1]) - dy * (xs - valve_a[0]) 
+    #    نتیجه: یک آرایه‌ی هم‌اندازه‌ی تصویر که هر خونه‌ش می‌گه "این پیکسل بالای خط یا پایین خط."
+
+
+    # سمت مرجع = سمت مرکز بیضی (یعنی سمت حفره)
     cy_e, cx_e = np.argwhere(result > 0).mean(axis=0)
-    ref_side = dx * (cy_e - valve_a[1]) - dy * (cx_e - valve_a[0]) # مرکز ستی که اعداد+ هستن برای عکس های روتیت شد ههم جوابه 
-    below_line = (np.sign(side) == np.sign(ref_side))    #  خط دریچه (سمت حفره)
+    ref_side = dx * (cy_e - valve_a[1]) - dy * (cx_e - valve_a[0])
+    below_line = (np.sign(side) == np.sign(ref_side))
 
-    # پر کردن شکاف: هر ستونی که بیضی توش پیکسل داره، از خط دریچه تا اولین پیکسل بیضی پر می‌شه
-    # اون بالا ها پر میشه 
+    # پر کردن شکاف بین خط دریچه و بیضی، ستون‌به‌ستون
     has_px = np.any(result > 0, axis=0)
-    cum    = np.cumsum(result, axis=0) # برای فهمیدن فضای خالی تا بطن
-    gap    = (cum == 0) & has_px & below_line            # فاصله‌ی خالی بین خط دریچه و بیضی
-    #هنوز خالی‌اند
-    # در ستونی هستند که بیضی دارد
-    # در سمت دهلیز هستند
-    result = np.maximum(result, gap.astype(np.uint8))
+    cum    = np.cumsum(result, axis=0)
+    gap    = (cum == 0) & has_px & below_line
+    result = np.maximum(result, gap.astype(np.uint8)) # پر میکنیم
 
-    result[~below_line] = 0      # حذف هر چیزی بالای خط دریچه
+    # ── گام ۴: برش نهایی ──────────────────────────────────────────────────
+    result[~below_line] = 0 # x مرکز و داریم و ستون از اونجا قط میکنیم 
+         # هر چیزی که بالای خط دریچه (بیرون حفره) بود حذف می‌شه
     if keep_left:
-        result[:, clip_x:] = 0   # دهلیز چپ: سمت راست clip_x حذف می‌شه
+        result[:, clip_x:] = 0   # دهلیز چپ می‌خوایم → ستون‌های سمت راست clip_x حذف می‌شن
     else:
-        result[:, :clip_x] = 0   # دهلیز راست: سمت چپ clip_x حذف می‌شه
+        result[:, :clip_x] = 0   # دهلیز راست می‌خوایم → ستون‌های سمت چپ clip_x حذف می‌شن
     return result
 
 
@@ -262,7 +262,7 @@ def run_a4c_atrial_areas(
     areas_cm2 = {k: pixel_area_to_cm2(px, scale) for k, px in areas_px.items()}
 
     # --------------------------------------------------------------------------
-    # ساخت تصویر overlay برای دیباگ/نمایش (دیواره‌ها، پرتوها، حفره‌ها، برچسب مساحت)
+    # ساخت تصویر overlay برای /نمایش (دیواره‌ها، پرتوها، حفره‌ها، برچسب مساحت)
     # --------------------------------------------------------------------------
     overlay = image_bgr.copy()
 
